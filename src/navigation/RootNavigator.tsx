@@ -5,7 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 import { TabNavigator } from './TabNavigator';
 import { OnboardingScreen } from '../screens/onboarding/OnboardingScreen';
 import { PinScreen } from '../screens/auth/PinScreen';
-import { ReportsScreen, AccountsScreen, RecurringScreen } from '../screens';
+import { ReportsScreen, AccountsScreen, RecurringScreen, AdvisorScreen } from '../screens';
 import { useAppTheme } from '../hooks';
 import { useAuthStore } from '../store';
 import { dbGetAll } from '../services/database';
@@ -63,6 +63,7 @@ export const RootNavigator: React.FC = () => {
             <Stack.Screen name="Reports" component={ReportsScreen} />
             <Stack.Screen name="Accounts" component={AccountsScreen} />
             <Stack.Screen name="RecurringPayments" component={RecurringScreen} />
+            <Stack.Screen name="Advisor" component={AdvisorScreen} />
           </>
         )}
       </Stack.Navigator>

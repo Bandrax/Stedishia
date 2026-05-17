@@ -6,5 +6,6 @@ export { MoreScreen } from './MoreScreen';
 export { ReportsScreen } from './ReportsScreen';
 export { AccountsScreen } from './AccountsScreen';
 export { RecurringScreen } from './RecurringScreen';
+export { AdvisorScreen } from './AdvisorScreen';
 export { OnboardingScreen } from './onboarding/OnboardingScreen';
 export { PinScreen } from './auth/PinScreen';
