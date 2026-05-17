@@ -14,3 +14,6 @@ export { BudgetEnvelopeCard } from './BudgetEnvelopeCard';
 export { BudgetSummaryHeader } from './BudgetSummaryHeader';
 export { BudgetAllocationSlider } from './BudgetAllocationSlider';
 export { BudgetModeToggle } from './BudgetModeToggle';
+export { GoalCard } from './GoalCard';
+export { NetWorthCard } from './NetWorthCard';
+export { EmergencyFundCard } from './EmergencyFundCard';
