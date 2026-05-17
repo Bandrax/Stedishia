@@ -7,5 +7,6 @@ export { ReportsScreen } from './ReportsScreen';
 export { AccountsScreen } from './AccountsScreen';
 export { RecurringScreen } from './RecurringScreen';
 export { AdvisorScreen } from './AdvisorScreen';
+export { HouseholdScreen } from './HouseholdScreen';
 export { OnboardingScreen } from './onboarding/OnboardingScreen';
 export { PinScreen } from './auth/PinScreen';
