@@ -10,3 +10,7 @@ export { ScopeToggle } from './ScopeToggle';
 export { CategoryPicker } from './CategoryPicker';
 export { AccountPicker } from './AccountPicker';
 export { TransactionListItem } from './TransactionListItem';
+export { BudgetEnvelopeCard } from './BudgetEnvelopeCard';
+export { BudgetSummaryHeader } from './BudgetSummaryHeader';
+export { BudgetAllocationSlider } from './BudgetAllocationSlider';
+export { BudgetModeToggle } from './BudgetModeToggle';
