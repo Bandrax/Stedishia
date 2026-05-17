@@ -4,5 +4,7 @@ export { BudgetScreen } from './BudgetScreen';
 export { GoalsScreen } from './GoalsScreen';
 export { MoreScreen } from './MoreScreen';
 export { ReportsScreen } from './ReportsScreen';
+export { AccountsScreen } from './AccountsScreen';
+export { RecurringScreen } from './RecurringScreen';
 export { OnboardingScreen } from './onboarding/OnboardingScreen';
 export { PinScreen } from './auth/PinScreen';
