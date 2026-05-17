@@ -1,0 +1,239 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "skip": "Skip",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "yes": "Yes",
+    "no": "No",
+    "all": "All",
+    "none": "None",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "currency": "€"
+  },
+
+  "tabs": {
+    "dashboard": "Home",
+    "transactions": "Transactions",
+    "budget": "Budget",
+    "goals": "Goals",
+    "more": "More"
+  },
+
+  "onboarding": {
+    "welcome": "Welcome to MojNovčanik!",
+    "welcomeSubtitle": "Your personal guide to household finances",
+    "step1Title": "What's your monthly income?",
+    "step1Subtitle": "Enter your total net monthly income (salary, freelance, etc.)",
+    "step2Title": "How many people in your household?",
+    "step2Subtitle": "This helps us tailor advice for your household",
+    "step3Title": "What are your financial goals?",
+    "step3Subtitle": "Choose one or more goals you'd like to achieve",
+    "step4Title": "Set up your accounts",
+    "step4Subtitle": "Add the accounts you use (bank, cash, cards)",
+    "step5Title": "You're all set!",
+    "step5Subtitle": "Start tracking your finances and take control of your budget",
+    "goals": {
+      "saving": "General savings",
+      "debtFree": "Become debt-free",
+      "apartment": "Buy a home",
+      "vacation": "Vacation",
+      "emergencyFund": "Emergency fund",
+      "retirement": "Retirement",
+      "car": "Buy a car",
+      "education": "Education"
+    },
+    "householdMembers": {
+      "one": "Just me",
+      "two": "Two of us",
+      "family": "Family (3+)"
+    },
+    "getStarted": "Let's go!",
+    "philosophy": "MojNovčanik helps you give every euro a purpose. Instead of tracking where money went, we plan ahead where it will go. Simple, no complicated jargon."
+  },
+
+  "auth": {
+    "enterPin": "Enter PIN",
+    "createPin": "Create PIN",
+    "confirmPin": "Confirm PIN",
+    "useBiometric": "Use fingerprint / Face ID",
+    "wrongPin": "Wrong PIN. Try again.",
+    "pinMismatch": "PINs don't match.",
+    "welcome": "Hey, {{name}}! 👋"
+  },
+
+  "dashboard": {
+    "title": "Home",
+    "totalBalance": "Total Balance",
+    "thisMonth": "This Month",
+    "howAmIDoing": "How am I doing?",
+    "statusGood": "Great! You're on track.",
+    "statusWarning": "Heads up — you're approaching limits in some categories.",
+    "statusBad": "You've exceeded your budget. Let's see where we can save.",
+    "upcomingPayments": "Upcoming Payments",
+    "topExpenses": "Top Expenses",
+    "cashFlow": "Cash Flow (30 days)",
+    "dailyTip": "Tip of the Day",
+    "noTransactions": "No transactions yet. Add your first one!",
+    "vsLastMonth": "vs. last month",
+    "income": "Income",
+    "expenses": "Expenses",
+    "balance": "Balance",
+    "household": "Household",
+    "personal": "Personal"
+  },
+
+  "transactions": {
+    "title": "Transactions",
+    "addNew": "New Transaction",
+    "amount": "Amount",
+    "category": "Category",
+    "account": "Account",
+    "description": "Description",
+    "date": "Date",
+    "note": "Note (optional)",
+    "tags": "Tags",
+    "type": {
+      "expense": "Expense",
+      "income": "Income",
+      "transfer": "Transfer"
+    },
+    "scope": {
+      "personal": "Personal",
+      "shared": "Shared"
+    },
+    "recurring": "Recurring",
+    "split": "Split across categories",
+    "noTransactions": "No transactions to show",
+    "deleteConfirm": "Are you sure you want to delete this transaction?",
+    "filterBy": "Filter by"
+  },
+
+  "budget": {
+    "title": "Budget",
+    "monthlyBudget": "Monthly Budget",
+    "allocated": "Allocated",
+    "spent": "Spent",
+    "remaining": "Remaining",
+    "available": "Available to allocate",
+    "overBudget": "Over budget",
+    "onTrack": "On track",
+    "envelopeMode": "Allocate every euro",
+    "envelopeExplain": "Imagine putting every euro in a separate envelope. Each envelope has its purpose — rent, food, fun... When the envelope is empty, that's it for the month!",
+    "simpleMode": "50/30/20 Rule",
+    "simpleExplain": "Simple rule: 50% for needs (rent, bills, food), 30% for wants (entertainment, dining out), 20% for savings and debt.",
+    "needs": "Needs (50%)",
+    "wants": "Wants (30%)",
+    "savingsDebt": "Savings & Debt (20%)",
+    "warningAt80": "Heads up — you've spent 80% of your {{category}} budget",
+    "warningAt100": "You've reached your limit for {{category}}!",
+    "warningOver": "You've exceeded your {{category}} budget by {{amount}}"
+  },
+
+  "goals": {
+    "title": "Goals",
+    "addGoal": "New Goal",
+    "goalName": "Goal Name",
+    "targetAmount": "Target Amount",
+    "targetDate": "By when?",
+    "monthlyNeeded": "Monthly needed",
+    "progress": "{{percent}}% achieved",
+    "completed": "Goal achieved! 🎉",
+    "emergencyFund": "Emergency Fund",
+    "emergencyFundExplain": "It's recommended to have savings covering 3-6 months of expenses. This is your financial cushion for unexpected situations.",
+    "monthsCovered": "Covers {{months}} months of expenses",
+    "netWorth": "Net Worth",
+    "netWorthExplain": "Net worth = everything you own - everything you owe. The goal is for this number to grow month by month.",
+    "noGoals": "No goals set. Start with your first one!"
+  },
+
+  "reports": {
+    "title": "Reports",
+    "monthly": "Monthly Overview",
+    "yearly": "Yearly Overview",
+    "trends": "Trends",
+    "cashFlow": "Cash Flow",
+    "forecast": "Forecast",
+    "export": "Export",
+    "exportPDF": "Export PDF",
+    "exportCSV": "Export CSV",
+    "noData": "Not enough data to display"
+  },
+
+  "accounts": {
+    "title": "Accounts",
+    "addAccount": "Add Account",
+    "accountName": "Account Name",
+    "accountType": "Account Type",
+    "balance": "Balance",
+    "types": {
+      "checking": "Checking Account",
+      "savings": "Savings Account",
+      "cash": "Cash",
+      "credit_card": "Credit Card"
+    },
+    "subscriptions": "Subscriptions",
+    "subscriptionTotal": "You're paying {{amount}} per year on subscriptions",
+    "debts": "Loans & Debts"
+  },
+
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "language": "Language",
+    "currency": "Currency",
+    "security": "Security",
+    "changePin": "Change PIN",
+    "biometric": "Fingerprint / Face ID",
+    "autoLock": "Auto-lock",
+    "notifications": "Notifications",
+    "weeklyCheckIn": "Weekly financial check-in",
+    "data": "Data",
+    "export": "Export Data",
+    "import": "Import Data",
+    "sync": "Sync",
+    "about": "About",
+    "household": "Household",
+    "householdName": "Household Name",
+    "members": "Members"
+  },
+
+  "advisor": {
+    "title": "Financial Advisor",
+    "weeklyCheckIn": "Weekly Check-in",
+    "tips": "Tips",
+    "education": "Education",
+    "infoIcon": "ℹ️ What does this mean?",
+    "dismiss": "Dismiss",
+    "markRead": "Mark as read"
+  },
+
+  "sync": {
+    "title": "Sync",
+    "lastSync": "Last synced",
+    "syncNow": "Sync now",
+    "exportData": "Export Data",
+    "importData": "Import Data",
+    "syncSuccess": "Data synced successfully!",
+    "syncError": "Sync error. Please try again."
+  }
+}

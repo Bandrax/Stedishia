@@ -1,0 +1,239 @@
+{
+  "common": {
+    "save": "Spremi",
+    "cancel": "Odustani",
+    "delete": "Obriši",
+    "edit": "Uredi",
+    "add": "Dodaj",
+    "close": "Zatvori",
+    "confirm": "Potvrdi",
+    "back": "Natrag",
+    "next": "Dalje",
+    "done": "Gotovo",
+    "skip": "Preskoči",
+    "search": "Pretraži",
+    "loading": "Učitavanje...",
+    "error": "Greška",
+    "success": "Uspjeh",
+    "yes": "Da",
+    "no": "Ne",
+    "all": "Sve",
+    "none": "Ništa",
+    "today": "Danas",
+    "yesterday": "Jučer",
+    "thisMonth": "Ovaj mjesec",
+    "lastMonth": "Prošli mjesec",
+    "currency": "€"
+  },
+
+  "tabs": {
+    "dashboard": "Početna",
+    "transactions": "Transakcije",
+    "budget": "Budžet",
+    "goals": "Ciljevi",
+    "more": "Više"
+  },
+
+  "onboarding": {
+    "welcome": "Dobrodošli u MojNovčanik!",
+    "welcomeSubtitle": "Vaš osobni vodič kroz kućne financije",
+    "step1Title": "Koliki su vam mjesečni prihodi?",
+    "step1Subtitle": "Unesite ukupni neto iznos koji primate svaki mjesec (plaća, honorari i sl.)",
+    "step2Title": "Koliko vas živi u kućanstvu?",
+    "step2Subtitle": "Ovo nam pomaže prilagoditi savjete za vaše kućanstvo",
+    "step3Title": "Koji su vam financijski ciljevi?",
+    "step3Subtitle": "Odaberite jedan ili više ciljeva koje želite postići",
+    "step4Title": "Postavite svoje račune",
+    "step4Subtitle": "Dodajte račune koje koristite (bankovni, gotovina, kartice)",
+    "step5Title": "Sve je spremno!",
+    "step5Subtitle": "Počnite pratiti svoje financije i preuzimte kontrolu nad budžetom",
+    "goals": {
+      "saving": "Općenita štednja",
+      "debtFree": "Otplata dugova",
+      "apartment": "Kupnja stana/kuće",
+      "vacation": "Godišnji odmor",
+      "emergencyFund": "Sigurnosni fond",
+      "retirement": "Mirovina",
+      "car": "Kupnja auta",
+      "education": "Edukacija"
+    },
+    "householdMembers": {
+      "one": "Samo ja",
+      "two": "Dvoje nas",
+      "family": "Obitelj (3+)"
+    },
+    "getStarted": "Započni!",
+    "philosophy": "MojNovčanik vam pomaže da svaki euro ima svoju svrhu. Umjesto da pratite gdje je novac otišao, planiramo unaprijed kamo će ići. Jednostavno, bez kompliciranog ekonomskog žargona."
+  },
+
+  "auth": {
+    "enterPin": "Unesite PIN",
+    "createPin": "Kreirajte PIN",
+    "confirmPin": "Potvrdite PIN",
+    "useBiometric": "Koristite otisak prsta / Face ID",
+    "wrongPin": "Pogrešan PIN. Pokušajte ponovo.",
+    "pinMismatch": "PIN-ovi se ne podudaraju.",
+    "welcome": "Bok, {{name}}! 👋"
+  },
+
+  "dashboard": {
+    "title": "Početna",
+    "totalBalance": "Ukupno stanje",
+    "thisMonth": "Ovaj mjesec",
+    "howAmIDoing": "Kako mi ide?",
+    "statusGood": "Odlično! Na pravom ste putu.",
+    "statusWarning": "Pažnja — približavate se limitu u nekim kategorijama.",
+    "statusBad": "Prekoračili ste budžet. Pogledajmo gdje možemo uštedjeti.",
+    "upcomingPayments": "Predstojeća plaćanja",
+    "topExpenses": "Najveći troškovi",
+    "cashFlow": "Tok novca (30 dana)",
+    "dailyTip": "Savjet dana",
+    "noTransactions": "Još nemate transakcija. Dodajte prvu!",
+    "vsLastMonth": "u odnosu na prošli mjesec",
+    "income": "Prihodi",
+    "expenses": "Rashodi",
+    "balance": "Stanje",
+    "household": "Kućanstvo",
+    "personal": "Osobno"
+  },
+
+  "transactions": {
+    "title": "Transakcije",
+    "addNew": "Nova transakcija",
+    "amount": "Iznos",
+    "category": "Kategorija",
+    "account": "Račun",
+    "description": "Opis",
+    "date": "Datum",
+    "note": "Bilješka (opcionalno)",
+    "tags": "Oznake",
+    "type": {
+      "expense": "Rashod",
+      "income": "Prihod",
+      "transfer": "Transfer"
+    },
+    "scope": {
+      "personal": "Osobno",
+      "shared": "Zajedničko"
+    },
+    "recurring": "Ponavljajuća",
+    "split": "Podijeli na kategorije",
+    "noTransactions": "Nema transakcija za prikaz",
+    "deleteConfirm": "Jeste li sigurni da želite obrisati ovu transakciju?",
+    "filterBy": "Filtriraj po"
+  },
+
+  "budget": {
+    "title": "Budžet",
+    "monthlyBudget": "Mjesečni budžet",
+    "allocated": "Raspoređeno",
+    "spent": "Potrošeno",
+    "remaining": "Preostaje",
+    "available": "Dostupno za raspodjelu",
+    "overBudget": "Prekoračenje",
+    "onTrack": "Na pravom putu",
+    "envelopeMode": "Rasporedi svaki euro",
+    "envelopeExplain": "Zamislite da svaki euro stavljate u posebnu kuvertu. Svaka kuvertu ima svoju namjenu — stan, hrana, zabava... Kad kuvertu potrošite, to je to za taj mjesec!",
+    "simpleMode": "50/30/20 pravilo",
+    "simpleExplain": "Jednostavno pravilo: 50% za potrebe (stan, režije, hrana), 30% za želje (zabava, izlasci), 20% za štednju i otplatu dugova.",
+    "needs": "Potrebe (50%)",
+    "wants": "Želje (30%)",
+    "savingsDebt": "Štednja & dugovi (20%)",
+    "warningAt80": "Pažnja — potrošili ste 80% budžeta za {{category}}",
+    "warningAt100": "Dosegli ste limit za {{category}}!",
+    "warningOver": "Prekoračili ste budžet za {{category}} za {{amount}}"
+  },
+
+  "goals": {
+    "title": "Ciljevi",
+    "addGoal": "Novi cilj",
+    "goalName": "Naziv cilja",
+    "targetAmount": "Ciljani iznos",
+    "targetDate": "Do kada?",
+    "monthlyNeeded": "Potrebno mjesečno",
+    "progress": "{{percent}}% ostvareno",
+    "completed": "Cilj ostvaren! 🎉",
+    "emergencyFund": "Sigurnosni fond",
+    "emergencyFundExplain": "Preporučuje se imati ušteđevinu koja pokriva 3-6 mjeseci vaših troškova. To je vaš financijski jastuk za neočekivane situacije.",
+    "monthsCovered": "Pokriva {{months}} mjeseci troškova",
+    "netWorth": "Neto vrijednost",
+    "netWorthExplain": "Neto vrijednost = sve što imate - sve što dugujete. Cilj je da ovaj broj raste iz mjeseca u mjesec.",
+    "noGoals": "Nemate postavljenih ciljeva. Krenite s prvim!"
+  },
+
+  "reports": {
+    "title": "Izvještaji",
+    "monthly": "Mjesečni pregled",
+    "yearly": "Godišnji pregled",
+    "trends": "Trendovi",
+    "cashFlow": "Tok novca",
+    "forecast": "Prognoza",
+    "export": "Izvezi",
+    "exportPDF": "Izvezi PDF",
+    "exportCSV": "Izvezi CSV",
+    "noData": "Nema dovoljno podataka za prikaz"
+  },
+
+  "accounts": {
+    "title": "Računi",
+    "addAccount": "Dodaj račun",
+    "accountName": "Naziv računa",
+    "accountType": "Vrsta računa",
+    "balance": "Stanje",
+    "types": {
+      "checking": "Tekući račun",
+      "savings": "Štedni račun",
+      "cash": "Gotovina",
+      "credit_card": "Kreditna kartica"
+    },
+    "subscriptions": "Pretplate",
+    "subscriptionTotal": "Plaćate {{amount}} godišnje za pretplate",
+    "debts": "Krediti i dugovi"
+  },
+
+  "settings": {
+    "title": "Postavke",
+    "profile": "Profil",
+    "appearance": "Izgled",
+    "theme": "Tema",
+    "themeLight": "Svijetla",
+    "themeDark": "Tamna",
+    "themeSystem": "Prema sustavu",
+    "language": "Jezik",
+    "currency": "Valuta",
+    "security": "Sigurnost",
+    "changePin": "Promijeni PIN",
+    "biometric": "Otisak prsta / Face ID",
+    "autoLock": "Auto-zaključavanje",
+    "notifications": "Obavijesti",
+    "weeklyCheckIn": "Tjedni financijski pregled",
+    "data": "Podaci",
+    "export": "Izvezi podatke",
+    "import": "Uvezi podatke",
+    "sync": "Sinkronizacija",
+    "about": "O aplikaciji",
+    "household": "Kućanstvo",
+    "householdName": "Naziv kućanstva",
+    "members": "Članovi"
+  },
+
+  "advisor": {
+    "title": "Financijski savjetnik",
+    "weeklyCheckIn": "Tjedni pregled",
+    "tips": "Savjeti",
+    "education": "Edukacija",
+    "infoIcon": "ℹ️ Što to znači?",
+    "dismiss": "Odbaci",
+    "markRead": "Označi kao pročitano"
+  },
+
+  "sync": {
+    "title": "Sinkronizacija",
+    "lastSync": "Zadnja sinkronizacija",
+    "syncNow": "Sinkroniziraj sada",
+    "exportData": "Izvezi podatke",
+    "importData": "Uvezi podatke",
+    "syncSuccess": "Podaci uspješno sinkronizirani!",
+    "syncError": "Greška pri sinkronizaciji. Pokušajte ponovo."
+  }
+}
