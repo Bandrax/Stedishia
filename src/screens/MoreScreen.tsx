@@ -1,25 +1,32 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import { useAppTheme } from '../hooks';
 import { Typography, Spacing, BorderRadius } from '../constants';
+import type { RootStackParamList } from '../types';
+
+type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 interface MenuItem {
   emoji: string;
   label: string;
   sublabel?: string;
+  screen?: keyof RootStackParamList;
 }
 
 const menuItems: MenuItem[] = [
-  { emoji: '🏦', label: 'Računi', sublabel: 'Upravljajte računima i karticama' },
-  { emoji: '📊', label: 'Izvještaji', sublabel: 'Mjesečni i godišnji pregledi' },
-  { emoji: '🤖', label: 'Financijski savjetnik', sublabel: 'Personalizirani savjeti' },
-  { emoji: '🏠', label: 'Kućanstvo', sublabel: 'Zajednički budžet i sync' },
-  { emoji: '🔄', label: 'Ponavljajuća plaćanja', sublabel: 'Pretplate i režije' },
-  { emoji: '⚙️', label: 'Postavke', sublabel: 'Tema, jezik, sigurnost' },
+  { emoji: '🏦', label: 'Računi', sublabel: 'Upravljajte računima i karticama', screen: 'Accounts' },
+  { emoji: '📊', label: 'Izvještaji', sublabel: 'Mjesečni i godišnji pregledi', screen: 'Reports' },
+  { emoji: '🤖', label: 'Financijski savjetnik', sublabel: 'Personalizirani savjeti', screen: 'Advisor' },
+  { emoji: '🏠', label: 'Kućanstvo', sublabel: 'Zajednički budžet i sync', screen: 'Household' },
+  { emoji: '🔄', label: 'Ponavljajuća plaćanja', sublabel: 'Pretplate i režije', screen: 'RecurringPayments' },
+  { emoji: '⚙️', label: 'Postavke', sublabel: 'Tema, jezik, sigurnost', screen: 'Settings' },
 ];
 
 export const MoreScreen: React.FC = () => {
   const { colors } = useAppTheme();
+  const navigation = useNavigation<NavigationProp>();
 
   return (
     <ScrollView
@@ -41,6 +48,7 @@ export const MoreScreen: React.FC = () => {
             },
           ]}
           activeOpacity={0.7}
+          onPress={() => item.screen && navigation.navigate(item.screen as any)}
         >
           <Text style={styles.menuEmoji}>{item.emoji}</Text>
           <View style={styles.menuText}>

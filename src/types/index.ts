@@ -206,6 +206,11 @@ export type RootStackParamList = {
   AccountDetail: { accountId: string };
   AddAccount: undefined;
   BudgetSetup: { month: string };
+  Reports: undefined;
+  Accounts: undefined;
+  Advisor: undefined;
+  Household: undefined;
+  RecurringPayments: undefined;
 };
 
 export type MainTabParamList = {

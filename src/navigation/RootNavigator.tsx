@@ -5,6 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 import { TabNavigator } from './TabNavigator';
 import { OnboardingScreen } from '../screens/onboarding/OnboardingScreen';
 import { PinScreen } from '../screens/auth/PinScreen';
+import { ReportsScreen } from '../screens';
 import { useAppTheme } from '../hooks';
 import { useAuthStore } from '../store';
 import { dbGetAll } from '../services/database';
@@ -57,7 +58,10 @@ export const RootNavigator: React.FC = () => {
         ) : !isAuthenticated ? (
           <Stack.Screen name="Auth" component={PinScreen} />
         ) : (
-          <Stack.Screen name="Main" component={TabNavigator} />
+          <>
+            <Stack.Screen name="Main" component={TabNavigator} />
+            <Stack.Screen name="Reports" component={ReportsScreen} />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>
