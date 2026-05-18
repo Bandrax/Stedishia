@@ -8,6 +8,7 @@ import {
   FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { useAccountStore } from '../../store';
 import { Typography, Spacing, BorderRadius } from '../../constants';
@@ -46,10 +47,17 @@ export const AccountPicker: React.FC<AccountPickerProps> = ({
         onPress={() => setVisible(true)}
         activeOpacity={0.7}
       >
-        <Text style={[styles.triggerText, { color: selectedAccountId ? colors.text : colors.textTertiary }]}>
-          {selected ? `${selected.icon} ${selected.name}` : 'Odaberi račun'}
-        </Text>
-        <Text style={{ color: colors.textTertiary }}>▼</Text>
+        <View style={styles.triggerContent}>
+          {selected ? (
+            <>
+              <Ionicons name={(selected.icon || 'business-outline') as any} size={18} color={colors.primary} style={{ marginRight: 8 }} />
+              <Text style={[styles.triggerText, { color: colors.text }]}>{selected.name}</Text>
+            </>
+          ) : (
+            <Text style={[styles.triggerText, { color: colors.textTertiary }]}>Odaberi račun</Text>
+          )}
+        </View>
+        <Ionicons name="chevron-down" size={16} color={colors.textTertiary} />
       </TouchableOpacity>
 
       <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
@@ -77,7 +85,9 @@ export const AccountPicker: React.FC<AccountPickerProps> = ({
                 onPress={() => handleSelect(item.id)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.accountEmoji}>{item.icon}</Text>
+                <View style={[styles.accountIconWrap, { backgroundColor: (item.color || colors.primary) + '20' }]}>
+                  <Ionicons name={(item.icon || 'business-outline') as any} size={22} color={item.color || colors.primary} />
+                </View>
                 <View style={styles.accountInfo}>
                   <Text style={[styles.accountName, { color: colors.text }]}>
                     {item.name}
@@ -87,7 +97,7 @@ export const AccountPicker: React.FC<AccountPickerProps> = ({
                   </Text>
                 </View>
                 {selectedAccountId === item.id && (
-                  <Text style={{ color: colors.primary, fontSize: 18 }}>✓</Text>
+                  <Ionicons name="checkmark" size={20} color={colors.primary} />
                 )}
               </TouchableOpacity>
             )}
@@ -107,6 +117,11 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.base,
+  },
+  triggerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   triggerText: {
     ...Typography.body,
@@ -135,8 +150,12 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.base,
   },
-  accountEmoji: {
-    fontSize: 28,
+  accountIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: Spacing.md,
   },
   accountInfo: {

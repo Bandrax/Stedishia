@@ -73,17 +73,17 @@ export const BudgetSummaryHeader: React.FC<BudgetSummaryHeaderProps> = ({
         <View style={styles.detail}>
           <View style={[styles.detailDot, { backgroundColor: 'rgba(255,255,255,0.9)' }]} />
           <Text style={styles.detailLabel}>Prihod</Text>
-          <Text style={styles.detailAmount}>{formatAmount(totalIncome)}</Text>
+          <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalIncome)}</Text>
         </View>
         <View style={styles.detail}>
           <View style={[styles.detailDot, { backgroundColor: 'rgba(255,255,255,0.5)' }]} />
-          <Text style={styles.detailLabel}>Raspoređeno</Text>
-          <Text style={styles.detailAmount}>{formatAmount(totalAllocated)}</Text>
+          <Text style={styles.detailLabel}>Raspod.</Text>
+          <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalAllocated)}</Text>
         </View>
         <View style={styles.detail}>
           <View style={[styles.detailDot, { backgroundColor: '#FFD700' }]} />
           <Text style={styles.detailLabel}>Potrošeno</Text>
-          <Text style={styles.detailAmount}>{formatAmount(totalSpent)}</Text>
+          <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalSpent)}</Text>
         </View>
       </View>
     </View>
@@ -158,19 +158,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   detail: {
-    flexDirection: 'row',
+    flex: 1,
     alignItems: 'center',
   },
   detailDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginRight: 5,
+    marginBottom: 3,
   },
   detailLabel: {
     color: 'rgba(255,255,255,0.6)',
-    fontSize: 11,
-    marginRight: 4,
+    fontSize: 10,
+    marginBottom: 2,
   },
   detailAmount: {
     color: '#FFFFFF',

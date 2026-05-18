@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
   Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useAccountStore } from '../store';
 import { Ionicons } from '@expo/vector-icons';
@@ -78,6 +78,7 @@ export const AccountsScreen: React.FC = () => {
 
   // Modal states
   const [showAddAccount, setShowAddAccount] = useState(false);
+  const [showEditAccount, setShowEditAccount] = useState<Account | null>(null);
   const [showAddDebt, setShowAddDebt] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null);
@@ -123,9 +124,11 @@ export const AccountsScreen: React.FC = () => {
     }
   }, [userId]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -156,17 +159,60 @@ export const AccountsScreen: React.FC = () => {
   const handleDeleteAccount = (account: Account) => {
     Alert.alert(
       'Obriši račun',
-      `Jeste li sigurni da želite obrisati "${account.name}"?`,
+      `Jeste li sigurni da želite obrisati "${account.name}"?\n\nSve transakcije vezane uz ovaj račun će biti obrisane, a stanje računa maknuto iz ukupnog izračuna.`,
       [
         { text: 'Odustani', style: 'cancel' },
         {
           text: 'Obriši',
           style: 'destructive',
           onPress: async () => {
+            // Delete transactions tied to this account
+            const { getDatabase } = await import('../services/database');
+            const db = await getDatabase();
+            await db.runAsync('DELETE FROM transactions WHERE account_id = ?', [account.id]);
             await deleteAccountById(account.id);
             loadData();
           },
         },
+      ]
+    );
+  };
+
+  const handleEditAccount = (account: Account) => {
+    setAccName(account.name);
+    setAccType(account.type);
+    setAccBalance(String(account.balance));
+    setAccColor(account.color);
+    setAccIncludeInTotal(account.includeInTotal);
+    setShowEditAccount(account);
+  };
+
+  const handleSaveEditAccount = async () => {
+    if (!showEditAccount || !accName.trim()) return;
+    const newBalance = parseFloat(accBalance.replace(',', '.')) || 0;
+
+    await updateAccount(showEditAccount.id, {
+      name: accName.trim(),
+      type: accType,
+      balance: newBalance,
+      color: accColor,
+      includeInTotal: accIncludeInTotal,
+      icon: ACCOUNT_TYPES.find((t) => t.type === accType)?.icon || 'business-outline',
+    });
+
+    setShowEditAccount(null);
+    resetAccountForm();
+    loadData();
+  };
+
+  const handleAccountPress = (account: Account) => {
+    Alert.alert(
+      account.name,
+      `Stanje: ${formatAmount(account.balance)}`,
+      [
+        { text: 'Zatvori', style: 'cancel' },
+        { text: 'Uredi', onPress: () => handleEditAccount(account) },
+        { text: 'Obriši', style: 'destructive', onPress: () => handleDeleteAccount(account) },
       ]
     );
   };
@@ -319,10 +365,10 @@ export const AccountsScreen: React.FC = () => {
                 <TouchableOpacity
                   key={account.id}
                   style={[styles.accountCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-                  onLongPress={() => handleDeleteAccount(account)}
+                  onPress={() => handleAccountPress(account)}
                   activeOpacity={0.7}
                 >
-                  <View style={[styles.accountIcon, { backgroundColor: account.color + '20' }]}>
+                  <View style={[styles.accountIcon, { backgroundColor: (account.color || colors.primary) + '20' }]}>
                     <Ionicons name={(typeInfo?.icon || 'business-outline') as any} size={22} color={account.color || colors.primary} />
                   </View>
                   <View style={styles.accountInfo}>
@@ -336,9 +382,11 @@ export const AccountsScreen: React.FC = () => {
                       styles.accountBalance,
                       { color: account.balance >= 0 ? colors.success : colors.error },
                     ]}
+                    numberOfLines={1}
                   >
                     {formatAmount(account.balance)}
                   </Text>
+                  <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} style={{ marginLeft: 4 }} />
                 </TouchableOpacity>
               );
             })}
@@ -623,6 +671,90 @@ export const AccountsScreen: React.FC = () => {
                 title="Spremi"
                 onPress={handleAddAccount}
                 disabled={!accName.trim() || !accBalance}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit Account Modal */}
+      <Modal visible={showEditAccount !== null} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Uredi račun</Text>
+
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
+              placeholder="Naziv računa"
+              placeholderTextColor={colors.textTertiary}
+              value={accName}
+              onChangeText={setAccName}
+            />
+
+            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Vrsta računa</Text>
+            <View style={styles.typeGrid}>
+              {ACCOUNT_TYPES.map((t) => (
+                <TouchableOpacity
+                  key={t.type}
+                  style={[
+                    styles.typeChip,
+                    {
+                      backgroundColor: accType === t.type ? colors.primary + '20' : colors.surfaceVariant,
+                      borderColor: accType === t.type ? colors.primary : colors.border,
+                    },
+                  ]}
+                  onPress={() => setAccType(t.type)}
+                >
+                  <Ionicons name={t.icon as any} size={18} color={accType === t.type ? colors.primary : colors.text} />
+                  <Text style={[styles.typeLabel, { color: accType === t.type ? colors.primary : colors.text }]}>
+                    {t.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
+              placeholder="Stanje (€)"
+              placeholderTextColor={colors.textTertiary}
+              value={accBalance}
+              onChangeText={setAccBalance}
+              keyboardType="decimal-pad"
+            />
+
+            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Boja</Text>
+            <View style={styles.colorRow}>
+              {ACCOUNT_COLORS.map((c) => (
+                <TouchableOpacity
+                  key={c}
+                  style={[
+                    styles.colorDot,
+                    { backgroundColor: c, borderWidth: accColor === c ? 3 : 0, borderColor: colors.text },
+                  ]}
+                  onPress={() => setAccColor(c)}
+                />
+              ))}
+            </View>
+
+            <View style={styles.switchRow}>
+              <Text style={[styles.switchLabel, { color: colors.text }]}>Uključi u ukupno stanje</Text>
+              <Switch
+                value={accIncludeInTotal}
+                onValueChange={setAccIncludeInTotal}
+                trackColor={{ true: colors.primary }}
+              />
+            </View>
+
+            <View style={styles.modalButtons}>
+              <Button
+                title="Odustani"
+                onPress={() => { setShowEditAccount(null); resetAccountForm(); }}
+                variant="ghost"
+              />
+              <Button
+                title="Spremi"
+                onPress={handleSaveEditAccount}
+                disabled={!accName.trim()}
               />
             </View>
           </View>

@@ -11,8 +11,10 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAppTheme } from '../hooks';
-import { useAuthStore, useGoalStore } from '../store';
+import { useAuthStore, useGoalStore, useAccountStore } from '../store';
 import { Typography, Spacing, BorderRadius } from '../constants';
 import { formatAmount } from '../utils';
 import {
@@ -24,12 +26,14 @@ import {
   getEmergencyFundCoverage,
   calculateMonthlyNeeded,
 } from '../services/goalService';
+import { getAccounts } from '../services/accountService';
+import { createTransaction } from '../services/transactionService';
 import { getMonthlyStats } from '../services/dashboardService';
 import { Button, Card } from '../components/atoms';
 import { GoalCard } from '../components/molecules/GoalCard';
 import { NetWorthCard } from '../components/molecules/NetWorthCard';
 import { EmergencyFundCard } from '../components/molecules/EmergencyFundCard';
-import type { SavingsGoal } from '../types';
+import type { SavingsGoal, Account } from '../types';
 
 const GOAL_EMOJIS = ['🎯', '✈️', '🏠', '🚗', '💻', '📚', '🎓', '🏖️', '💍', '🎉', '🎸', '🐕'];
 const GOAL_COLORS = ['#0F4C3A', '#D4AF37', '#2196F3', '#FF5722', '#9C27B0', '#4CAF50', '#FF9800', '#E91E63'];
@@ -38,11 +42,13 @@ export const GoalsScreen: React.FC = () => {
   const { colors } = useAppTheme();
   const { currentUser } = useAuthStore();
   const { goals, setGoals } = useGoalStore();
+  const { accounts, setAccounts } = useAccountStore();
 
   const [refreshing, setRefreshing] = useState(false);
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [showAddMoney, setShowAddMoney] = useState<string | null>(null);
   const [addMoneyAmount, setAddMoneyAmount] = useState('');
+  const [addMoneyAccountId, setAddMoneyAccountId] = useState('');
   const [netWorthData, setNetWorthData] = useState({ assets: 0, liabilities: 0, netWorth: 0 });
   const [emergencyMonths, setEmergencyMonths] = useState(0);
   const [monthlyExpenses, setMonthlyExpenses] = useState(0);
@@ -59,35 +65,36 @@ export const GoalsScreen: React.FC = () => {
   const loadData = useCallback(async () => {
     if (!currentUser) return;
     try {
-      const [goalsData, nw, stats] = await Promise.all([
+      const [goalsData, nw, stats, accs] = await Promise.all([
         getGoals(currentUser.id),
         getNetWorth(currentUser.id),
         getMonthlyStats(currentUser.id),
+        getAccounts(currentUser.id),
       ]);
 
       setGoals(goalsData);
       setNetWorthData(nw);
       setMonthlyExpenses(stats.expenses);
+      setAccounts(accs);
 
       const coverage = await getEmergencyFundCoverage(currentUser.id, stats.expenses);
       setEmergencyMonths(coverage);
 
       // Ukupno u štednim računima
-      const { dbQuery } = await import('../services/database');
-      const savingsResult = await dbQuery<{ total: number }>(
-        `SELECT COALESCE(SUM(balance), 0) as total FROM accounts
-         WHERE user_id = ? AND type = 'savings'`,
-        [currentUser.id]
-      );
-      setSavingsTotal(savingsResult[0]?.total ?? 0);
+      const savingsTotal = accs
+        .filter((a) => a.type === 'savings')
+        .reduce((sum, a) => sum + a.balance, 0);
+      setSavingsTotal(savingsTotal);
     } catch (err) {
       console.error('Error loading goals:', err);
     }
   }, [currentUser]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -139,20 +146,45 @@ export const GoalsScreen: React.FC = () => {
   };
 
   const handleAddMoney = async () => {
-    if (!showAddMoney) return;
+    if (!showAddMoney || !currentUser) return;
     const amount = parseFloat(addMoneyAmount.replace(',', '.'));
     if (isNaN(amount) || amount <= 0) {
       Alert.alert('Greška', 'Unesite ispravan iznos.');
       return;
     }
+    if (!addMoneyAccountId) {
+      Alert.alert('Greška', 'Odaberite račun s kojeg skidate novac.');
+      return;
+    }
 
     try {
+      // Find the goal name for transaction description
+      const goal = goals.find((g) => g.id === showAddMoney);
+      const goalName = goal?.name || 'Cilj';
+
+      // Create a real transaction that debits the account
+      await createTransaction({
+        userId: currentUser.id,
+        accountId: addMoneyAccountId,
+        type: 'expense',
+        scope: 'personal',
+        amount,
+        currency: 'EUR',
+        categoryId: 'savings',
+        description: `Štednja: ${goalName}`,
+        date: new Date().toISOString().split('T')[0],
+        tags: ['štednja', 'cilj'],
+        isRecurring: false,
+      });
+
+      // Update the goal progress
       const updated = await addToGoal(showAddMoney, amount);
       if (updated?.status === 'completed') {
         Alert.alert('Čestitamo!', `Ostvarili ste cilj "${updated.name}"!`);
       }
       setShowAddMoney(null);
       setAddMoneyAmount('');
+      setAddMoneyAccountId('');
       await loadData();
     } catch (err) {
       Alert.alert('Greška', 'Nije moguće dodati iznos.');
@@ -183,6 +215,45 @@ export const GoalsScreen: React.FC = () => {
     setGoalDate('');
     setGoalEmoji('🎯');
     setGoalColor('#0F4C3A');
+  };
+
+  // Emergency fund goal - find or auto-create
+  const EMERGENCY_FUND_NAME = 'Sigurnosni fond';
+  const emergencyGoal = goals.find((g) => g.name === EMERGENCY_FUND_NAME && g.status === 'active');
+
+  const ensureEmergencyGoal = useCallback(async () => {
+    if (!currentUser || monthlyExpenses <= 0) return null;
+    const existing = goals.find((g) => g.name === EMERGENCY_FUND_NAME && g.status === 'active');
+    if (existing) return existing.id;
+
+    const targetAmount = monthlyExpenses * 6;
+    const targetDate = new Date();
+    targetDate.setFullYear(targetDate.getFullYear() + 2);
+    const monthlyNeeded = calculateMonthlyNeeded(targetAmount, savingsTotal, targetDate.toISOString().split('T')[0]);
+
+    const id = await createGoal({
+      userId: currentUser.id,
+      name: EMERGENCY_FUND_NAME,
+      emoji: '🛡️',
+      targetAmount,
+      currentAmount: savingsTotal,
+      targetDate: targetDate.toISOString().split('T')[0],
+      monthlyContribution: monthlyNeeded,
+      status: 'active',
+      color: '#0F4C3A',
+    });
+    await loadData();
+    return id;
+  }, [currentUser, goals, monthlyExpenses, savingsTotal, loadData]);
+
+  const handleEmergencyAddMoney = async () => {
+    let goalId = emergencyGoal?.id;
+    if (!goalId) {
+      goalId = await ensureEmergencyGoal() ?? undefined;
+    }
+    if (goalId) {
+      setShowAddMoney(goalId);
+    }
   };
 
   const activeGoals = goals.filter((g) => g.status === 'active');
@@ -222,6 +293,7 @@ export const GoalsScreen: React.FC = () => {
             monthsCovered={emergencyMonths}
             totalSaved={savingsTotal}
             monthlyExpenses={monthlyExpenses}
+            onAddMoney={handleEmergencyAddMoney}
             onInfoPress={() => Alert.alert(
               'Sigurnosni fond',
               'Sigurnosni fond je ušteđevina koja pokriva 3-6 mjeseci vaših troškova.\n\nTo je vaš financijski jastuk za neočekivane situacije poput gubitka posla, kvara auta ili zdravstvenih troškova.'
@@ -232,9 +304,10 @@ export const GoalsScreen: React.FC = () => {
         {/* Aktivni ciljevi */}
         {activeGoals.length > 0 && (
           <View style={{ marginTop: Spacing.lg }}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              🎯 Aktivni ciljevi
-            </Text>
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="flag-outline" size={18} color={colors.primary} style={{ marginRight: 8 }} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Aktivni ciljevi</Text>
+            </View>
             {activeGoals.map((goal) => (
               <GoalCard
                 key={goal.id}
@@ -249,9 +322,10 @@ export const GoalsScreen: React.FC = () => {
         {/* Ostvareni ciljevi */}
         {completedGoals.length > 0 && (
           <View style={{ marginTop: Spacing.lg }}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              🏆 Ostvareni ciljevi
-            </Text>
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="trophy-outline" size={18} color={colors.primary} style={{ marginRight: 8 }} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Ostvareni ciljevi</Text>
+            </View>
             {completedGoals.map((goal) => (
               <GoalCard key={goal.id} goal={goal} />
             ))}
@@ -261,7 +335,7 @@ export const GoalsScreen: React.FC = () => {
         {/* Empty state */}
         {goals.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>🎯</Text>
+            <Ionicons name="flag-outline" size={56} color={colors.primary} style={{ marginBottom: Spacing.base }} />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
               Nemate postavljenih ciljeva
             </Text>
@@ -272,7 +346,7 @@ export const GoalsScreen: React.FC = () => {
               title="Postavi prvi cilj"
               variant="primary"
               onPress={() => setShowAddGoal(true)}
-              icon="🎯"
+              icon="flag-outline"
             />
           </View>
         )}
@@ -378,7 +452,7 @@ export const GoalsScreen: React.FC = () => {
 
             <View style={{ marginTop: Spacing.xl }}>
               <Button
-                title="Kreiraj cilj 🎯"
+                title="Kreiraj cilj"
                 variant="primary"
                 size="lg"
                 fullWidth
@@ -396,6 +470,32 @@ export const GoalsScreen: React.FC = () => {
         <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
           <View style={[styles.addMoneyModal, { backgroundColor: colors.card }]}>
             <Text style={[styles.addMoneyTitle, { color: colors.text }]}>Dodaj iznos</Text>
+
+            {/* Odabir računa */}
+            <Text style={[styles.addMoneyLabel, { color: colors.textSecondary }]}>S kojeg računa?</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.accountPickerRow}>
+              {accounts.map((acc) => (
+                <TouchableOpacity
+                  key={acc.id}
+                  style={[
+                    styles.accountChip,
+                    {
+                      backgroundColor: addMoneyAccountId === acc.id ? colors.primary + '15' : colors.surface,
+                      borderColor: addMoneyAccountId === acc.id ? colors.primary : colors.border,
+                    },
+                  ]}
+                  onPress={() => setAddMoneyAccountId(acc.id)}
+                >
+                  <Text style={[styles.accountChipText, { color: addMoneyAccountId === acc.id ? colors.primary : colors.text }]}>
+                    {acc.icon} {acc.name}
+                  </Text>
+                  <Text style={[styles.accountChipBalance, { color: colors.textTertiary }]}>
+                    {formatAmount(acc.balance)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
             <TextInput
               style={[styles.addMoneyInput, { color: colors.text, borderColor: colors.border }]}
               value={addMoneyAmount}
@@ -409,13 +509,13 @@ export const GoalsScreen: React.FC = () => {
               <Button
                 title="Odustani"
                 variant="ghost"
-                onPress={() => { setShowAddMoney(null); setAddMoneyAmount(''); }}
+                onPress={() => { setShowAddMoney(null); setAddMoneyAmount(''); setAddMoneyAccountId(''); }}
               />
               <Button
                 title="Dodaj"
                 variant="primary"
                 onPress={handleAddMoney}
-                disabled={!addMoneyAmount}
+                disabled={!addMoneyAmount || !addMoneyAccountId}
               />
             </View>
           </View>
@@ -439,14 +539,18 @@ const styles = StyleSheet.create({
   addButton: { ...Typography.body, fontWeight: '600' },
   scroll: { flex: 1 },
   content: { paddingHorizontal: Spacing.base },
-  sectionTitle: { ...Typography.subtitle, marginBottom: Spacing.md },
+  sectionTitle: { ...Typography.subtitle },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
 
   // Empty state
   emptyState: {
     alignItems: 'center',
     paddingVertical: Spacing['3xl'],
   },
-  emptyEmoji: { fontSize: 56, marginBottom: Spacing.base },
   emptyTitle: { ...Typography.heading3, marginBottom: Spacing.sm },
   emptySubtitle: {
     ...Typography.body,
@@ -534,7 +638,35 @@ const styles = StyleSheet.create({
   addMoneyTitle: {
     ...Typography.heading3,
     textAlign: 'center',
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.md,
+  },
+  addMoneyLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.5,
+    marginBottom: Spacing.xs,
+  },
+  accountPickerRow: {
+    marginBottom: Spacing.md,
+    maxHeight: 70,
+  },
+  accountChip: {
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1.5,
+    marginRight: Spacing.sm,
+    alignItems: 'center',
+    minWidth: 100,
+  },
+  accountChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  accountChipBalance: {
+    fontSize: 11,
+    marginTop: 2,
   },
   addMoneyInput: {
     borderWidth: 1.5,

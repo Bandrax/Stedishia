@@ -14,6 +14,7 @@ export interface Advice {
   priority: AdvicePriority;
   emoji: string;
   actionLabel?: string;
+  actionRoute?: string;
 }
 
 // Generiraj personalizirane savjete na temelju financijskih podataka
@@ -51,6 +52,7 @@ export const generateAdvice = async (userId: string): Promise<Advice[]> => {
         priority: 'high',
         emoji: '🚨',
         actionLabel: 'Pogledaj troškove',
+        actionRoute: 'Transactions',
       });
     }
 
@@ -91,6 +93,7 @@ export const generateAdvice = async (userId: string): Promise<Advice[]> => {
         priority: 'medium',
         emoji: '📊',
         actionLabel: 'Pogledaj budžet',
+        actionRoute: 'Budget',
       });
     }
 
@@ -127,6 +130,7 @@ export const generateAdvice = async (userId: string): Promise<Advice[]> => {
           priority: 'high',
           emoji: '🔥',
           actionLabel: 'Pogledaj dugove',
+          actionRoute: 'Accounts',
         });
       }
 
@@ -162,6 +166,7 @@ export const generateAdvice = async (userId: string): Promise<Advice[]> => {
           priority: 'medium',
           emoji: '🔄',
           actionLabel: 'Pogledaj pretplate',
+          actionRoute: 'RecurringPayments',
         });
       } else if (subscriptions.length > 5) {
         advice.push({
@@ -188,6 +193,7 @@ export const generateAdvice = async (userId: string): Promise<Advice[]> => {
         priority: 'high',
         emoji: '🛡️',
         actionLabel: 'Postavi cilj',
+        actionRoute: 'Goals',
       });
     } else if (emergencyMonths < 3) {
       advice.push({

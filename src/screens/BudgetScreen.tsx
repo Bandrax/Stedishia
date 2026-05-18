@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useBudgetStore } from '../store';
 import { Typography, Spacing, BorderRadius, DEFAULT_EXPENSE_CATEGORIES } from '../constants';
@@ -60,9 +61,11 @@ export const BudgetScreen: React.FC = () => {
     }
   }, [currentUser, currentMonth, monthlyIncome]);
 
-  useEffect(() => {
-    loadBudget();
-  }, [loadBudget]);
+  useFocusEffect(
+    useCallback(() => {
+      loadBudget();
+    }, [loadBudget])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);

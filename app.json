@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "MojNovcnik",
+    "name": "Sthedisia",
     "slug": "MojNovcnik",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0F4C3A"
     },
     "ios": {
       "supportsTablet": true
@@ -19,7 +19,7 @@
       "package": "com.sthedisia.mojnovcnik",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0F4C3A"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false

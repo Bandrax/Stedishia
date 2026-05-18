@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import { Button } from '../components/atoms';
 import { CategoryPicker } from '../components/molecules/CategoryPicker';
 import { AccountPicker } from '../components/molecules/AccountPicker';
 import { createTransaction } from '../services/transactionService';
+import { getAccounts } from '../services/accountService';
 import { autoDetectCategory } from '../services/autoCategory';
 import type { TransactionType, TransactionScope } from '../types';
 
@@ -33,7 +34,7 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
 }) => {
   const { colors } = useAppTheme();
   const { currentUser } = useAuthStore();
-  const { accounts } = useAccountStore();
+  const { accounts, setAccounts } = useAccountStore();
   const { addTransaction } = useTransactionStore();
 
   const [type, setType] = useState<TransactionType>(initialType);
@@ -41,7 +42,27 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [subcategoryId, setSubcategoryId] = useState<string | undefined>();
-  const [accountId, setAccountId] = useState(accounts.find((a) => a.isDefault)?.id || accounts[0]?.id || '');
+  const [accountId, setAccountId] = useState('');
+
+  // Load accounts from DB if store is empty
+  useEffect(() => {
+    const loadAccounts = async () => {
+      if (!currentUser) return;
+      if (accounts.length === 0) {
+        const accs = await getAccounts(currentUser.id);
+        setAccounts(accs);
+      }
+    };
+    loadAccounts();
+  }, [currentUser]);
+
+  // Set default account once accounts are available
+  useEffect(() => {
+    if (accounts.length > 0 && !accountId) {
+      const defaultAcc = accounts.find((a) => a.isDefault);
+      setAccountId(defaultAcc?.id || accounts[0].id);
+    }
+  }, [accounts]);
   const [scope, setScope] = useState<TransactionScope>('shared');
   const [note, setNote] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);

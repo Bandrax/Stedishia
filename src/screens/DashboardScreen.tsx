@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useAccountStore } from '../store';
 import { Typography, Spacing, ALL_DEFAULT_CATEGORIES } from '../constants';
@@ -118,9 +119,11 @@ export const DashboardScreen: React.FC = () => {
     }
   }, [currentUser, household, scope]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);

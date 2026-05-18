@@ -137,7 +137,19 @@ export const AdvisorScreen: React.FC = () => {
               {item.message}
             </Text>
             {item.actionLabel && (
-              <TouchableOpacity style={[styles.actionButton, { borderColor: style.text }]}>
+              <TouchableOpacity
+                style={[styles.actionButton, { borderColor: style.text }]}
+                onPress={() => {
+                  if (item.actionRoute) {
+                    const tabScreens = ['Dashboard', 'Transactions', 'Budget', 'Goals', 'More'];
+                    if (tabScreens.includes(item.actionRoute)) {
+                      (navigation as any).navigate('Main', { screen: item.actionRoute });
+                    } else {
+                      (navigation as any).navigate(item.actionRoute);
+                    }
+                  }
+                }}
+              >
                 <Text style={[styles.actionButtonText, { color: style.text }]}>
                   {item.actionLabel} →
                 </Text>
