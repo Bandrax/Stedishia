@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,12 +12,12 @@ import {
   Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAppTheme } from '../hooks';
 import { useAuthStore } from '../store';
 import { Ionicons } from '@expo/vector-icons';
 import { Typography, Spacing, BorderRadius } from '../constants';
-import { formatAmount, formatDate } from '../utils';
+import { formatAmount } from '../utils';
 import { getCategoryInfo } from '../services/dashboardService';
 import {
   getRecurringTransactions,
@@ -26,6 +26,7 @@ import {
   toggleRecurring,
   type RecurringTransaction,
 } from '../services/recurringService';
+import { scheduleAllNotifications } from '../services/notificationService';
 import { Button } from '../components/atoms';
 
 const FREQUENCIES = [
@@ -61,7 +62,7 @@ export const RecurringScreen: React.FC = () => {
     setTransactions(data);
   }, [userId]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useFocusEffect(useCallback(() => { loadData(); }, [loadData]));
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -89,7 +90,8 @@ export const RecurringScreen: React.FC = () => {
     setAmount('');
     setTxType('expense');
     setFrequency('monthly');
-    loadData();
+    await loadData();
+    if (userId) scheduleAllNotifications(userId).catch(console.error);
   };
 
   const handleDelete = (tx: RecurringTransaction) => {
@@ -98,14 +100,19 @@ export const RecurringScreen: React.FC = () => {
       {
         text: 'Obriši',
         style: 'destructive',
-        onPress: async () => { await deleteRecurring(tx.id); loadData(); },
+        onPress: async () => {
+            await deleteRecurring(tx.id);
+            await loadData();
+            if (userId) scheduleAllNotifications(userId).catch(console.error);
+          },
       },
     ]);
   };
 
   const handleToggle = async (tx: RecurringTransaction) => {
     await toggleRecurring(tx.id, !tx.isActive);
-    loadData();
+    await loadData();
+    if (userId) scheduleAllNotifications(userId).catch(console.error);
   };
 
   const activeTx = transactions.filter((t) => t.isActive);

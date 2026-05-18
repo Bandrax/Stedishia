@@ -3,9 +3,14 @@ import { StatusBar } from 'expo-status-bar';
 import { View, Text, StyleSheet, Appearance } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Ionicons } from '@expo/vector-icons';
 import { RootNavigator } from './src/navigation';
-import { useThemeStore } from './src/store';
+import { useThemeStore, useAuthStore } from './src/store';
 import { initializeDatabase } from './src/services/database';
+import {
+  requestNotificationPermissions,
+  scheduleAllNotifications,
+} from './src/services/notificationService';
 import './src/locales/i18n';
 
 export default function App() {
@@ -17,6 +22,8 @@ export default function App() {
     const init = async () => {
       try {
         await initializeDatabase();
+        // Request notification permissions
+        await requestNotificationPermissions();
         setIsReady(true);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Greška pri pokretanju');
@@ -24,6 +31,22 @@ export default function App() {
     };
     init();
   }, []);
+
+  // Schedule notifications when user is available
+  useEffect(() => {
+    if (!isReady) return;
+    const unsub = useAuthStore.subscribe((state) => {
+      if (state.currentUser) {
+        scheduleAllNotifications(state.currentUser.id).catch(console.error);
+      }
+    });
+    // Also run immediately if user is already set
+    const user = useAuthStore.getState().currentUser;
+    if (user) {
+      scheduleAllNotifications(user.id).catch(console.error);
+    }
+    return unsub;
+  }, [isReady]);
 
   // Praćenje promjene sistemske teme
   useEffect(() => {
@@ -36,7 +59,7 @@ export default function App() {
   if (error) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorEmoji}>⚠️</Text>
+        <Ionicons name="warning-outline" size={48} color="#C62828" style={{ marginBottom: 16 }} />
         <Text style={styles.errorText}>{error}</Text>
       </View>
     );
@@ -45,8 +68,8 @@ export default function App() {
   if (!isReady) {
     return (
       <View style={styles.center}>
-        <Text style={styles.loadingEmoji}>💰</Text>
-        <Text style={styles.loadingText}>MojNovčanik</Text>
+        <Ionicons name="wallet-outline" size={64} color="#0F4C3A" style={{ marginBottom: 16 }} />
+        <Text style={styles.loadingText}>Sthedisia</Text>
       </View>
     );
   }
@@ -68,18 +91,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FAFAF7',
   },
-  loadingEmoji: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
   loadingText: {
     fontSize: 24,
     fontWeight: '700',
     color: '#0F4C3A',
-  },
-  errorEmoji: {
-    fontSize: 48,
-    marginBottom: 16,
   },
   errorText: {
     fontSize: 16,

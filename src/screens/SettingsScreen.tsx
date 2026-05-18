@@ -163,15 +163,16 @@ export const SettingsScreen: React.FC = () => {
         {/* Odjava */}
         <View style={styles.logoutSection}>
           <Button
-            title="🚪 Odjavi se"
+            title="Odjavi se"
             onPress={handleLogout}
             variant="outline"
             fullWidth
+            icon="log-out-outline"
           />
         </View>
 
         <Text style={[styles.footer, { color: colors.textTertiary }]}>
-          MojNovčanik v1.0.0{'\n'}
+          Sthedisia v1.0.0{'\n'}
           Vaši podaci su pohranjeni lokalno na uređaju.
         </Text>
       </ScrollView>

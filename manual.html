@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sthedisia - Korisnicki prirucnik</title>
+  <style>
+    :root {
+      --primary: #0F4C3A;
+      --primary-light: #1A6B52;
+      --accent: #D4AF37;
+      --bg: #FAFAF7;
+      --card: #FFFFFF;
+      --text: #1A1A1A;
+      --text-secondary: #666;
+      --border: #E8E8E5;
+      --success: #2E7D32;
+      --error: #C62828;
+      --warning: #F57C00;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      padding: 60px 20px 50px;
+      text-align: center;
+    }
+    .hero h1 { font-size: 2.5em; margin-bottom: 8px; letter-spacing: -0.5px; }
+    .hero .subtitle { font-size: 1.1em; opacity: 0.85; }
+    .hero .coin {
+      display: inline-flex;
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, #E8C84A, var(--accent));
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5em;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .container { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+
+    .toc {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin: -30px auto 40px;
+      position: relative;
+      z-index: 1;
+    }
+    .toc h2 { font-size: 1.2em; color: var(--primary); margin-bottom: 12px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin-bottom: 6px; }
+    .toc a { color: var(--primary); text-decoration: none; font-weight: 500; }
+    .toc a:hover { text-decoration: underline; }
+
+    section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: var(--primary);
+      font-size: 1.5em;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+    }
+
+    h3 {
+      color: var(--primary-light);
+      font-size: 1.15em;
+      margin: 20px 0 8px;
+    }
+
+    p { margin-bottom: 12px; }
+
+    .tip {
+      background: #E8F5E9;
+      border-left: 4px solid var(--success);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      font-size: 0.95em;
+    }
+    .tip strong { color: var(--success); }
+
+    .warning {
+      background: #FFF3E0;
+      border-left: 4px solid var(--warning);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      font-size: 0.95em;
+    }
+    .warning strong { color: var(--warning); }
+
+    .important {
+      background: #FFEBEE;
+      border-left: 4px solid var(--error);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      font-size: 0.95em;
+    }
+    .important strong { color: var(--error); }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .feature-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    .feature-card .icon { font-size: 1.8em; margin-bottom: 8px; }
+    .feature-card h4 { color: var(--primary); margin-bottom: 4px; font-size: 0.95em; }
+    .feature-card p { font-size: 0.85em; color: var(--text-secondary); margin: 0; }
+
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+    }
+    .steps li {
+      counter-increment: step;
+      padding: 12px 12px 12px 48px;
+      position: relative;
+      margin-bottom: 8px;
+      background: var(--bg);
+      border-radius: 8px;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      width: 28px;
+      height: 28px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.9em;
+    }
+    th { background: var(--primary); color: white; padding: 10px 12px; text-align: left; }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    tr:hover td { background: #f5f5f2; }
+
+    .keyboard-shortcut {
+      display: inline-block;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.85em;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+      font-size: 0.9em;
+    }
+
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 1.8em; }
+      section { padding: 20px; }
+      .feature-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="coin">S</div>
+  <h1>Sthedisia</h1>
+  <p class="subtitle">Kompletni prirucnik za upravljanje kucnim financijama</p>
+</div>
+
+<div class="container">
+
+<div class="toc">
+  <h2>Sadrzaj</h2>
+  <ol>
+    <li><a href="#start">Pocetni koraci</a></li>
+    <li><a href="#dashboard">Dashboard - Kontrolna ploca</a></li>
+    <li><a href="#transactions">Transakcije - Unos i pracenje</a></li>
+    <li><a href="#budget">Budzet - Planiranje potrosnje</a></li>
+    <li><a href="#goals">Ciljevi i stednja</a></li>
+    <li><a href="#accounts">Racuni i financije</a></li>
+    <li><a href="#recurring">Ponavljajuca placanja</a></li>
+    <li><a href="#notifications">Obavijesti i podsjetnici</a></li>
+    <li><a href="#advisor">Financijski savjetnik</a></li>
+    <li><a href="#household">Kucanstvo - Zajednicki budzet</a></li>
+    <li><a href="#sync">Sinkronizacija podataka</a></li>
+    <li><a href="#tips">Savjeti za maksimalnu korist</a></li>
+  </ol>
+</div>
+
+<!-- 1. POCETNI KORACI -->
+<section id="start">
+  <h2>1. Pocetni koraci</h2>
+
+  <p>Sthedisia je aplikacija za pracenje osobnih i zajednickih financija, dizajnirana za dvoclano kucanstvo. Svi podaci ostaju lokalno na vasem uredaju - nista se ne salje na server.</p>
+
+  <h3>Onboarding (postavljanje)</h3>
+  <p>Pri prvom pokretanju, aplikacija vas vodi kroz 7 koraka:</p>
+  <ol class="steps">
+    <li><strong>Dobrodosli</strong> - kratko upoznavanje s aplikacijom</li>
+    <li><strong>Ime i profil</strong> - unesite svoje ime</li>
+    <li><strong>Prihod</strong> - mjesecni prihod i izvor (placa, honorar, mirovina...)</li>
+    <li><strong>Racuni</strong> - dodajte svoje bankovne racune, stednju, gotovinu</li>
+    <li><strong>Kucanstvo</strong> - odaberite zivite li sami, u paru ili s obitelji</li>
+    <li><strong>Ciljevi</strong> - postavite inicijalne financijske ciljeve</li>
+    <li><strong>PIN zasticivanje</strong> - zastitite aplikaciju PIN-om ili biometrijom</li>
+  </ol>
+
+  <div class="tip">
+    <strong>Savjet:</strong> Budite sto tocniji pri unosu prihoda i pocetnog stanja racuna - to je temelj svih buducih izracuna.
+  </div>
+</section>
+
+<!-- 2. DASHBOARD -->
+<section id="dashboard">
+  <h2>2. Dashboard - Kontrolna ploca</h2>
+
+  <p>Dashboard je prvi ekran koji vidite. Pruza brzi pregled vaseg financijskog stanja.</p>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="icon">&#128176;</div>
+      <h4>Ukupno stanje</h4>
+      <p>Zbroj svih racuna s trendom promjene</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#128678;</div>
+      <h4>Semafor</h4>
+      <p>Zeleno/zuto/crveno - kako stojite ovaj mjesec</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#128200;</div>
+      <h4>Cash Flow</h4>
+      <p>Graf prihoda vs rashoda (30 dana)</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#128161;</div>
+      <h4>Savjet dana</h4>
+      <p>Personalizirani financijski savjet</p>
+    </div>
+  </div>
+
+  <h3>Prebacivanje pogleda</h3>
+  <p>Na vrhu dashboarda mozete prebacivati izmedu <strong>Osobnog</strong> i <strong>Zajednickog</strong> pogleda. Osobni prikazuje samo vase transakcije, a zajednicki ukljucuje sve oznacene kao "zajednicko".</p>
+
+  <div class="tip">
+    <strong>Savjet:</strong> Dashboard se automatski osvjezava kad se vratite na njega iz drugog taba. Ne morate rucno povlaciti za osvjezavanje (ali mozete ako zelite).
+  </div>
+</section>
+
+<!-- 3. TRANSAKCIJE -->
+<section id="transactions">
+  <h2>3. Transakcije - Unos i pracenje</h2>
+
+  <h3>Dodavanje transakcije</h3>
+  <p>Kliknite na tab <strong>Transakcije</strong> pa na <strong>+</strong> gumb. Popunite:</p>
+  <ol class="steps">
+    <li><strong>Tip</strong> - Rashod, Prihod ili Transfer</li>
+    <li><strong>Iznos</strong> - koliko ste potrosili/zaradili</li>
+    <li><strong>Za koga</strong> - Osobno ili Zajednicko</li>
+    <li><strong>Kategorija</strong> - odaberite iz liste (hrana, stanovanje, zabava...)</li>
+    <li><strong>Racun</strong> - s kojeg racuna ide novac</li>
+    <li><strong>Opis</strong> - npr. "Glovo narudzba", "Konzum"</li>
+    <li><strong>Datum</strong> - Danas, Jucer, ili rucni unos</li>
+  </ol>
+
+  <h3>Auto-kategorizacija</h3>
+  <p>Kad upisete opis od 3+ slova, aplikacija automatski predlaze kategoriju. Na primjer, "Konzum" ce automatski odabrati kategoriju "Hrana".</p>
+
+  <h3>Filtriranje</h3>
+  <p>Na listi transakcija mozete filtrirati po:</p>
+  <ul>
+    <li>Tipu (Sve / Rashodi / Prihodi / Transferi)</li>
+    <li>Pretrazi teksta</li>
+  </ul>
+
+  <div class="warning">
+    <strong>Vazno:</strong> Svaka transakcija automatski azurira stanje racuna. Ako dodajete rashod od 50 EUR s tekuceg racuna, stanje tog racuna se automatski smanjuje za 50 EUR na svim ekranima.
+  </div>
+</section>
+
+<!-- 4. BUDZET -->
+<section id="budget">
+  <h2>4. Budzet - Planiranje potrosnje</h2>
+
+  <h3>Dva nacina budzetiranja</h3>
+  <table>
+    <tr>
+      <th>Envelope (Kuverte)</th>
+      <th>50/30/20 Pravilo</th>
+    </tr>
+    <tr>
+      <td>Sami odredujete koliko ide u svaku kategoriju. Kao da stavljate novac u kuverte - kad je kuverta prazna, prestajete trositi.</td>
+      <td>Automatska raspodjela: 50% potrebe (stanovanje, hrana), 30% zelje (zabava, shopping), 20% stednja i otplata.</td>
+    </tr>
+  </table>
+
+  <h3>Postavljanje budzeta</h3>
+  <ol class="steps">
+    <li>Otvorite tab <strong>Budzet</strong></li>
+    <li>Kliknite <strong>Postavi budzet</strong> ako je prvi put</li>
+    <li>Unesite mjesecni prihod</li>
+    <li>Odaberite mod (Envelope ili 50/30/20)</li>
+    <li>Raspodijelite iznose po kategorijama</li>
+  </ol>
+
+  <h3>Pracenje potrosnje</h3>
+  <p>Za svaku kategoriju vidite:</p>
+  <ul>
+    <li><strong>Raspored.</strong> - koliko ste odvojili za tu kategoriju</li>
+    <li><strong>Potroseno</strong> - koliko ste stvarno potrosili</li>
+    <li><strong>Progress bar</strong> - vizualni prikaz potrosnje</li>
+    <li><strong>Upozorenja</strong> - zuto na 80%, crveno na 100%</li>
+  </ul>
+
+  <div class="tip">
+    <strong>Savjet:</strong> Zagled "Dostupno za raspodjelu" na vrhu pokazuje koliko vam je prihoda ostalo za rasporediti. Cilj je dovesti to na 0 EUR - svaki euro ima svoju namjenu.
+  </div>
+</section>
+
+<!-- 5. CILJEVI -->
+<section id="goals">
+  <h2>5. Ciljevi i stednja</h2>
+
+  <h3>Tipovi ciljeva</h3>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="icon">&#127919;</div>
+      <h4>Stedni ciljevi</h4>
+      <p>Odmor, auto, elektronika - bilo sto za sto stedeite</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#128737;</div>
+      <h4>Sigurnosni fond</h4>
+      <p>3-6 mjeseci troskova za nepredvidene situacije</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#128200;</div>
+      <h4>Neto vrijednost</h4>
+      <p>Ukupna imovina minus dugovi - cilj je rast</p>
+    </div>
+  </div>
+
+  <h3>Kreiranje cilja</h3>
+  <ol class="steps">
+    <li>Otvorite tab <strong>Ciljevi</strong></li>
+    <li>Kliknite <strong>+ Novi cilj</strong></li>
+    <li>Unesite naziv, ciljani iznos, rok</li>
+    <li>Aplikacija izracunava koliko trebate mjesecno stediti</li>
+  </ol>
+
+  <h3>Dodavanje novca u cilj</h3>
+  <p>Kad kliknete <strong>"Dodaj u stednju"</strong> na bilo kojem cilju:</p>
+  <ol class="steps">
+    <li>Odaberite <strong>racun s kojeg skidate novac</strong> (tekuci, gotovina...)</li>
+    <li>Unesite iznos</li>
+    <li>Aplikacija automatski: skida novac s racuna, biljezi transakciju u kategoriji "Stednja", i azurira progress cilja</li>
+  </ol>
+
+  <div class="important">
+    <strong>Kljucno:</strong> "Dodaj u stednju" NIJE besplatni novac! Novac se skida s odabranog racuna i biljezi kao rashod. To osigurava da se stanje na dashboardu, transakcijama i racunima automatski uskladi.
+  </div>
+
+  <h3>Sigurnosni fond</h3>
+  <p>Kartica sigurnosnog fonda prikazuje:</p>
+  <ul>
+    <li>Koliko mjeseci troskova pokrivate</li>
+    <li>Progress bar prema cilju od 6 mjeseci</li>
+    <li>Status (odlicno / dobro / u izgradnji / pocnite)</li>
+  </ul>
+</section>
+
+<!-- 6. RACUNI -->
+<section id="accounts">
+  <h2>6. Racuni i financije</h2>
+
+  <p>Pristupite preko: <strong>Vise</strong> tab &rarr; <strong>Računi</strong></p>
+
+  <h3>Tipovi racuna</h3>
+  <table>
+    <tr><th>Tip</th><th>Primjer</th><th>Svrha</th></tr>
+    <tr><td>Tekuci</td><td>ZABA tekuci</td><td>Svakodnevna placanja</td></tr>
+    <tr><td>Stedni</td><td>Stednja PBZ</td><td>Dugorocna stednja</td></tr>
+    <tr><td>Gotovina</td><td>Novcanik</td><td>Fizicki novac</td></tr>
+    <tr><td>Kreditna</td><td>Visa Gold</td><td>Kreditne kartice</td></tr>
+  </table>
+
+  <h3>Upravljanje racunima</h3>
+  <p>Kliknite na bilo koji racun za opcije:</p>
+  <ul>
+    <li><strong>Uredi</strong> - promjena imena, tipa, stanja, boje</li>
+    <li><strong>Obrisi</strong> - brise racun i sve vezane transakcije</li>
+  </ul>
+
+  <div class="warning">
+    <strong>Oprez kod brisanja:</strong> Kad obrisete racun, brisu se i SVE transakcije vezane uz njega. Ovo se ne moze poništiti!
+  </div>
+
+  <h3>Dugovi i krediti</h3>
+  <p>U tabu "Dugovi" mozete pratiti:</p>
+  <ul>
+    <li>Sve kredite i dugove s kamatama</li>
+    <li>Progress otplate</li>
+    <li>Usporedbu Snowball vs Avalanche strategije</li>
+    <li>Koliko stedite koristeci bolju strategiju</li>
+  </ul>
+
+  <h3>Pretplate</h3>
+  <p>Tab "Pretplate" automatski detektira ponavljajuce troskove iz vasih transakcija i pokazuje koliko trositi godisnje na pretplate.</p>
+</section>
+
+<!-- 7. PONAVLJAJUCA PLACANJA -->
+<section id="recurring">
+  <h2>7. Ponavljajuca placanja</h2>
+
+  <p>Pristupite preko: <strong>Vise</strong> tab &rarr; <strong>Ponavljajuca placanja</strong></p>
+
+  <h3>Sto su ponavljajuca placanja?</h3>
+  <p>Sve sto placate redovito: rezije, pretplate, rate kredita, clanarine. Aplikacija vas podsjeca 24 sata prije svakog dospijeca.</p>
+
+  <h3>Dodavanje</h3>
+  <ol class="steps">
+    <li>Kliknite <strong>+ Novo</strong></li>
+    <li>Odaberite tip: Rashod ili Prihod (npr. placa)</li>
+    <li>Unesite opis i iznos</li>
+    <li>Odaberite ucestalost (tjedno, mjesecno, kvartalno, godisnje)</li>
+    <li>Unesite <strong>datum sljedeceg dospijeca</strong> (npr. 2026-06-01)</li>
+  </ol>
+
+  <h3>Upravljanje</h3>
+  <ul>
+    <li><strong>Pauziraj</strong> - prebacite prekidac za privremeno iskljucivanje</li>
+    <li><strong>Obrisi</strong> - trajno uklanjanje</li>
+    <li>Vidite koliko dana do sljedeceg dospijeca</li>
+    <li>Ukupan mjesecni i godisnji trosak svih ponavljajucih placanja</li>
+  </ul>
+
+  <div class="tip">
+    <strong>Savjet:</strong> Dodajte SVE redovite troskove - struju, internet, Netflix, mobitel, osiguranje. Cesto se iznenadimo koliko ukupno trosimo na "male" mjesecne troskove.
+  </div>
+</section>
+
+<!-- 8. OBAVIJESTI -->
+<section id="notifications">
+  <h2>8. Obavijesti i podsjetnici</h2>
+
+  <p>Sthedisia salje pametne obavijesti koje vam pomazu ostati na vrhu financija bez da vas zatrpava.</p>
+
+  <h3>Tipovi obavijesti</h3>
+  <table>
+    <tr><th>Tip</th><th>Kada</th><th>Sto</th></tr>
+    <tr>
+      <td><strong>Podsjetnik za placanje</strong></td>
+      <td>24h prije dospijeca</td>
+      <td>"Sutra dospijeva: Struja - 85,00 EUR"</td>
+    </tr>
+    <tr>
+      <td><strong>Tjedni pregled</strong></td>
+      <td>Svaki ponedjeljak u 9:00</td>
+      <td>"Pogledajte kako stojite s budzetom ovaj tjedan"</td>
+    </tr>
+    <tr>
+      <td><strong>Mjesecni sazetak</strong></td>
+      <td>1. u mjesecu u 10:00</td>
+      <td>"Novi mjesec - pregledajte prosli i postavite ciljeve"</td>
+    </tr>
+  </table>
+
+  <div class="tip">
+    <strong>Savjet:</strong> Obavijesti se automatski azuriraju kad dodate, obrisete ili pauzirate ponavljajuce placanje. Ne trebate nista rucno podesavati.
+  </div>
+</section>
+
+<!-- 9. SAVJETNIK -->
+<section id="advisor">
+  <h2>9. Financijski savjetnik</h2>
+
+  <p>Pristupite preko: <strong>Vise</strong> tab &rarr; <strong>Financijski savjetnik</strong></p>
+
+  <p>AI savjetnik analizira vase financijsko ponasanje i daje personalizirane savjete. Sve radi lokalno - vasi podaci nikad ne napustaju uredaj.</p>
+
+  <h3>Cetiri kartice</h3>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <h4>Savjeti</h4>
+      <p>Konkretni prijedlozi za ustedu i bolje upravljanje</p>
+    </div>
+    <div class="feature-card">
+      <h4>Plan</h4>
+      <p>Koraci za poboljsanje financijske situacije</p>
+    </div>
+    <div class="feature-card">
+      <h4>Edukacija</h4>
+      <p>Kratki clanci o financijskim pojmovima</p>
+    </div>
+    <div class="feature-card">
+      <h4>Pojmovnik</h4>
+      <p>Objasnjenja financijskih pojmova laickim jezikom</p>
+    </div>
+  </div>
+
+  <h3>Akcije na savjetima</h3>
+  <p>Svaki savjet ima gumb koji vas vodi direktno na relevantni ekran - "Pogledaj troskove" otvara Transakcije, "Postavi cilj" otvara Ciljeve, itd.</p>
+</section>
+
+<!-- 10. KUCANSTVO -->
+<section id="household">
+  <h2>10. Kucanstvo - Zajednicki budzet</h2>
+
+  <p>Sthedisia je dizajnirana za <strong>dvoclano kucanstvo</strong>. Svaka osoba ima svoj profil, a zajednicke transakcije se agregiraju.</p>
+
+  <h3>Kako radi</h3>
+  <ul>
+    <li>Kad unosite transakciju, odaberite "Osobno" ili "Zajednicko"</li>
+    <li>Na dashboardu prebacite na "Kucanstvo" pogled za zajednicke podatke</li>
+    <li>Zajednicki troskovi se dijele ravnopravno</li>
+  </ul>
+
+  <h3>Sinkronizacija</h3>
+  <p>Pristupite preko: <strong>Vise</strong> tab &rarr; <strong>Kucanstvo</strong></p>
+  <p>Koristite Export/Import za dijeljenje podataka s partnerom putem dijeljene mape (Google Drive, AirDrop).</p>
+</section>
+
+<!-- 11. SYNC -->
+<section id="sync">
+  <h2>11. Sinkronizacija podataka</h2>
+
+  <h3>Export podataka</h3>
+  <ol class="steps">
+    <li>Idite na <strong>Kucanstvo</strong></li>
+    <li>Kliknite <strong>Izvezi podatke</strong></li>
+    <li>Datoteka se sprema kao JSON</li>
+    <li>Podijelite je putem Google Drivea, AirDropa ili drugim kanalima</li>
+  </ol>
+
+  <h3>Import podataka</h3>
+  <ol class="steps">
+    <li>Primite JSON datoteku od partnera</li>
+    <li>Idite na <strong>Kucanstvo</strong></li>
+    <li>Kliknite <strong>Uvezi podatke</strong></li>
+    <li>Podaci se spajaju s vasim postojecim podacima</li>
+  </ol>
+
+  <div class="warning">
+    <strong>Vazno:</strong> Podaci se pohranjuju iskljucivo lokalno na vasem uredaju. Nema automatske cloud sinkronizacije - vi kontrolirate kada i kako dijeliti podatke.
+  </div>
+</section>
+
+<!-- 12. SAVJETI -->
+<section id="tips">
+  <h2>12. Savjeti za maksimalnu korist</h2>
+
+  <h3>Svakodnevne navike</h3>
+  <ol class="steps">
+    <li><strong>Unosite transakcije odmah</strong> - ne ostavljajte za kasnije. Traje 10 sekundi.</li>
+    <li><strong>Koristite "Zajednicko"</strong> za sve racune koji se ticu kucanstva (rezije, namirnice, hrana vani zajedno).</li>
+    <li><strong>Pregledajte dashboard</strong> svako jutro - 30 sekundi za provjeru stanja.</li>
+  </ol>
+
+  <h3>Tjedne navike</h3>
+  <ol class="steps">
+    <li><strong>Ponedjeljak: Tjedni pregled</strong> - koliko ste potrosili, jeste li u okviru budzeta?</li>
+    <li><strong>Provjerite ponavljajuca placanja</strong> - je li nesto uskoro na redu?</li>
+    <li><strong>Dodajte u stednju</strong> - stavite bar mali iznos prema cilju.</li>
+  </ol>
+
+  <h3>Mjesecne navike</h3>
+  <ol class="steps">
+    <li><strong>1. u mjesecu: Mjesecni pregled</strong> - koristite Izvjestaje za pregled proslog mjeseca.</li>
+    <li><strong>Azurirajte budzet</strong> ako se promijenio prihod ili troskovi.</li>
+    <li><strong>Provjerite pretplate</strong> - platcate li nesto sto ne koristite?</li>
+    <li><strong>Pogledajte neto vrijednost</strong> - raste li iz mjeseca u mjesec?</li>
+  </ol>
+
+  <h3>Zlatna pravila</h3>
+  <div class="tip">
+    <strong>Pravilo 50/30/20:</strong> 50% prihoda na potrebe, 30% na zelje, 20% na stednju i otplatu dugova. Ako ne znate odakle poceti, ovo je odlican temelj.
+  </div>
+  <div class="tip">
+    <strong>Sigurnosni fond prvo:</strong> Prije bilo kakvog ulaganja ili velikih kupnji, napunite sigurnosni fond na barem 3 mjeseca troskova. To je vas financijski jastuk.
+  </div>
+  <div class="tip">
+    <strong>Pratite, ne sudeite:</strong> Cilj aplikacije nije da se osjecate lose zbog potrosnje, nego da imate uvid. Svjesnost o potrosnji automatski vodi boljem ponasanju.
+  </div>
+  <div class="tip">
+    <strong>Mali iznosi se zbrajaju:</strong> 3 EUR dnevno za kavu = 90 EUR mjesecno = 1.080 EUR godisnje. Nije poanta prestati piti kavu, nego znati koliko to zapravo kosta i svjesno odluciti.
+  </div>
+</section>
+
+</div>
+
+<div class="footer">
+  <p><strong>Sthedisia v1.0.0</strong></p>
+  <p>Aplikacija za pametno upravljanje kucnim financijama</p>
+  <p style="margin-top: 12px; font-size: 0.85em;">Svi podaci ostaju lokalno na vasem uredaju. Privatnost je na prvom mjestu.</p>
+</div>
+
+</body>
+</html>
