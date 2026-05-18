@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 import { formatAmount } from '../../utils';
@@ -36,9 +37,13 @@ export const BudgetSummaryHeader: React.FC<BudgetSummaryHeaderProps> = ({
         <View style={[styles.percentBadge, {
           backgroundColor: isFullyAllocated ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.15)',
         }]}>
-          <Text style={styles.percentText}>
-            {isFullyAllocated ? '✓' : `${allocationPercent}%`}
-          </Text>
+          {isFullyAllocated ? (
+            <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+          ) : (
+            <Text style={styles.percentText}>
+              {`${allocationPercent}%`}
+            </Text>
+          )}
           <Text style={styles.percentLabel}>
             {isFullyAllocated ? 'Raspoređeno' : 'raspoređeno'}
           </Text>

@@ -7,6 +7,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 
@@ -47,9 +48,9 @@ export const Button: React.FC<ButtonProps> = ({
     };
 
     const sizeStyles: Record<string, ViewStyle> = {
-      sm: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: BorderRadius.md },
-      md: { paddingVertical: 14, paddingHorizontal: 24 },
-      lg: { paddingVertical: 18, paddingHorizontal: 32 },
+      sm: { paddingVertical: 10, paddingHorizontal: 16, minHeight: 36, borderRadius: BorderRadius.md },
+      md: { paddingVertical: 14, paddingHorizontal: 20, minHeight: 48 },
+      lg: { paddingVertical: 16, paddingHorizontal: 28, minHeight: 56 },
     };
 
     const variantStyles: Record<string, ViewStyle> = {
@@ -74,8 +75,8 @@ export const Button: React.FC<ButtonProps> = ({
   const getTextStyle = (): TextStyle => {
     const sizeStyles: Record<string, TextStyle> = {
       sm: { fontSize: 13, fontWeight: '600' },
-      md: { fontSize: 16, fontWeight: '600' },
-      lg: { fontSize: 18, fontWeight: '700' },
+      md: { fontSize: 15, fontWeight: '600' },
+      lg: { fontSize: 17, fontWeight: '700' },
     };
 
     const colorMap: Record<string, string> = {
@@ -105,7 +106,7 @@ export const Button: React.FC<ButtonProps> = ({
         />
       ) : (
         <>
-          {icon && <Text style={{ marginRight: 8, fontSize: 18 }}>{icon}</Text>}
+          {icon && <Ionicons name={icon as any} size={18} color={getTextStyle().color} style={{ marginRight: 8 }} />}
           <Text style={[getTextStyle(), textStyle]}>{title}</Text>
         </>
       )}

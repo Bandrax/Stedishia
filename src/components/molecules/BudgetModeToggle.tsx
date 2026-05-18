@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 
@@ -17,13 +18,13 @@ export const BudgetModeToggle: React.FC<BudgetModeToggleProps> = ({
   const modes = [
     {
       value: 'envelope' as const,
-      emoji: '✉️',
+      icon: 'mail-outline' as const,
       label: 'Kuverte',
       description: 'Rasporedi svaki euro',
     },
     {
       value: '50-30-20' as const,
-      emoji: '📊',
+      icon: 'bar-chart-outline' as const,
       label: '50/30/20',
       description: 'Potrebe / Želje / Štednja',
     },
@@ -44,7 +45,7 @@ export const BudgetModeToggle: React.FC<BudgetModeToggleProps> = ({
           onPress={() => onModeChange(m.value)}
           activeOpacity={0.7}
         >
-          <Text style={styles.emoji}>{m.emoji}</Text>
+          <Ionicons name={m.icon} size={24} color={mode === m.value ? colors.primary : colors.textSecondary} />
           <Text style={[styles.label, { color: mode === m.value ? colors.primary : colors.text }]}>
             {m.label}
           </Text>
@@ -69,8 +70,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
     borderWidth: 1.5,
   },
-  emoji: {
-    fontSize: 24,
+  iconWrap: {
     marginBottom: 4,
   },
   label: {

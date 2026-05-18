@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid';
+import * as Crypto from 'expo-crypto';
 import { dbInsert, dbUpdate, dbDelete, dbQuery } from './database';
 import type { SavingsGoal, GoalStatus } from '../types';
 
@@ -7,7 +7,7 @@ export const createGoal = async (
   goal: Omit<SavingsGoal, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<string> => {
   const now = new Date().toISOString();
-  const id = uuid();
+  const id = Crypto.randomUUID();
 
   await dbInsert('savings_goals', {
     id,

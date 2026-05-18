@@ -17,6 +17,7 @@ import {
   getCategoryInfo,
 } from '../services/dashboardService';
 import { getDailyTip } from '../services/tips';
+import { Ionicons } from '@expo/vector-icons';
 import { Card } from '../components/atoms';
 import {
   BalanceCard,
@@ -145,14 +146,16 @@ export const DashboardScreen: React.FC = () => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={[styles.greeting, { color: colors.textSecondary }]}>
-              Bok, {userName}! 👋
-            </Text>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>
-              Početna
-            </Text>
-          </View>
+          <Text style={[styles.greeting, { color: colors.textSecondary }]}>
+            Bok, {userName}!
+          </Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>
+            Početna
+          </Text>
+        </View>
+
+        {/* Scope toggle */}
+        <View style={styles.toggleRow}>
           <ScopeToggle scope={scope} onScopeChange={setScope} />
         </View>
 
@@ -172,9 +175,12 @@ export const DashboardScreen: React.FC = () => {
         {/* Budget Progress */}
         {data && data.budgetItems.length > 0 && (
           <Card style={styles.section} variant="default">
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              📊 Budžet ovog mjeseca
-            </Text>
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="wallet-outline" size={18} color={colors.primary} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Budžet ovog mjeseca
+              </Text>
+            </View>
             {data.budgetItems.slice(0, 5).map((item) => {
               const catInfo = getCategoryInfo(item.category_id);
               return (
@@ -194,9 +200,12 @@ export const DashboardScreen: React.FC = () => {
         {/* Top troškovi */}
         {data && data.topExpenses.length > 0 && (
           <Card style={styles.section} variant="default">
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              🔥 Najveći troškovi
-            </Text>
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="flame-outline" size={18} color={colors.warning} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Najveći troškovi
+              </Text>
+            </View>
             {data.topExpenses.map((expense, index) => {
               const catInfo = getCategoryInfo(expense.category_id);
               const totalExpenses = data.monthlyExpenses || 1;
@@ -218,9 +227,12 @@ export const DashboardScreen: React.FC = () => {
         {/* Predstojeća plaćanja */}
         {data && data.upcomingPayments.length > 0 && (
           <Card style={styles.section} variant="default">
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              📅 Predstojeća plaćanja
-            </Text>
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="calendar-outline" size={18} color={colors.primary} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Predstojeća plaćanja
+              </Text>
+            </View>
             {data.upcomingPayments.map((payment) => {
               const catInfo = getCategoryInfo(payment.category_id);
               const dueDate = new Date(payment.next_due_date);
@@ -246,9 +258,12 @@ export const DashboardScreen: React.FC = () => {
         {/* Cash Flow graf */}
         {data && data.cashFlowData.some((v) => v !== 0) && (
           <Card style={styles.section} variant="default">
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              📈 Tok novca (30 dana)
-            </Text>
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="trending-up-outline" size={18} color={colors.success} />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Tok novca (30 dana)
+              </Text>
+            </View>
             <MiniCashFlowChart data={data.cashFlowData} />
           </Card>
         )}
@@ -263,7 +278,7 @@ export const DashboardScreen: React.FC = () => {
         {/* Empty state */}
         {!hasTransactions && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>📝</Text>
+            <Ionicons name="document-text-outline" size={56} color={colors.textTertiary} style={{ marginBottom: Spacing.base }} />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
               Još nemate transakcija
             </Text>
@@ -291,10 +306,7 @@ const styles = StyleSheet.create({
     padding: Spacing.base,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.sm,
   },
   greeting: {
     ...Typography.bodySmall,
@@ -303,20 +315,24 @@ const styles = StyleSheet.create({
   headerTitle: {
     ...Typography.heading1,
   },
+  toggleRow: {
+    marginBottom: Spacing.base,
+  },
   section: {
     marginTop: Spacing.base,
   },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: Spacing.md,
+  },
   sectionTitle: {
     ...Typography.subtitle,
-    marginBottom: Spacing.md,
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: Spacing['3xl'],
-  },
-  emptyEmoji: {
-    fontSize: 56,
-    marginBottom: Spacing.base,
   },
   emptyTitle: {
     ...Typography.heading3,

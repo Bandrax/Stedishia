@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, View, Text, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import {
   DashboardScreen,
   TransactionsScreen,
@@ -9,18 +10,18 @@ import {
   MoreScreen,
 } from '../screens';
 import { useAppTheme } from '../hooks';
-import { Spacing, BorderRadius, Typography } from '../constants';
+import { Spacing, BorderRadius } from '../constants';
 import type { MainTabParamList } from '../types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const tabConfig = {
-  Dashboard: { emoji: '🏠', label: 'Početna' },
-  Transactions: { emoji: '📝', label: 'Transakcije' },
-  Budget: { emoji: '💰', label: 'Budžet' },
-  Goals: { emoji: '🎯', label: 'Ciljevi' },
-  More: { emoji: '⚙️', label: 'Više' },
-} as const;
+const tabConfig: Record<string, { icon: keyof typeof Ionicons.glyphMap; iconFocused: keyof typeof Ionicons.glyphMap; label: string }> = {
+  Dashboard: { icon: 'home-outline', iconFocused: 'home', label: 'Početna' },
+  Transactions: { icon: 'receipt-outline', iconFocused: 'receipt', label: 'Transakcije' },
+  Budget: { icon: 'wallet-outline', iconFocused: 'wallet', label: 'Budžet' },
+  Goals: { icon: 'flag-outline', iconFocused: 'flag', label: 'Ciljevi' },
+  More: { icon: 'grid-outline', iconFocused: 'grid', label: 'Više' },
+};
 
 export const TabNavigator: React.FC = () => {
   const { colors } = useAppTheme();
@@ -31,7 +32,7 @@ export const TabNavigator: React.FC = () => {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: colors.card,
-          borderTopColor: colors.border,
+          borderTopColor: colors.borderLight,
           borderTopWidth: 1,
           height: Platform.OS === 'ios' ? 88 : 64,
           paddingBottom: Platform.OS === 'ios' ? 28 : 8,
@@ -40,19 +41,18 @@ export const TabNavigator: React.FC = () => {
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '500',
-          marginTop: 2,
-        },
-        tabBarIcon: ({ focused }) => {
+        tabBarIcon: ({ focused, color }) => {
           const config = tabConfig[route.name];
           return (
             <View style={[
               styles.iconContainer,
-              focused && { backgroundColor: colors.primary + '15' },
+              focused && { backgroundColor: colors.primary + '12' },
             ]}>
-              <Text style={styles.emoji}>{config.emoji}</Text>
+              <Ionicons
+                name={focused ? config.iconFocused : config.icon}
+                size={22}
+                color={color}
+              />
             </View>
           );
         },
@@ -80,14 +80,11 @@ export const TabNavigator: React.FC = () => {
 
 const styles = StyleSheet.create({
   iconContainer: {
-    width: 36,
+    width: 48,
     height: 28,
     borderRadius: BorderRadius.md,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  emoji: {
-    fontSize: 20,
   },
   tabLabel: {
     fontSize: 11,

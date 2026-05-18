@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 import { formatAmount } from '../../utils';
@@ -19,27 +20,28 @@ export const EmergencyFundCard: React.FC<EmergencyFundCardProps> = ({
 }) => {
   const { colors } = useAppTheme();
 
-  // Cilj je 3-6 mjeseci
   const targetMonths = 6;
-  const percentage = Math.min((monthsCovered / targetMonths) * 100, 100);
   const status = monthsCovered >= 6 ? 'excellent' : monthsCovered >= 3 ? 'good' : monthsCovered >= 1 ? 'building' : 'start';
 
   const statusConfig = {
-    excellent: { emoji: '🛡️', color: colors.success, label: 'Odlično zaštićeni!' },
-    good: { emoji: '🟢', color: colors.success, label: 'Dobro stojite!' },
-    building: { emoji: '🟡', color: colors.warning, label: 'U izgradnji...' },
-    start: { emoji: '🔴', color: colors.error, label: 'Vrijeme za početak' },
+    excellent: { icon: 'shield-checkmark' as const, color: colors.success, label: 'Odlično zaštićeni!' },
+    good: { icon: 'shield-half' as const, color: colors.success, label: 'Dobro stojite!' },
+    building: { icon: 'shield' as const, color: colors.warning, label: 'U izgradnji...' },
+    start: { icon: 'shield-outline' as const, color: colors.error, label: 'Vrijeme za početak' },
   };
 
   const config = statusConfig[status];
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.card, borderColor: colors.border }]}>
+    <View style={[styles.container, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>🛡️ Sigurnosni fond</Text>
+        <View style={styles.titleRow}>
+          <Ionicons name="shield-checkmark-outline" size={18} color={colors.primary} style={{ marginRight: 8 }} />
+          <Text style={[styles.title, { color: colors.text }]}>Sigurnosni fond</Text>
+        </View>
         {onInfoPress && (
           <TouchableOpacity onPress={onInfoPress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Text style={[styles.infoButton, { color: colors.primary }]}>ℹ️</Text>
+            <Ionicons name="information-circle-outline" size={20} color={colors.primary} />
           </TouchableOpacity>
         )}
       </View>
@@ -66,21 +68,26 @@ export const EmergencyFundCard: React.FC<EmergencyFundCardProps> = ({
       </View>
 
       <View style={styles.statusRow}>
-        <Text style={styles.statusEmoji}>{config.emoji}</Text>
+        <Ionicons name={config.icon} size={18} color={config.color} />
         <Text style={[styles.statusLabel, { color: config.color }]}>{config.label}</Text>
       </View>
 
       <Text style={[styles.coverage, { color: colors.text }]}>
         Pokriva {monthsCovered.toFixed(1)} mjeseci troškova
       </Text>
-      <Text style={[styles.detail, { color: colors.textSecondary }]}>
-        Ušteđeno: {formatAmount(totalSaved)} • Mj. troškovi: {formatAmount(monthlyExpenses)}
-      </Text>
+
+      <View style={styles.detailRow}>
+        <Text style={[styles.detail, { color: colors.textSecondary }]} numberOfLines={1}>
+          Ušteđeno: {formatAmount(totalSaved)}
+        </Text>
+        <Text style={[styles.detail, { color: colors.textSecondary }]} numberOfLines={1}>
+          Mj. troškovi: {formatAmount(monthlyExpenses)}
+        </Text>
+      </View>
 
       <View style={[styles.hint, { backgroundColor: colors.surfaceVariant }]}>
         <Text style={[styles.hintText, { color: colors.textSecondary }]}>
-          💡 Preporučuje se imati ušteđevinu koja pokriva 3-6 mjeseci troškova.
-          To je vaš financijski jastuk za neočekivane situacije.
+          Preporučuje se 3-6 mjeseci troškova kao financijski jastuk za neočekivane situacije.
         </Text>
       </View>
     </View>
@@ -99,11 +106,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.md,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   title: {
     ...Typography.subtitle,
-  },
-  infoButton: {
-    fontSize: 16,
   },
   monthsRow: {
     flexDirection: 'row',
@@ -129,10 +137,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 4,
-  },
-  statusEmoji: {
-    fontSize: 16,
-    marginRight: 6,
+    gap: 6,
   },
   statusLabel: {
     fontSize: 14,
@@ -141,11 +146,16 @@ const styles = StyleSheet.create({
   coverage: {
     ...Typography.body,
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: 4,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.md,
   },
   detail: {
     fontSize: 12,
-    marginBottom: Spacing.md,
+    flex: 1,
   },
   hint: {
     padding: Spacing.sm,

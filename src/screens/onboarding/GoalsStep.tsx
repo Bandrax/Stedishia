@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SelectableChip } from '../../components/atoms';
 import { useAppTheme } from '../../hooks';
-import { Typography, Spacing } from '../../constants';
+import { Typography, Spacing, BorderRadius } from '../../constants';
 
 interface GoalOption {
   id: string;
@@ -33,7 +33,11 @@ export const GoalsStep: React.FC<GoalsStepProps> = ({
   const { colors } = useAppTheme();
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       <Text style={styles.emoji}>🎯</Text>
       <Text style={[styles.title, { color: colors.text }]}>
         Koji su vam financijski ciljevi?
@@ -56,24 +60,27 @@ export const GoalsStep: React.FC<GoalsStepProps> = ({
 
       <View style={[styles.hint, { backgroundColor: colors.surfaceVariant }]}>
         <Text style={[styles.hintText, { color: colors.textSecondary }]}>
-          💡 Na temelju vaših ciljeva prilagođavamo savjete i preporuke.
+          Na temelju vaših ciljeva prilagođavamo savjete i preporuke.
           Možete ih promijeniti kad god želite.
         </Text>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  scroll: {
     flex: 1,
-    justifyContent: 'center',
+  },
+  container: {
     paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing['2xl'],
   },
   emoji: {
-    fontSize: 56,
+    fontSize: 48,
     textAlign: 'center',
-    marginBottom: Spacing.base,
+    marginBottom: Spacing.md,
   },
   title: {
     ...Typography.heading2,
@@ -93,7 +100,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     padding: Spacing.base,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
   },
   hintText: {
     ...Typography.bodySmall,

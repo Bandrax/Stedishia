@@ -7,6 +7,7 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 import { Button } from '../../components/atoms';
@@ -20,11 +21,11 @@ interface AccountSetup {
   emoji: string;
 }
 
-const accountTemplates: { type: AccountType; emoji: string; label: string }[] = [
-  { type: 'checking', emoji: '🏦', label: 'Tekući račun' },
-  { type: 'savings', emoji: '🐷', label: 'Štedni račun' },
-  { type: 'cash', emoji: '💵', label: 'Gotovina' },
-  { type: 'credit_card', emoji: '💳', label: 'Kreditna kartica' },
+const accountTemplates: { type: AccountType; icon: string; label: string }[] = [
+  { type: 'checking', icon: 'business-outline', label: 'Tekući račun' },
+  { type: 'savings', icon: 'save-outline', label: 'Štedni račun' },
+  { type: 'cash', icon: 'cash-outline', label: 'Gotovina' },
+  { type: 'credit_card', icon: 'card-outline', label: 'Kreditna kartica' },
 ];
 
 interface AccountsStepProps {
@@ -45,7 +46,7 @@ export const AccountsStep: React.FC<AccountsStepProps> = ({
       name: template.label,
       type: template.type,
       balance: '',
-      emoji: template.emoji,
+      emoji: template.icon,
     };
     onAccountsChange([...accounts, newAccount]);
   };
@@ -67,7 +68,7 @@ export const AccountsStep: React.FC<AccountsStepProps> = ({
       contentContainerStyle={styles.container}
       keyboardShouldPersistTaps="handled"
     >
-      <Text style={styles.emoji}>🏦</Text>
+      <Ionicons name="business" size={48} color={colors.primary} style={{ marginBottom: Spacing.lg }} />
       <Text style={[styles.title, { color: colors.text }]}>
         Postavite svoje račune
       </Text>
@@ -82,12 +83,12 @@ export const AccountsStep: React.FC<AccountsStepProps> = ({
           style={[styles.accountCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
         >
           <View style={styles.accountHeader}>
-            <Text style={styles.accountEmoji}>{account.emoji}</Text>
+            <Ionicons name={(accountTemplates.find(t => t.type === account.type)?.icon || 'cash-outline') as any} size={22} color={colors.primary} style={{ marginRight: 8 }} />
             <Text style={[styles.accountName, { color: colors.text }]}>
               {account.name}
             </Text>
             <TouchableOpacity onPress={() => removeAccount(account.id)}>
-              <Text style={{ color: colors.error, fontSize: 18 }}>✕</Text>
+              <Ionicons name="close-circle-outline" size={20} color={colors.error} />
             </TouchableOpacity>
           </View>
           <View style={[styles.balanceRow, { borderColor: colors.border }]}>
@@ -119,7 +120,7 @@ export const AccountsStep: React.FC<AccountsStepProps> = ({
             onPress={() => addAccount(template.type)}
             activeOpacity={0.7}
           >
-            <Text style={styles.addEmoji}>{template.emoji}</Text>
+            <Ionicons name={template.icon as any} size={24} color={colors.primary} style={{ marginBottom: 4 }} />
             <Text style={[styles.addText, { color: colors.text }]}>
               {template.label}
             </Text>
@@ -130,7 +131,7 @@ export const AccountsStep: React.FC<AccountsStepProps> = ({
       {accounts.length === 0 && (
         <View style={[styles.hint, { backgroundColor: colors.surfaceVariant }]}>
           <Text style={[styles.hintText, { color: colors.textSecondary }]}>
-            💡 Dodajte barem jedan račun da biste mogli pratiti transakcije.
+            Dodajte barem jedan račun da biste mogli pratiti transakcije.
             Ne brinite — stanje ne mora biti točno do lipe, okvirno je dovoljno!
           </Text>
         </View>

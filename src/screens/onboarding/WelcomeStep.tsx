@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing } from '../../constants';
 
@@ -8,7 +9,7 @@ export const WelcomeStep: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.emoji}>💰</Text>
+      <Ionicons name="wallet" size={72} color={colors.primary} style={{ marginBottom: Spacing.lg }} />
       <Text style={[styles.title, { color: colors.text }]}>
         Dobrodošli u{'\n'}MojNovčanik!
       </Text>
@@ -17,7 +18,7 @@ export const WelcomeStep: React.FC = () => {
       </Text>
 
       <View style={[styles.philosophyCard, { backgroundColor: colors.surfaceVariant }]}>
-        <Text style={styles.philosophyEmoji}>💡</Text>
+        <Ionicons name="bulb-outline" size={24} color={colors.primary} style={{ marginBottom: Spacing.sm }} />
         <Text style={[styles.philosophyText, { color: colors.text }]}>
           MojNovčanik vam pomaže da svaki euro ima svoju svrhu. Umjesto da
           pratite gdje je novac otišao, planiramo unaprijed kamo će ići.

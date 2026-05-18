@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 import { formatAmount } from '../../utils';
@@ -27,7 +28,6 @@ export const BudgetEnvelopeCard: React.FC<BudgetEnvelopeCardProps> = ({
   const isOver = spent > allocated;
   const isNearLimit = percentage >= 80 && !isOver;
 
-  // Vizualna metafora "staklenke" - koliko je puna
   const fillHeight = Math.min(percentage, 100);
   const fillColor = isOver
     ? colors.error
@@ -35,11 +35,9 @@ export const BudgetEnvelopeCard: React.FC<BudgetEnvelopeCardProps> = ({
       ? colors.warning
       : color;
 
-  const statusEmoji = isOver ? '🔴' : isNearLimit ? '🟡' : '🟢';
-
   return (
     <TouchableOpacity
-      style={[styles.container, { backgroundColor: colors.card, borderColor: colors.border }]}
+      style={[styles.container, { backgroundColor: colors.card, borderColor: colors.borderLight }]}
       onPress={onPress}
       activeOpacity={0.7}
       disabled={!onPress}
@@ -66,7 +64,7 @@ export const BudgetEnvelopeCard: React.FC<BudgetEnvelopeCardProps> = ({
           <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
             {categoryName}
           </Text>
-          <Text style={styles.status}>{statusEmoji}</Text>
+          <View style={[styles.statusDot, { backgroundColor: fillColor }]} />
         </View>
 
         {/* Progress bar */}
@@ -82,20 +80,21 @@ export const BudgetEnvelopeCard: React.FC<BudgetEnvelopeCardProps> = ({
           />
         </View>
 
-        {/* Iznosi */}
+        {/* Iznosi - stacked to prevent overflow */}
         <View style={styles.amountRow}>
-          <Text style={[styles.spent, { color: colors.textSecondary }]}>
-            {formatAmount(spent)} potrošeno
+          <Text style={[styles.spent, { color: colors.textSecondary }]} numberOfLines={1}>
+            {formatAmount(spent)} / {formatAmount(allocated)}
           </Text>
           <Text
             style={[
               styles.remaining,
               { color: isOver ? colors.error : colors.success },
             ]}
+            numberOfLines={1}
           >
             {isOver
-              ? `-${formatAmount(Math.abs(remaining))} prekoračenje`
-              : `${formatAmount(remaining)} preostaje`}
+              ? `${formatAmount(Math.abs(remaining))} preko`
+              : `${formatAmount(remaining)} ost.`}
           </Text>
         </View>
       </View>
@@ -116,8 +115,8 @@ const styles = StyleSheet.create({
     marginRight: Spacing.md,
   },
   jar: {
-    width: 48,
-    height: 56,
+    width: 44,
+    height: 52,
     borderRadius: 8,
     borderWidth: 2,
     overflow: 'hidden',
@@ -131,11 +130,12 @@ const styles = StyleSheet.create({
     right: 0,
   },
   jarEmoji: {
-    fontSize: 22,
+    fontSize: 20,
     zIndex: 1,
   },
   info: {
     flex: 1,
+    minWidth: 0,
   },
   nameRow: {
     flexDirection: 'row',
@@ -146,10 +146,12 @@ const styles = StyleSheet.create({
   name: {
     ...Typography.subtitle,
     flex: 1,
+    marginRight: 8,
   },
-  status: {
-    fontSize: 12,
-    marginLeft: 4,
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   progressTrack: {
     height: 5,
@@ -164,12 +166,16 @@ const styles = StyleSheet.create({
   amountRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   spent: {
     fontSize: 12,
+    flex: 1,
+    marginRight: 8,
   },
   remaining: {
     fontSize: 12,
     fontWeight: '600',
+    flexShrink: 0,
   },
 });

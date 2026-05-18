@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 
@@ -12,15 +13,15 @@ interface StatusSemaphoreProps {
 
 const statusConfig = {
   good: {
-    emoji: '🟢',
+    icon: 'checkmark-circle' as const,
     defaultMessage: 'Odlično! Na pravom ste putu.',
   },
   warning: {
-    emoji: '🟡',
+    icon: 'alert-circle' as const,
     defaultMessage: 'Pažnja — približavate se limitu u nekim kategorijama.',
   },
   over: {
-    emoji: '🔴',
+    icon: 'close-circle' as const,
     defaultMessage: 'Prekoračili ste budžet. Pogledajmo gdje možemo uštedjeti.',
   },
 };
@@ -38,7 +39,7 @@ export const StatusSemaphore: React.FC<StatusSemaphoreProps> = ({
     over: colors.errorLight,
   };
 
-  const textColorMap: Record<BudgetStatus, string> = {
+  const iconColorMap: Record<BudgetStatus, string> = {
     good: colors.success,
     warning: colors.warning,
     over: colors.error,
@@ -46,9 +47,9 @@ export const StatusSemaphore: React.FC<StatusSemaphoreProps> = ({
 
   return (
     <View style={[styles.container, { backgroundColor: bgColorMap[status] }]}>
-      <Text style={styles.emoji}>{config.emoji}</Text>
+      <Ionicons name={config.icon} size={28} color={iconColorMap[status]} />
       <View style={styles.textContainer}>
-        <Text style={[styles.title, { color: textColorMap[status] }]}>
+        <Text style={[styles.title, { color: iconColorMap[status] }]}>
           Kako mi ide ovaj mjesec?
         </Text>
         <Text style={[styles.message, { color: colors.text }]}>
@@ -65,10 +66,7 @@ const styles = StyleSheet.create({
     padding: Spacing.base,
     borderRadius: BorderRadius.lg,
     alignItems: 'center',
-  },
-  emoji: {
-    fontSize: 28,
-    marginRight: Spacing.md,
+    gap: Spacing.md,
   },
   textContainer: {
     flex: 1,

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 import { formatAmount, formatDate } from '../../utils';
@@ -41,10 +42,10 @@ export const GoalCard: React.FC<GoalCardProps> = ({
         <View style={styles.headerInfo}>
           <Text style={[styles.name, { color: colors.text }]}>{goal.name}</Text>
           <Text style={[styles.deadline, { color: colors.textTertiary }]}>
-            {isCompleted ? 'Ostvareno! 🎉' : `Do ${formatDate(goal.targetDate, 'd. MMM yyyy.')}`}
+            {isCompleted ? 'Ostvareno!' : `Do ${formatDate(goal.targetDate, 'd. MMM yyyy.')}`}
           </Text>
         </View>
-        {isCompleted && <Text style={styles.completedBadge}>✅</Text>}
+        {isCompleted && <Ionicons name="checkmark-circle" size={24} color={colors.success} />}
       </View>
 
       {/* Progress */}
@@ -124,9 +125,7 @@ const styles = StyleSheet.create({
   deadline: {
     fontSize: 12,
   },
-  completedBadge: {
-    fontSize: 24,
-  },
+  completedBadge: {},
   progressSection: {
     marginBottom: Spacing.sm,
   },

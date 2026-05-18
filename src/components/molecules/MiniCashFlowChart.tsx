@@ -21,7 +21,7 @@ export const MiniCashFlowChart: React.FC<MiniCashFlowChartProps> = ({
     return (
       <View style={[styles.empty, { backgroundColor: colors.surfaceVariant }]}>
         <Text style={[styles.emptyText, { color: colors.textTertiary }]}>
-          📊 Nedovoljno podataka za graf
+          Nedovoljno podataka za graf
         </Text>
       </View>
     );

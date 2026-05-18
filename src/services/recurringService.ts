@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid';
+import * as Crypto from 'expo-crypto';
 import { dbInsert, dbUpdate, dbDelete, dbQuery } from './database';
 
 export interface RecurringTransaction {
@@ -20,7 +20,7 @@ export const createRecurring = async (
   tx: Omit<RecurringTransaction, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<string> => {
   const now = new Date().toISOString();
-  const id = uuid();
+  const id = Crypto.randomUUID();
 
   await dbInsert('recurring_transactions', {
     id,

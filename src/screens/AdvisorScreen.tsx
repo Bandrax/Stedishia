@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../hooks';
 import { useAuthStore } from '../store';
+import { Ionicons } from '@expo/vector-icons';
 import { Typography, Spacing, BorderRadius } from '../constants';
 import {
   generateAdvice,
@@ -64,11 +65,11 @@ export const AdvisorScreen: React.FC = () => {
     setRefreshing(false);
   }, [loadAdvice]);
 
-  const tabs: Array<{ key: AdvisorTab; label: string; emoji: string }> = [
-    { key: 'advice', label: 'Savjeti', emoji: '🤖' },
-    { key: 'checkin', label: 'Check-in', emoji: '📝' },
-    { key: 'learn', label: 'Nauči', emoji: '📚' },
-    { key: 'glossary', label: 'Pojmovi', emoji: '📖' },
+  const tabs: Array<{ key: AdvisorTab; label: string; icon: string }> = [
+    { key: 'advice', label: 'Savjeti', icon: 'bulb-outline' },
+    { key: 'checkin', label: 'Check-in', icon: 'clipboard-outline' },
+    { key: 'learn', label: 'Nauči', icon: 'book-outline' },
+    { key: 'glossary', label: 'Pojmovi', icon: 'library-outline' },
   ];
 
   const getPriorityStyle = (priority: string) => {
@@ -94,18 +95,20 @@ export const AdvisorScreen: React.FC = () => {
     <View>
       {/* Savjet dana */}
       <View style={[styles.tipCard, { backgroundColor: colors.primary + '10', borderColor: colors.primary + '30' }]}>
-        <Text style={[styles.tipTitle, { color: colors.primary }]}>💡 Savjet dana</Text>
+        <Text style={[styles.tipTitle, { color: colors.primary }]}>
+          <Ionicons name="bulb-outline" size={14} color={colors.primary} /> Savjet dana
+        </Text>
         <Text style={[styles.tipText, { color: colors.text }]}>{dailyTip}</Text>
       </View>
 
       {/* Personalizirani savjeti */}
       <Text style={[styles.sectionTitle, { color: colors.text }]}>
-        🤖 Personalizirani savjeti
+        <Ionicons name="sparkles-outline" size={16} color={colors.text} /> Personalizirani savjeti
       </Text>
 
       {advice.length === 0 && (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyEmoji}>🔄</Text>
+          <Ionicons name="sync-outline" size={40} color={colors.textSecondary} style={{ marginBottom: Spacing.sm }} />
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
             Analiziram vaše financije...
           </Text>
@@ -149,7 +152,7 @@ export const AdvisorScreen: React.FC = () => {
   const renderCheckInTab = () => (
     <View>
       <View style={[styles.checkInHeader, { backgroundColor: colors.primary + '10' }]}>
-        <Text style={styles.checkInEmoji}>📝</Text>
+        <Ionicons name="clipboard-outline" size={40} color={colors.primary} style={{ marginBottom: Spacing.sm }} />
         <Text style={[styles.checkInTitle, { color: colors.text }]}>Tjedni check-in</Text>
         <Text style={[styles.checkInSubtitle, { color: colors.textSecondary }]}>
           Odvojite 2 minute da razmislite o svojim financijama ovaj tjedan
@@ -167,10 +170,10 @@ export const AdvisorScreen: React.FC = () => {
             {item.type === 'yes_no' && (
               <View style={styles.yesNoRow}>
                 <TouchableOpacity style={[styles.yesNoBtn, { backgroundColor: colors.success + '15' }]}>
-                  <Text style={[styles.yesNoText, { color: colors.success }]}>Da ✓</Text>
+                  <Text style={[styles.yesNoText, { color: colors.success }]}>Da <Ionicons name="checkmark" size={16} color={colors.success} /></Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.yesNoBtn, { backgroundColor: colors.error + '15' }]}>
-                  <Text style={[styles.yesNoText, { color: colors.error }]}>Ne ✗</Text>
+                  <Text style={[styles.yesNoText, { color: colors.error }]}>Ne <Ionicons name="close" size={16} color={colors.error} /></Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -199,7 +202,7 @@ export const AdvisorScreen: React.FC = () => {
 
       <View style={[styles.hint, { backgroundColor: colors.surfaceVariant }]}>
         <Text style={[styles.hintText, { color: colors.textSecondary }]}>
-          💡 Tjedni check-in je navika koja pomaže graditi financijsku svjesnost.
+          <Ionicons name="information-circle-outline" size={12} color={colors.textSecondary} /> Tjedni check-in je navika koja pomaže graditi financijsku svjesnost.
           Pitanja se mijenjaju svaki tjedan.
         </Text>
       </View>
@@ -270,7 +273,7 @@ export const AdvisorScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={[styles.backButton, { color: colors.primary }]}>← Natrag</Text>
+          <Ionicons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
         <Text style={[styles.screenTitle, { color: colors.text }]}>Savjetnik</Text>
         <View style={{ width: 60 }} />
@@ -297,7 +300,7 @@ export const AdvisorScreen: React.FC = () => {
               ]}
               onPress={() => setActiveTab(tab.key)}
             >
-              <Text style={styles.tabEmoji}>{tab.emoji}</Text>
+              <Ionicons name={tab.icon as any} size={16} color={activeTab === tab.key ? '#FFF' : colors.textSecondary} />
               <Text
                 style={[styles.tabLabel, { color: activeTab === tab.key ? '#FFF' : colors.textSecondary }]}
               >
@@ -362,7 +365,6 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.full,
     gap: 6,
   },
-  tabEmoji: { fontSize: 14 },
   tabLabel: { fontSize: 13, fontWeight: '600' },
 
   // Tip
@@ -413,7 +415,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.lg,
   },
-  checkInEmoji: { fontSize: 40, marginBottom: Spacing.sm },
   checkInTitle: { ...Typography.heading2, marginBottom: 4 },
   checkInSubtitle: { fontSize: 14, textAlign: 'center' },
 
@@ -474,7 +475,6 @@ const styles = StyleSheet.create({
 
   // Empty & hint
   emptyState: { alignItems: 'center', paddingVertical: Spacing['2xl'] },
-  emptyEmoji: { fontSize: 40, marginBottom: Spacing.sm },
   emptyText: { fontSize: 14 },
   hint: { padding: Spacing.sm, borderRadius: BorderRadius.md, marginTop: Spacing.md },
   hintText: { fontSize: 12, lineHeight: 18 },

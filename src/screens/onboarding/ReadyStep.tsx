@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing } from '../../constants';
 
@@ -18,7 +19,7 @@ export const ReadyStep: React.FC<ReadyStepProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.emoji}>🎉</Text>
+      <Ionicons name="checkmark-circle" size={72} color={colors.success} style={{ marginBottom: Spacing.lg }} />
       <Text style={[styles.title, { color: colors.text }]}>
         Sve je spremno!
       </Text>
@@ -28,19 +29,19 @@ export const ReadyStep: React.FC<ReadyStepProps> = ({
 
       <View style={styles.summary}>
         <View style={[styles.summaryItem, { backgroundColor: colors.surfaceVariant }]}>
-          <Text style={styles.summaryEmoji}>👤</Text>
+          <Ionicons name="person" size={24} color={colors.primary} style={{ marginRight: Spacing.md }} />
           <Text style={[styles.summaryText, { color: colors.text }]}>
             {userName || 'Vaš profil'}
           </Text>
         </View>
         <View style={[styles.summaryItem, { backgroundColor: colors.surfaceVariant }]}>
-          <Text style={styles.summaryEmoji}>🏦</Text>
+          <Ionicons name="business" size={24} color={colors.primary} style={{ marginRight: Spacing.md }} />
           <Text style={[styles.summaryText, { color: colors.text }]}>
             {accountCount} {accountCount === 1 ? 'račun' : accountCount < 5 ? 'računa' : 'računa'}
           </Text>
         </View>
         <View style={[styles.summaryItem, { backgroundColor: colors.surfaceVariant }]}>
-          <Text style={styles.summaryEmoji}>🎯</Text>
+          <Ionicons name="flag" size={24} color={colors.primary} style={{ marginRight: Spacing.md }} />
           <Text style={[styles.summaryText, { color: colors.text }]}>
             {goalCount} {goalCount === 1 ? 'cilj' : goalCount < 5 ? 'cilja' : 'ciljeva'}
           </Text>
@@ -49,7 +50,7 @@ export const ReadyStep: React.FC<ReadyStepProps> = ({
 
       <View style={[styles.tip, { backgroundColor: colors.primary + '10' }]}>
         <Text style={[styles.tipText, { color: colors.primary }]}>
-          🚀 Savjet: Počnite s unosom transakcija odmah! Što prije
+          Savjet: Počnite s unosom transakcija odmah! Što prije
           krenete, točniji će biti vaši izvještaji i savjeti.
         </Text>
       </View>

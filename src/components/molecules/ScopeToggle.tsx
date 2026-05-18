@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Spacing, BorderRadius } from '../../constants';
 
@@ -31,7 +32,7 @@ export const ScopeToggle: React.FC<ScopeToggleProps> = ({
         onPress={() => onScopeChange('personal')}
         activeOpacity={0.7}
       >
-        <Text style={styles.optionEmoji}>👤</Text>
+        <Ionicons name="person-outline" size={16} color={scope === 'personal' ? colors.primary : colors.textTertiary} />
         <Text
           style={[
             styles.optionText,
@@ -51,7 +52,7 @@ export const ScopeToggle: React.FC<ScopeToggleProps> = ({
         onPress={() => onScopeChange('household')}
         activeOpacity={0.7}
       >
-        <Text style={styles.optionEmoji}>🏠</Text>
+        <Ionicons name="home-outline" size={16} color={scope === 'household' ? colors.primary : colors.textTertiary} />
         <Text
           style={[
             styles.optionText,
@@ -86,11 +87,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  optionEmoji: {
-    fontSize: 14,
-    marginRight: 6,
-  },
   optionText: {
+    marginLeft: 6,
     fontSize: 14,
     fontWeight: '600',
   },

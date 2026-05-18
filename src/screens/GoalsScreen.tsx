@@ -149,7 +149,7 @@ export const GoalsScreen: React.FC = () => {
     try {
       const updated = await addToGoal(showAddMoney, amount);
       if (updated?.status === 'completed') {
-        Alert.alert('🎉 Čestitamo!', `Ostvarili ste cilj "${updated.name}"!`);
+        Alert.alert('Čestitamo!', `Ostvarili ste cilj "${updated.name}"!`);
       }
       setShowAddMoney(null);
       setAddMoneyAmount('');
@@ -345,7 +345,7 @@ export const GoalsScreen: React.FC = () => {
             {goalAmount && (
               <Card style={{ marginTop: Spacing.md }} variant="default" padding="md">
                 <Text style={[styles.calcText, { color: colors.text }]}>
-                  💡 Za ovaj cilj trebate odvajati približno{' '}
+                  Za ovaj cilj trebate odvajati približno{' '}
                   <Text style={{ fontWeight: '700', color: colors.primary }}>
                     {formatAmount(
                       calculateMonthlyNeeded(

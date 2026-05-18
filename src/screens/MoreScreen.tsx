@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../hooks';
 import { Typography, Spacing, BorderRadius } from '../constants';
 import type { RootStackParamList } from '../types';
@@ -9,19 +10,20 @@ import type { RootStackParamList } from '../types';
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 interface MenuItem {
-  emoji: string;
+  icon: keyof typeof Ionicons.glyphMap;
   label: string;
   sublabel?: string;
   screen?: keyof RootStackParamList;
+  iconColor?: string;
 }
 
 const menuItems: MenuItem[] = [
-  { emoji: '🏦', label: 'Računi', sublabel: 'Upravljajte računima i karticama', screen: 'Accounts' },
-  { emoji: '📊', label: 'Izvještaji', sublabel: 'Mjesečni i godišnji pregledi', screen: 'Reports' },
-  { emoji: '🤖', label: 'Financijski savjetnik', sublabel: 'Personalizirani savjeti', screen: 'Advisor' },
-  { emoji: '🏠', label: 'Kućanstvo', sublabel: 'Zajednički budžet i sync', screen: 'Household' },
-  { emoji: '🔄', label: 'Ponavljajuća plaćanja', sublabel: 'Pretplate i režije', screen: 'RecurringPayments' },
-  { emoji: '⚙️', label: 'Postavke', sublabel: 'Tema, jezik, sigurnost', screen: 'Settings' },
+  { icon: 'card-outline', label: 'Računi', sublabel: 'Upravljajte računima i karticama', screen: 'Accounts', iconColor: '#2196F3' },
+  { icon: 'bar-chart-outline', label: 'Izvještaji', sublabel: 'Mjesečni i godišnji pregledi', screen: 'Reports', iconColor: '#9C27B0' },
+  { icon: 'bulb-outline', label: 'Financijski savjetnik', sublabel: 'Personalizirani savjeti', screen: 'Advisor', iconColor: '#FF9800' },
+  { icon: 'people-outline', label: 'Kućanstvo', sublabel: 'Zajednički budžet i sync', screen: 'Household', iconColor: '#4CAF50' },
+  { icon: 'repeat-outline', label: 'Ponavljajuća plaćanja', sublabel: 'Pretplate i režije', screen: 'RecurringPayments', iconColor: '#00BCD4' },
+  { icon: 'settings-outline', label: 'Postavke', sublabel: 'Tema, jezik, sigurnost', screen: 'Settings', iconColor: '#607D8B' },
 ];
 
 export const MoreScreen: React.FC = () => {
@@ -44,13 +46,15 @@ export const MoreScreen: React.FC = () => {
             styles.menuItem,
             {
               backgroundColor: colors.card,
-              borderColor: colors.border,
+              borderColor: colors.borderLight,
             },
           ]}
           activeOpacity={0.7}
           onPress={() => item.screen && navigation.navigate(item.screen as any)}
         >
-          <Text style={styles.menuEmoji}>{item.emoji}</Text>
+          <View style={[styles.iconCircle, { backgroundColor: (item.iconColor || colors.primary) + '15' }]}>
+            <Ionicons name={item.icon} size={22} color={item.iconColor || colors.primary} />
+          </View>
           <View style={styles.menuText}>
             <Text style={[styles.menuLabel, { color: colors.text }]}>
               {item.label}
@@ -61,7 +65,7 @@ export const MoreScreen: React.FC = () => {
               </Text>
             )}
           </View>
-          <Text style={{ color: colors.textTertiary, fontSize: 18 }}>›</Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
         </TouchableOpacity>
       ))}
     </ScrollView>
@@ -84,12 +88,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: Spacing.base,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.xl,
     borderWidth: 1,
     marginBottom: Spacing.sm,
   },
-  menuEmoji: {
-    fontSize: 28,
+  iconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: Spacing.md,
   },
   menuText: {

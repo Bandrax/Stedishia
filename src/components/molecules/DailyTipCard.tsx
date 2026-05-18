@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 
@@ -19,13 +20,13 @@ export const DailyTipCard: React.FC<DailyTipCardProps> = ({
   return (
     <View style={[styles.container, { backgroundColor: colors.accent + '15' }]}>
       <View style={styles.header}>
-        <Text style={styles.emoji}>💡</Text>
+        <Ionicons name="bulb-outline" size={18} color={colors.accent} />
         <Text style={[styles.title, { color: colors.accent }]}>
           Savjet dana
         </Text>
         {onDismiss && (
           <TouchableOpacity onPress={onDismiss} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Text style={{ color: colors.textTertiary, fontSize: 16 }}>✕</Text>
+            <Ionicons name="close" size={18} color={colors.textTertiary} />
           </TouchableOpacity>
         )}
       </View>
@@ -45,10 +46,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: Spacing.sm,
-  },
-  emoji: {
-    fontSize: 18,
-    marginRight: Spacing.sm,
+    gap: 8,
   },
   title: {
     fontSize: 13,

@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid';
+import * as Crypto from 'expo-crypto';
 import { dbInsert, dbUpdate, dbQuery, getDatabase } from './database';
 import { getCurrentMonth } from '../utils';
 import { DEFAULT_EXPENSE_CATEGORIES } from '../constants';
@@ -61,7 +61,7 @@ export const upsertBudgetItem = async (
     });
     return existing[0].id;
   } else {
-    const id = uuid();
+    const id = Crypto.randomUUID();
     await dbInsert('budget_items', {
       id,
       user_id: userId,

@@ -6,6 +6,7 @@ module.exports = {
   moduleNameMapper: {
     '^../services/database$': '<rootDir>/src/__tests__/__mocks__/database.ts',
     '^expo-sqlite$': '<rootDir>/src/__tests__/__mocks__/expoSqlite.ts',
+    '^expo-crypto$': '<rootDir>/src/__tests__/__mocks__/expoCrypto.ts',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   testMatch: ['**/__tests__/**/*.test.ts', '**/__tests__/**/*.test.tsx'],

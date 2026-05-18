@@ -33,8 +33,11 @@ export const BudgetProgressBar: React.FC<BudgetProgressBarProps> = ({
         <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
           {categoryName}
         </Text>
-        <Text style={[styles.amount, { color: isOver ? colors.error : colors.textSecondary }]}>
-          {formatAmount(spent)} / {formatAmount(allocated)}
+        <Text
+          style={[styles.amount, { color: isOver ? colors.error : colors.textSecondary }]}
+          numberOfLines={1}
+        >
+          {formatAmount(spent)}/{formatAmount(allocated)}
         </Text>
       </View>
       <View style={[styles.track, { backgroundColor: colors.surfaceVariant }]}>
@@ -69,10 +72,12 @@ const styles = StyleSheet.create({
     ...Typography.bodySmall,
     fontWeight: '500',
     flex: 1,
+    marginRight: 6,
   },
   amount: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '500',
+    flexShrink: 0,
   },
   track: {
     height: 6,

@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../hooks';
 import { useAuthStore } from '../store';
+import { Ionicons } from '@expo/vector-icons';
 import { Typography, Spacing, BorderRadius } from '../constants';
 import { formatAmount, formatDate } from '../utils';
 import { getCategoryInfo } from '../services/dashboardService';
@@ -139,7 +140,7 @@ export const RecurringScreen: React.FC = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={[styles.backButton, { color: colors.primary }]}>← Natrag</Text>
+          <Ionicons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
         <Text style={[styles.screenTitle, { color: colors.text }]}>Ponavljajuća</Text>
         <TouchableOpacity onPress={() => setShowAdd(true)}>
@@ -241,7 +242,7 @@ export const RecurringScreen: React.FC = () => {
                 style={[styles.txCard, { backgroundColor: colors.card, borderColor: colors.border, opacity: 0.6 }]}
               >
                 <View style={styles.txHeader}>
-                  <Text style={styles.txEmoji}>⏸️</Text>
+                  <Ionicons name="pause-circle-outline" size={28} color={colors.textSecondary} style={{ marginRight: 8 }} />
                   <View style={styles.txInfo}>
                     <Text style={[styles.txName, { color: colors.text }]}>{tx.description}</Text>
                     <Text style={[styles.txMeta, { color: colors.textSecondary }]}>
@@ -269,7 +270,7 @@ export const RecurringScreen: React.FC = () => {
 
         {transactions.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>🔄</Text>
+            <Ionicons name="repeat-outline" size={48} color={colors.textTertiary} style={{ marginBottom: Spacing.base }} />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>Nema ponavljajućih plaćanja</Text>
             <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
               Dodajte režije, pretplate i redovita plaćanja{'\n'}kako biste ih lakše pratili.

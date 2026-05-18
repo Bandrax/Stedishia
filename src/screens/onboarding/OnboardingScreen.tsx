@@ -6,10 +6,12 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { v4 as uuid } from 'uuid';
-import { Button, ProgressDots } from '../../components/atoms';
+import * as Crypto from 'expo-crypto';
+import { Ionicons } from '@expo/vector-icons';
+import { Button } from '../../components/atoms';
 import { useAppTheme } from '../../hooks';
 import { useAuthStore, useAccountStore } from '../../store';
 import { dbInsert } from '../../services/database';
@@ -30,7 +32,7 @@ interface AccountSetup {
   emoji: string;
 }
 
-const TOTAL_STEPS = 6; // 0-5: Welcome, Name, Income+Household, Goals, Accounts, Ready
+const TOTAL_STEPS = 7; // 0-6: Welcome, Name, Household, Income, Goals, Accounts, Ready
 
 export const OnboardingScreen: React.FC = () => {
   const { colors } = useAppTheme();
@@ -40,13 +42,17 @@ export const OnboardingScreen: React.FC = () => {
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
   const [income, setIncome] = useState('');
+  const [incomeType, setIncomeType] = useState<'fixed' | 'variable' | 'none'>('fixed');
   const [householdSize, setHouseholdSize] = useState('two');
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [accounts, setAccountsLocal] = useState<AccountSetup[]>([
-    { id: 'checking_default', name: 'Tekući račun', type: 'checking', balance: '', emoji: '🏦' },
-    { id: 'cash_default', name: 'Gotovina', type: 'cash', balance: '', emoji: '💵' },
+    { id: 'checking_default', name: 'Tekući račun', type: 'checking', balance: '', emoji: 'business-outline' },
+    { id: 'cash_default', name: 'Gotovina', type: 'cash', balance: '', emoji: 'cash-outline' },
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Privremeno preskačemo auth - postavljamo kao authenticated
+  const { setAuthenticated } = useAuthStore();
 
   const toggleGoal = (goalId: string) => {
     setSelectedGoals((prev) =>
@@ -58,10 +64,11 @@ export const OnboardingScreen: React.FC = () => {
     switch (step) {
       case 0: return true; // Welcome
       case 1: return name.trim().length >= 2; // Name
-      case 2: return true; // Income + Household (income optional)
-      case 3: return true; // Goals (optional)
-      case 4: return accounts.length > 0; // Accounts
-      case 5: return true; // Ready
+      case 2: return true; // Household
+      case 3: return true; // Income (all options valid)
+      case 4: return true; // Goals (optional)
+      case 5: return accounts.length > 0; // Accounts
+      case 6: return true; // Ready
       default: return false;
     }
   };
@@ -70,8 +77,8 @@ export const OnboardingScreen: React.FC = () => {
     setIsSubmitting(true);
     try {
       const now = new Date().toISOString();
-      const userId = uuid();
-      const householdId = uuid();
+      const userId = Crypto.randomUUID();
+      const householdId = Crypto.randomUUID();
 
       // Kreiraj kućanstvo
       await dbInsert('households', {
@@ -84,7 +91,7 @@ export const OnboardingScreen: React.FC = () => {
       const user = {
         id: userId,
         name: name.trim(),
-        monthly_income: parseFloat(income) || 0,
+        monthly_income: incomeType === 'none' ? 0 : (parseFloat(income) || 0),
         currency: 'EUR',
         household_id: householdId,
         budget_mode: 'envelope',
@@ -99,7 +106,7 @@ export const OnboardingScreen: React.FC = () => {
       for (let i = 0; i < accounts.length; i++) {
         const acc = accounts[i];
         const accountData = {
-          id: uuid(),
+          id: Crypto.randomUUID(),
           user_id: userId,
           name: acc.name,
           type: acc.type,
@@ -121,7 +128,7 @@ export const OnboardingScreen: React.FC = () => {
         });
       }
 
-      // Spremi financijske ciljeve u app_settings
+      // Spremi financijske ciljeve i tip prihoda
       await dbInsert('app_settings', {
         key: 'financial_goals',
         value: JSON.stringify(selectedGoals),
@@ -130,12 +137,16 @@ export const OnboardingScreen: React.FC = () => {
         key: 'household_size',
         value: householdSize,
       });
+      await dbInsert('app_settings', {
+        key: 'income_type',
+        value: incomeType,
+      });
 
       // Ažuriraj store
       setCurrentUser({
         id: userId,
         name: name.trim(),
-        monthlyIncome: parseFloat(income) || 0,
+        monthlyIncome: incomeType === 'none' ? 0 : (parseFloat(income) || 0),
         currency: 'EUR',
         householdId,
         budgetMode: 'envelope',
@@ -154,13 +165,11 @@ export const OnboardingScreen: React.FC = () => {
       setAuthenticated(true);
     } catch (error) {
       console.error('Onboarding error:', error);
+      Alert.alert('Greška', 'Došlo je do pogreške pri postavljanju. Pokušajte ponovo.');
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  // Privremeno preskačemo auth - postavljamo kao authenticated
-  const { setAuthenticated } = useAuthStore();
 
   const renderStep = () => {
     switch (step) {
@@ -169,7 +178,7 @@ export const OnboardingScreen: React.FC = () => {
       case 1:
         return (
           <View style={styles.nameContainer}>
-            <Text style={styles.nameEmoji}>👋</Text>
+            <Ionicons name="hand-left-outline" size={40} color={colors.primary} style={{ marginBottom: Spacing.sm }} />
             <Text style={[styles.nameTitle, { color: colors.text }]}>
               Kako se zovete?
             </Text>
@@ -195,25 +204,35 @@ export const OnboardingScreen: React.FC = () => {
         );
       case 2:
         return (
-          <View style={{ flex: 1 }}>
-            <IncomeStep income={income} onIncomeChange={setIncome} />
-          </View>
+          <HouseholdStep
+            selected={householdSize}
+            onSelect={setHouseholdSize}
+          />
         );
       case 3:
+        return (
+          <IncomeStep
+            income={income}
+            onIncomeChange={setIncome}
+            incomeType={incomeType}
+            onIncomeTypeChange={setIncomeType}
+          />
+        );
+      case 4:
         return (
           <GoalsStep
             selectedGoals={selectedGoals}
             onToggleGoal={toggleGoal}
           />
         );
-      case 4:
+      case 5:
         return (
           <AccountsStep
             accounts={accounts}
             onAccountsChange={setAccountsLocal}
           />
         );
-      case 5:
+      case 6:
         return (
           <ReadyStep
             userName={name}
@@ -232,9 +251,22 @@ export const OnboardingScreen: React.FC = () => {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {/* Progress indikator */}
+        {/* Progress bar */}
         <View style={styles.progressContainer}>
-          <ProgressDots total={TOTAL_STEPS} current={step} />
+          <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
+            <View
+              style={[
+                styles.progressFill,
+                {
+                  backgroundColor: colors.primary,
+                  width: `${((step + 1) / TOTAL_STEPS) * 100}%`,
+                },
+              ]}
+            />
+          </View>
+          <Text style={[styles.stepLabel, { color: colors.textTertiary }]}>
+            {step + 1} / {TOTAL_STEPS}
+          </Text>
         </View>
 
         {/* Sadržaj koraka */}
@@ -244,24 +276,34 @@ export const OnboardingScreen: React.FC = () => {
 
         {/* Navigacijski gumbi */}
         <View style={styles.buttons}>
-          {step > 0 && (
+          {step > 0 ? (
+            <View style={styles.buttonRow}>
+              <Button
+                title="Natrag"
+                variant="ghost"
+                size="md"
+                onPress={() => setStep((s) => s - 1)}
+                style={styles.backButton}
+              />
+              <Button
+                title={step === TOTAL_STEPS - 1 ? 'Započni!' : 'Dalje'}
+                variant="primary"
+                size="lg"
+                onPress={step === TOTAL_STEPS - 1 ? handleFinish : () => setStep((s) => s + 1)}
+                disabled={!canProceed()}
+                loading={isSubmitting}
+                style={styles.nextButton}
+              />
+            </View>
+          ) : (
             <Button
-              title="Natrag"
-              variant="ghost"
-              onPress={() => setStep((s) => s - 1)}
-              style={styles.backButton}
+              title="Započnimo"
+              variant="primary"
+              size="lg"
+              fullWidth
+              onPress={() => setStep(1)}
             />
           )}
-          <Button
-            title={step === TOTAL_STEPS - 1 ? 'Započni! 🚀' : 'Dalje'}
-            variant="primary"
-            size="lg"
-            fullWidth={step === 0}
-            onPress={step === TOTAL_STEPS - 1 ? handleFinish : () => setStep((s) => s + 1)}
-            disabled={!canProceed()}
-            loading={isSubmitting}
-            style={step > 0 ? styles.nextButton : undefined}
-          />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -276,22 +318,42 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   progressContainer: {
+    paddingHorizontal: Spacing.xl,
     paddingTop: Spacing.base,
     paddingBottom: Spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  progressTrack: {
+    flex: 1,
+    height: 4,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  stepLabel: {
+    fontSize: 12,
+    fontWeight: '500',
   },
   content: {
     flex: 1,
   },
   buttons: {
-    flexDirection: 'row',
-    paddingHorizontal: Spacing.xl,
+    paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.lg,
     paddingTop: Spacing.sm,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.md,
   },
   backButton: {
-    flex: 0,
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: Spacing.base,
   },
   nextButton: {
     flex: 1,
@@ -302,9 +364,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
   },
   nameEmoji: {
-    fontSize: 56,
+    fontSize: 48,
     textAlign: 'center',
-    marginBottom: Spacing.base,
+    marginBottom: Spacing.md,
   },
   nameTitle: {
     ...Typography.heading2,

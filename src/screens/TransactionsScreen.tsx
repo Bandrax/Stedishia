@@ -8,12 +8,15 @@ import {
   Modal,
   RefreshControl,
   TextInput,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useTransactionStore } from '../store';
 import { Typography, Spacing, BorderRadius } from '../constants';
-import { formatRelativeDate } from '../utils';
+import { formatRelativeDate, formatAmount } from '../utils';
+import { getCategoryInfo } from '../services/dashboardService';
 import { getTransactions } from '../services/transactionService';
 import { TransactionListItem } from '../components/molecules/TransactionListItem';
 import { AddTransactionScreen } from './AddTransactionScreen';
@@ -64,7 +67,20 @@ export const TransactionsScreen: React.FC = () => {
   };
 
   const handleTransactionPress = (tx: Transaction) => {
-    // TODO: Navigacija na detalje/edit transakcije
+    const catInfo = getCategoryInfo(tx.categoryId);
+    const typeLabel = tx.type === 'income' ? 'Prihod' : tx.type === 'transfer' ? 'Transfer' : 'Rashod';
+    const sign = tx.type === 'income' ? '+' : '-';
+    Alert.alert(
+      `${catInfo?.emoji ?? '📌'} ${tx.description}`,
+      [
+        `${typeLabel}: ${sign}${formatAmount(tx.amount)}`,
+        `Kategorija: ${catInfo?.name ?? tx.categoryId}`,
+        `Datum: ${tx.date}`,
+        tx.scope === 'shared' ? 'Zajedničko' : 'Osobno',
+        tx.note ? `\nBilješka: ${tx.note}` : '',
+        tx.tags && tx.tags.length > 0 ? `Oznake: ${tx.tags.join(', ')}` : '',
+      ].filter(Boolean).join('\n')
+    );
   };
 
   // Grupiraj transakcije po datumu
@@ -85,8 +101,8 @@ export const TransactionsScreen: React.FC = () => {
 
   const filterOptions: { value: TransactionType | 'all'; label: string }[] = [
     { value: 'all', label: 'Sve' },
-    { value: 'expense', label: '📉 Rashodi' },
-    { value: 'income', label: '📈 Prihodi' },
+    { value: 'expense', label: 'Rashodi' },
+    { value: 'income', label: 'Prihodi' },
   ];
 
   return (
@@ -158,7 +174,7 @@ export const TransactionsScreen: React.FC = () => {
         )}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>📝</Text>
+            <Ionicons name="document-text-outline" size={48} color={colors.textTertiary} style={{ marginBottom: Spacing.base }} />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
               Nema transakcija
             </Text>
@@ -185,7 +201,7 @@ export const TransactionsScreen: React.FC = () => {
         onPress={() => setShowAdd(true)}
         activeOpacity={0.8}
       >
-        <Text style={styles.fabText}>+</Text>
+        <Ionicons name="add" size={28} color="#FFFFFF" />
       </TouchableOpacity>
 
       {/* Modal za dodavanje */}

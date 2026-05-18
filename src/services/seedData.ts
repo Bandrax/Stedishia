@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid';
+import * as Crypto from 'expo-crypto';
 import { dbInsert, dbQuery } from './database';
 
 // Generira 3 mjeseca mock podataka za testiranje
@@ -30,7 +30,7 @@ const createTestAccounts = async (userId: string): Promise<string[]> => {
 
   const ids: string[] = [];
   for (const acc of accounts) {
-    const id = uuid();
+    const id = Crypto.randomUUID();
     ids.push(id);
     await dbInsert('accounts', {
       id,
@@ -143,7 +143,7 @@ const createTestBudget = async (userId: string, now: Date): Promise<void> => {
 
   for (const item of budgetItems) {
     await dbInsert('budget_items', {
-      id: uuid(),
+      id: Crypto.randomUUID(),
       user_id: userId,
       category_id: item.categoryId,
       month,
@@ -189,7 +189,7 @@ const createTestGoals = async (userId: string): Promise<void> => {
 
   for (const goal of goals) {
     await dbInsert('savings_goals', {
-      id: uuid(),
+      id: Crypto.randomUUID(),
       user_id: userId,
       name: goal.name,
       emoji: goal.emoji,
@@ -209,7 +209,7 @@ const createTestDebts = async (userId: string): Promise<void> => {
   const now = new Date().toISOString();
 
   await dbInsert('debts', {
-    id: uuid(),
+    id: Crypto.randomUUID(),
     user_id: userId,
     name: 'Auto kredit',
     total_amount: 12000,
@@ -225,7 +225,7 @@ const createTestDebts = async (userId: string): Promise<void> => {
   });
 
   await dbInsert('debts', {
-    id: uuid(),
+    id: Crypto.randomUUID(),
     user_id: userId,
     name: 'Visa kartica',
     total_amount: 500,
@@ -255,7 +255,7 @@ const createTestRecurring = async (userId: string, accountId: string): Promise<v
 
   for (const r of recurring) {
     await dbInsert('recurring_transactions', {
-      id: uuid(),
+      id: Crypto.randomUUID(),
       user_id: userId,
       description: r.desc,
       amount: r.amount,
@@ -288,7 +288,7 @@ const insertTx = async (
 ): Promise<void> => {
   const now = new Date().toISOString();
   await dbInsert('transactions', {
-    id: uuid(),
+    id: Crypto.randomUUID(),
     user_id: userId,
     account_id: accountId,
     type,

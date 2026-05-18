@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../hooks';
 import { useAuthStore } from '../store';
 import { useThemeStore } from '../store/useThemeStore';
+import { Ionicons } from '@expo/vector-icons';
 import { Typography, Spacing, BorderRadius } from '../constants';
 import { Button } from '../components/atoms';
 
@@ -23,10 +24,10 @@ export const SettingsScreen: React.FC = () => {
   const { logout } = useAuthStore();
   const { mode, setMode } = useThemeStore();
 
-  const themeOptions: Array<{ key: 'light' | 'dark' | 'system'; label: string; emoji: string }> = [
-    { key: 'light', label: 'Svijetla', emoji: '☀️' },
-    { key: 'dark', label: 'Tamna', emoji: '🌙' },
-    { key: 'system', label: 'Sustav', emoji: '📱' },
+  const themeOptions: Array<{ key: 'light' | 'dark' | 'system'; label: string; icon: keyof typeof Ionicons.glyphMap }> = [
+    { key: 'light', label: 'Svijetla', icon: 'sunny-outline' },
+    { key: 'dark', label: 'Tamna', icon: 'moon-outline' },
+    { key: 'system', label: 'Sustav', icon: 'phone-portrait-outline' },
   ];
 
   const handleLogout = () => {
@@ -48,7 +49,7 @@ export const SettingsScreen: React.FC = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={[styles.backButton, { color: colors.primary }]}>← Natrag</Text>
+          <Ionicons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
         <Text style={[styles.screenTitle, { color: colors.text }]}>Postavke</Text>
         <View style={{ width: 60 }} />
@@ -57,10 +58,13 @@ export const SettingsScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Profil */}
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>👤 Profil</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
+            <Ionicons name="person-outline" size={18} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>Profil</Text>
+          </View>
           <View style={styles.profileRow}>
             <View style={[styles.avatar, { backgroundColor: colors.primary + '20' }]}>
-              <Text style={styles.avatarEmoji}>👤</Text>
+              <Ionicons name="person-circle-outline" size={36} color={colors.primary} />
             </View>
             <View style={styles.profileInfo}>
               <Text style={[styles.profileName, { color: colors.text }]}>
@@ -78,7 +82,10 @@ export const SettingsScreen: React.FC = () => {
 
         {/* Tema */}
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>🎨 Tema</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
+            <Ionicons name="color-palette-outline" size={18} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>Tema</Text>
+          </View>
           <View style={styles.themeRow}>
             {themeOptions.map((option) => (
               <TouchableOpacity
@@ -92,7 +99,7 @@ export const SettingsScreen: React.FC = () => {
                 ]}
                 onPress={() => setMode(option.key)}
               >
-                <Text style={styles.themeEmoji}>{option.emoji}</Text>
+                <Ionicons name={option.icon} size={20} color={mode === option.key ? colors.primary : colors.textSecondary} style={{ marginBottom: 4 }} />
                 <Text
                   style={[styles.themeLabel, { color: mode === option.key ? colors.primary : colors.text }]}
                 >
@@ -105,7 +112,10 @@ export const SettingsScreen: React.FC = () => {
 
         {/* Valuta i jezik */}
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>🌍 Regionalno</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
+            <Ionicons name="globe-outline" size={18} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>Regionalno</Text>
+          </View>
           <View style={styles.settingRow}>
             <Text style={[styles.settingLabel, { color: colors.text }]}>Valuta</Text>
             <Text style={[styles.settingValue, { color: colors.textSecondary }]}>EUR (€)</Text>
@@ -118,7 +128,10 @@ export const SettingsScreen: React.FC = () => {
 
         {/* Sigurnost */}
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>🔒 Sigurnost</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
+            <Ionicons name="lock-closed-outline" size={18} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>Sigurnost</Text>
+          </View>
           <View style={styles.settingRow}>
             <Text style={[styles.settingLabel, { color: colors.text }]}>PIN zaključavanje</Text>
             <Text style={[styles.settingValue, { color: colors.success }]}>Aktivno</Text>
@@ -133,7 +146,10 @@ export const SettingsScreen: React.FC = () => {
 
         {/* O aplikaciji */}
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>ℹ️ O aplikaciji</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
+            <Ionicons name="information-circle-outline" size={18} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>O aplikaciji</Text>
+          </View>
           <View style={styles.settingRow}>
             <Text style={[styles.settingLabel, { color: colors.text }]}>Verzija</Text>
             <Text style={[styles.settingValue, { color: colors.textSecondary }]}>1.0.0</Text>

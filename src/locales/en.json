@@ -73,7 +73,7 @@
     "useBiometric": "Use fingerprint / Face ID",
     "wrongPin": "Wrong PIN. Try again.",
     "pinMismatch": "PINs don't match.",
-    "welcome": "Hey, {{name}}! 👋"
+    "welcome": "Hey, {{name}}!"
   },
 
   "dashboard": {
@@ -152,7 +152,7 @@
     "targetDate": "By when?",
     "monthlyNeeded": "Monthly needed",
     "progress": "{{percent}}% achieved",
-    "completed": "Goal achieved! 🎉",
+    "completed": "Goal achieved!",
     "emergencyFund": "Emergency Fund",
     "emergencyFundExplain": "It's recommended to have savings covering 3-6 months of expenses. This is your financial cushion for unexpected situations.",
     "monthsCovered": "Covers {{months}} months of expenses",
@@ -222,7 +222,7 @@
     "weeklyCheckIn": "Weekly Check-in",
     "tips": "Tips",
     "education": "Education",
-    "infoIcon": "ℹ️ What does this mean?",
+    "infoIcon": "What does this mean?",
     "dismiss": "Dismiss",
     "markRead": "Mark as read"
   },

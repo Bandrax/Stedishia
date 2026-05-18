@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 
 interface HouseholdOption {
   id: string;
-  emoji: string;
+  icon: string;
   label: string;
   description: string;
 }
@@ -13,19 +14,19 @@ interface HouseholdOption {
 const options: HouseholdOption[] = [
   {
     id: 'one',
-    emoji: '🧑',
+    icon: 'person-outline',
     label: 'Samo ja',
     description: 'Pratit ću samo svoje financije',
   },
   {
     id: 'two',
-    emoji: '👫',
+    icon: 'people-outline',
     label: 'Dvoje nas',
     description: 'Ja i partner/ica — osobno i zajedničko',
   },
   {
     id: 'family',
-    emoji: '👨‍👩‍👧',
+    icon: 'people-circle-outline',
     label: 'Obitelj (3+)',
     description: 'Cijela obitelj na jednom mjestu',
   },
@@ -43,8 +44,12 @@ export const HouseholdStep: React.FC<HouseholdStepProps> = ({
   const { colors } = useAppTheme();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.emoji}>🏠</Text>
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
+      <Ionicons name="home" size={48} color={colors.primary} style={{ marginBottom: Spacing.lg }} />
       <Text style={[styles.title, { color: colors.text }]}>
         Koliko vas živi u kućanstvu?
       </Text>
@@ -68,7 +73,7 @@ export const HouseholdStep: React.FC<HouseholdStepProps> = ({
               onPress={() => onSelect(opt.id)}
               activeOpacity={0.7}
             >
-              <Text style={styles.optionEmoji}>{opt.emoji}</Text>
+              <Ionicons name={opt.icon as any} size={28} color={isSelected ? colors.primary : colors.textSecondary} style={{ marginRight: 12 }} />
               <View style={styles.optionText}>
                 <Text
                   style={[
@@ -83,26 +88,31 @@ export const HouseholdStep: React.FC<HouseholdStepProps> = ({
                 </Text>
               </View>
               {isSelected && (
-                <Text style={{ fontSize: 20 }}>✓</Text>
+                <View style={[styles.checkCircle, { backgroundColor: colors.primary }]}>
+                  <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                </View>
               )}
             </TouchableOpacity>
           );
         })}
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  scroll: {
     flex: 1,
-    justifyContent: 'center',
+  },
+  container: {
     paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing['2xl'],
+    paddingBottom: Spacing['2xl'],
   },
   emoji: {
-    fontSize: 56,
+    fontSize: 48,
     textAlign: 'center',
-    marginBottom: Spacing.base,
+    marginBottom: Spacing.md,
   },
   title: {
     ...Typography.heading2,
@@ -125,7 +135,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   optionEmoji: {
-    fontSize: 32,
+    fontSize: 28,
     marginRight: Spacing.md,
   },
   optionText: {
@@ -137,5 +147,18 @@ const styles = StyleSheet.create({
   },
   optionDesc: {
     ...Typography.bodySmall,
+  },
+  checkCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: Spacing.sm,
+  },
+  checkMark: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

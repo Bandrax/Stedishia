@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../hooks';
 import { useAuthStore } from '../store';
+import { Ionicons } from '@expo/vector-icons';
 import { Typography, Spacing, BorderRadius } from '../constants';
 import { formatAmount, formatMonth, getCurrentMonth } from '../utils';
 import { getHouseholdStats, exportToFile, importFromFile, mergeImportedData } from '../services/syncService';
@@ -131,7 +132,7 @@ export const HouseholdScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={[styles.backButton, { color: colors.primary }]}>← Natrag</Text>
+          <Ionicons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
         <Text style={[styles.screenTitle, { color: colors.text }]}>Kućanstvo</Text>
         <View style={{ width: 60 }} />
@@ -145,7 +146,7 @@ export const HouseholdScreen: React.FC = () => {
       >
         {/* Household info */}
         <View style={[styles.householdCard, { backgroundColor: colors.primary }]}>
-          <Text style={styles.householdEmoji}>🏠</Text>
+          <Ionicons name="home" size={40} color="#FFFFFF" style={{ marginBottom: 8 }} />
           <Text style={styles.householdName}>{household?.name || 'Naše kućanstvo'}</Text>
           <Text style={styles.householdMembers}>
             {householdStats?.memberStats.map((m) => m.name).join(' & ') || currentUser?.name || 'Učitavanje...'}
@@ -168,7 +169,7 @@ export const HouseholdScreen: React.FC = () => {
         {/* Zajednički troškovi */}
         <View style={[styles.sharedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            🤝 Zajednički troškovi
+            Zajednički troškovi
           </Text>
 
           <View style={styles.sharedTotal}>
@@ -183,7 +184,7 @@ export const HouseholdScreen: React.FC = () => {
           {householdStats && householdStats.memberStats.length > 1 && (
             <View style={[styles.splitInfo, { backgroundColor: colors.surfaceVariant }]}>
               <Text style={[styles.splitText, { color: colors.text }]}>
-                💡 Podijeljeno na {householdStats.memberStats.length}: po {formatAmount(perPerson)} svako
+                Podijeljeno na {householdStats.memberStats.length}: po {formatAmount(perPerson)} svako
               </Text>
             </View>
           )}
@@ -193,7 +194,7 @@ export const HouseholdScreen: React.FC = () => {
         {householdStats && householdStats.memberStats.length > 0 && (
           <View style={[styles.membersCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              👥 Članovi kućanstva
+              Članovi kućanstva
             </Text>
 
             {householdStats.memberStats.map((member, index) => {
@@ -212,9 +213,7 @@ export const HouseholdScreen: React.FC = () => {
                   ]}
                 >
                   <View style={styles.memberInfo}>
-                    <Text style={styles.memberEmoji}>
-                      {isCurrentUser ? '👤' : '👥'}
-                    </Text>
+                    <Ionicons name={isCurrentUser ? 'person' : 'people'} size={20} color={colors.primary} style={{ marginRight: 8 }} />
                     <View>
                       <Text style={[styles.memberName, { color: colors.text }]}>
                         {member.name} {isCurrentUser ? '(vi)' : ''}
@@ -252,7 +251,7 @@ export const HouseholdScreen: React.FC = () => {
         {householdStats && (
           <View style={[styles.overviewCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              📊 Kućanski pregled
+              Kućanski pregled
             </Text>
             <View style={styles.overviewRow}>
               <View style={styles.overviewItem}>
@@ -297,7 +296,7 @@ export const HouseholdScreen: React.FC = () => {
         {/* Sync section */}
         <View style={[styles.syncCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            🔄 Sinkronizacija
+            Sinkronizacija
           </Text>
           <Text style={[styles.syncDesc, { color: colors.textSecondary }]}>
             Eksportirajte svoje podatke kao JSON datoteku i podijelite je s partnerom/icom
@@ -307,7 +306,7 @@ export const HouseholdScreen: React.FC = () => {
           {syncMessage && (
             <View style={[styles.syncSuccess, { backgroundColor: colors.success + '15' }]}>
               <Text style={[styles.syncSuccessText, { color: colors.success }]}>
-                ✓ {syncMessage}
+                {syncMessage}
               </Text>
             </View>
           )}
@@ -318,7 +317,8 @@ export const HouseholdScreen: React.FC = () => {
 
           <View style={styles.syncButtons}>
             <Button
-              title="📤 Eksportiraj podatke"
+              title="Eksportiraj podatke"
+              icon="cloud-upload-outline"
               onPress={handleExport}
               variant="primary"
               fullWidth
@@ -326,7 +326,8 @@ export const HouseholdScreen: React.FC = () => {
             />
             <View style={{ height: Spacing.sm }} />
             <Button
-              title="📥 Importiraj podatke"
+              title="Importiraj podatke"
+              icon="cloud-download-outline"
               onPress={handleImport}
               variant="outline"
               fullWidth
@@ -336,7 +337,7 @@ export const HouseholdScreen: React.FC = () => {
 
           <View style={[styles.hint, { backgroundColor: colors.surfaceVariant }]}>
             <Text style={[styles.hintText, { color: colors.textSecondary }]}>
-              💡 Kako funkcionira sync:{'\n'}
+              Kako funkcionira sync:{'\n'}
               1. Svako eksportira svoje podatke{'\n'}
               2. Stavite datoteke u zajedničku Google Drive mapu{'\n'}
               3. Svako importira podatke onog drugog{'\n'}

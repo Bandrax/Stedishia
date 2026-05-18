@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing } from '../../constants';
 import { formatAmount } from '../../utils';
@@ -39,7 +40,7 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
           </Text>
           {isShared && (
             <View style={[styles.scopeBadge, { backgroundColor: colors.primary + '15' }]}>
-              <Text style={[styles.scopeText, { color: colors.primary }]}>🏠</Text>
+              <Ionicons name="home" size={10} color={colors.primary} />
             </View>
           )}
           {transaction.tags.length > 0 && (

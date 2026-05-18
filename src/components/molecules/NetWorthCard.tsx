@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 import { formatAmount } from '../../utils';
@@ -21,12 +22,15 @@ export const NetWorthCard: React.FC<NetWorthCardProps> = ({
   const isPositive = netWorth >= 0;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.card, borderColor: colors.border }]}>
+    <View style={[styles.container, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>📊 Neto vrijednost</Text>
+        <View style={styles.titleRow}>
+          <Ionicons name="trending-up" size={18} color={colors.primary} style={{ marginRight: 8 }} />
+          <Text style={[styles.title, { color: colors.text }]}>Neto vrijednost</Text>
+        </View>
         {onInfoPress && (
           <TouchableOpacity onPress={onInfoPress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Text style={[styles.infoButton, { color: colors.primary }]}>ℹ️</Text>
+            <Ionicons name="information-circle-outline" size={20} color={colors.primary} />
           </TouchableOpacity>
         )}
       </View>
@@ -39,14 +43,14 @@ export const NetWorthCard: React.FC<NetWorthCardProps> = ({
         <View style={styles.detail}>
           <View style={[styles.dot, { backgroundColor: colors.success }]} />
           <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Imovina</Text>
-          <Text style={[styles.detailAmount, { color: colors.text }]}>
+          <Text style={[styles.detailAmount, { color: colors.text }]} numberOfLines={1}>
             {formatAmount(assets)}
           </Text>
         </View>
         <View style={styles.detail}>
           <View style={[styles.dot, { backgroundColor: colors.error }]} />
           <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Dugovi</Text>
-          <Text style={[styles.detailAmount, { color: colors.text }]}>
+          <Text style={[styles.detailAmount, { color: colors.text }]} numberOfLines={1}>
             {formatAmount(liabilities)}
           </Text>
         </View>
@@ -67,14 +71,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.sm,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   title: {
     ...Typography.subtitle,
   },
-  infoButton: {
-    fontSize: 16,
-  },
   netWorth: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: '700',
     letterSpacing: -0.5,
     marginBottom: Spacing.md,
@@ -86,6 +91,7 @@ const styles = StyleSheet.create({
   detail: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   dot: {
     width: 8,
@@ -100,5 +106,6 @@ const styles = StyleSheet.create({
   detailAmount: {
     fontSize: 14,
     fontWeight: '600',
+    flex: 1,
   },
 });

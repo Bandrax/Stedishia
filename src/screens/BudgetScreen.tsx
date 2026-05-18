@@ -14,6 +14,7 @@ import { useAppTheme } from '../hooks';
 import { useAuthStore, useBudgetStore } from '../store';
 import { Typography, Spacing, BorderRadius, DEFAULT_EXPENSE_CATEGORIES } from '../constants';
 import { formatMonth, getCurrentMonth, formatAmount } from '../utils';
+import { Ionicons } from '@expo/vector-icons';
 import { getCategoryInfo } from '../services/dashboardService';
 import {
   getBudgetSummary,
@@ -164,7 +165,7 @@ export const BudgetScreen: React.FC = () => {
         {/* Ako nema budžeta — setup */}
         {!hasBudget ? (
           <View style={styles.setupContainer}>
-            <Text style={styles.setupEmoji}>💰</Text>
+            <Ionicons name="cash-outline" size={64} color={colors.primary} style={{ marginBottom: Spacing.base }} />
             <Text style={[styles.setupTitle, { color: colors.text }]}>
               Postavite budžet za {formatMonth(currentMonth)}
             </Text>
@@ -174,7 +175,7 @@ export const BudgetScreen: React.FC = () => {
 
             {/* Objašnjenje metoda */}
             <Card style={styles.explainCard} variant="default" padding="base">
-              <Text style={styles.explainEmoji}>✉️</Text>
+              <Ionicons name="mail-outline" size={28} color={colors.primary} style={{ marginBottom: Spacing.sm }} />
               <Text style={[styles.explainTitle, { color: colors.text }]}>Metoda kuverti</Text>
               <Text style={[styles.explainText, { color: colors.textSecondary }]}>
                 Zamislite da svaki euro stavljate u posebnu kuvertu. Svaka kuverta ima svoju
@@ -183,7 +184,7 @@ export const BudgetScreen: React.FC = () => {
             </Card>
 
             <Card style={styles.explainCard} variant="default" padding="base">
-              <Text style={styles.explainEmoji}>📊</Text>
+              <Ionicons name="bar-chart-outline" size={28} color={colors.accent} style={{ marginBottom: Spacing.sm }} />
               <Text style={[styles.explainTitle, { color: colors.text }]}>50/30/20 pravilo</Text>
               <Text style={[styles.explainText, { color: colors.textSecondary }]}>
                 Jednostavno pravilo: 50% za potrebe (stan, režije, hrana), 30% za želje
@@ -199,7 +200,7 @@ export const BudgetScreen: React.FC = () => {
                 fullWidth
                 onPress={handleSetup503020}
                 loading={isSettingUp}
-                icon="📊"
+                icon="bar-chart-outline"
               />
               <Button
                 title="Kopiraj iz prošlog mjeseca"
@@ -207,7 +208,7 @@ export const BudgetScreen: React.FC = () => {
                 size="md"
                 fullWidth
                 onPress={handleCopyPrevious}
-                icon="📋"
+                icon="copy-outline"
               />
               <Button
                 title="Ručno rasporedi"
@@ -236,21 +237,27 @@ export const BudgetScreen: React.FC = () => {
             {/* Upozorenja */}
             {summary!.overBudgetCategories.length > 0 && (
               <Card style={{ marginTop: Spacing.base }} variant="default" padding="md">
-                <Text style={[styles.warningText, { color: colors.error }]}>
-                  🔴 Prekoračenje u {summary!.overBudgetCategories.length} {
-                    summary!.overBudgetCategories.length === 1 ? 'kategoriji' : 'kategorija'
-                  }
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Ionicons name="close-circle" size={16} color={colors.error} />
+                  <Text style={[styles.warningText, { color: colors.error, flex: 1 }]}>
+                    Prekoračenje u {summary!.overBudgetCategories.length} {
+                      summary!.overBudgetCategories.length === 1 ? 'kategoriji' : 'kategorija'
+                    }
+                  </Text>
+                </View>
               </Card>
             )}
 
             {summary!.nearLimitCategories.length > 0 && (
               <Card style={{ marginTop: Spacing.sm }} variant="default" padding="md">
-                <Text style={[styles.warningText, { color: colors.warning }]}>
-                  🟡 Približavate se limitu u {summary!.nearLimitCategories.length} {
-                    summary!.nearLimitCategories.length === 1 ? 'kategoriji' : 'kategorija'
-                  }
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Ionicons name="alert-circle" size={16} color={colors.warning} />
+                  <Text style={[styles.warningText, { color: colors.warning, flex: 1 }]}>
+                    Približavate se limitu u {summary!.nearLimitCategories.length} {
+                      summary!.nearLimitCategories.length === 1 ? 'kategoriji' : 'kategorija'
+                    }
+                  </Text>
+                </View>
               </Card>
             )}
 
@@ -258,16 +265,16 @@ export const BudgetScreen: React.FC = () => {
             {mode === '50-30-20' ? (
               <View style={{ marginTop: Spacing.base }}>
                 {[
-                  { label: 'Potrebe (50%)', emoji: '🏠', target: monthlyIncome * 0.5, categories: needsCategories, color: colors.primary },
-                  { label: 'Želje (30%)', emoji: '🎬', target: monthlyIncome * 0.3, categories: wantsCategories, color: colors.accent },
-                  { label: 'Štednja & dugovi (20%)', emoji: '🐷', target: monthlyIncome * 0.2, categories: savingsCategories, color: colors.success },
+                  { label: 'Potrebe (50%)', icon: 'home-outline' as const, target: monthlyIncome * 0.5, categories: needsCategories, color: colors.primary },
+                  { label: 'Želje (30%)', icon: 'heart-outline' as const, target: monthlyIncome * 0.3, categories: wantsCategories, color: colors.accent },
+                  { label: 'Štednja & dugovi (20%)', icon: 'save-outline' as const, target: monthlyIncome * 0.2, categories: savingsCategories, color: colors.success },
                 ].map((group) => {
                   const spent = groupSpent(group.categories);
                   const percent = group.target > 0 ? (spent / group.target) * 100 : 0;
                   return (
                     <Card key={group.label} style={{ marginBottom: Spacing.sm }} variant="default" padding="base">
                       <View style={styles.groupHeader}>
-                        <Text style={styles.groupEmoji}>{group.emoji}</Text>
+                        <Ionicons name={group.icon} size={20} color={group.color} style={{ marginRight: Spacing.sm }} />
                         <Text style={[styles.groupLabel, { color: colors.text }]}>{group.label}</Text>
                         <Text style={[styles.groupAmount, { color: spent > group.target ? colors.error : colors.textSecondary }]}>
                           {formatAmount(spent)} / {formatAmount(group.target)}
@@ -291,9 +298,12 @@ export const BudgetScreen: React.FC = () => {
             ) : (
               /* Envelope prikaz */
               <View style={{ marginTop: Spacing.base }}>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                  ✉️ Kuverte
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
+                  <Ionicons name="mail-outline" size={18} color={colors.primary} />
+                  <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>
+                    Kuverte
+                  </Text>
+                </View>
                 {summary!.items.map((item) => {
                   const catInfo = getCategoryInfo(item.categoryId);
                   return (
@@ -313,9 +323,12 @@ export const BudgetScreen: React.FC = () => {
             {/* Potrošnja bez budžeta */}
             {unbudgeted.length > 0 && (
               <Card style={{ marginTop: Spacing.base }} variant="default" padding="base">
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                  ⚠️ Troškovi bez budžeta
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
+                  <Ionicons name="warning-outline" size={18} color={colors.warning} />
+                  <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>
+                    Troškovi bez budžeta
+                  </Text>
+                </View>
                 <Text style={[styles.unbudgetedHint, { color: colors.textSecondary }]}>
                   Ove kategorije imaju troškove ali nemaju postavljeni budžet.
                 </Text>
@@ -343,7 +356,7 @@ export const BudgetScreen: React.FC = () => {
                 variant="outline"
                 size="md"
                 fullWidth
-                icon="✏️"
+                icon="create-outline"
                 onPress={() => setShowSetup(true)}
               />
             </View>
@@ -445,8 +458,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: Spacing.xl,
   },
-  setupEmoji: {
-    fontSize: 64,
+  setupIcon: {
     marginBottom: Spacing.base,
   },
   setupTitle: {
@@ -464,8 +476,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
     width: '100%',
   },
-  explainEmoji: {
-    fontSize: 28,
+  explainIcon: {
     marginBottom: Spacing.sm,
   },
   explainTitle: {
@@ -487,8 +498,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.sm,
   },
-  groupEmoji: {
-    fontSize: 20,
+  groupIcon: {
     marginRight: Spacing.sm,
   },
   groupLabel: {

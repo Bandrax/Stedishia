@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useAccountStore } from '../store';
+import { Ionicons } from '@expo/vector-icons';
 import { Typography, Spacing, BorderRadius } from '../constants';
 import { formatAmount } from '../utils';
 import {
@@ -37,19 +38,19 @@ import type { Account, AccountType, Debt } from '../types';
 
 type ScreenTab = 'accounts' | 'debts' | 'subscriptions';
 
-const ACCOUNT_TYPES: Array<{ type: AccountType; label: string; emoji: string }> = [
-  { type: 'checking', label: 'Tekući račun', emoji: '🏦' },
-  { type: 'savings', label: 'Štedni račun', emoji: '🐷' },
-  { type: 'cash', label: 'Gotovina', emoji: '💵' },
-  { type: 'credit_card', label: 'Kreditna kartica', emoji: '💳' },
+const ACCOUNT_TYPES: Array<{ type: AccountType; label: string; icon: string }> = [
+  { type: 'checking', label: 'Tekući račun', icon: 'business-outline' },
+  { type: 'savings', label: 'Štedni račun', icon: 'save-outline' },
+  { type: 'cash', label: 'Gotovina', icon: 'cash-outline' },
+  { type: 'credit_card', label: 'Kreditna kartica', icon: 'card-outline' },
 ];
 
-const DEBT_TYPES: Array<{ type: Debt['type']; label: string; emoji: string }> = [
-  { type: 'mortgage', label: 'Stambeni kredit', emoji: '🏠' },
-  { type: 'personal_loan', label: 'Osobni kredit', emoji: '📝' },
-  { type: 'car_loan', label: 'Auto kredit', emoji: '🚗' },
-  { type: 'credit_card', label: 'Kreditna kartica', emoji: '💳' },
-  { type: 'other', label: 'Ostalo', emoji: '📋' },
+const DEBT_TYPES: Array<{ type: Debt['type']; label: string; icon: string }> = [
+  { type: 'mortgage', label: 'Stambeni kredit', icon: 'home-outline' },
+  { type: 'personal_loan', label: 'Osobni kredit', icon: 'document-text-outline' },
+  { type: 'car_loan', label: 'Auto kredit', icon: 'car-outline' },
+  { type: 'credit_card', label: 'Kreditna kartica', icon: 'card-outline' },
+  { type: 'other', label: 'Ostalo', icon: 'list-outline' },
 ];
 
 const ACCOUNT_COLORS = ['#0F4C3A', '#1A6B52', '#2196F3', '#9C27B0', '#FF9800', '#E91E63', '#00BCD4', '#795548'];
@@ -142,7 +143,7 @@ export const AccountsScreen: React.FC = () => {
       balance: parseFloat(accBalance) || 0,
       currency: 'EUR',
       color: accColor,
-      icon: ACCOUNT_TYPES.find((t) => t.type === accType)?.emoji || '🏦',
+      icon: ACCOUNT_TYPES.find((t) => t.type === accType)?.icon || 'business-outline',
       isDefault: accounts.length === 0,
       includeInTotal: accIncludeInTotal,
     });
@@ -245,10 +246,10 @@ export const AccountsScreen: React.FC = () => {
   const totalDebt = debts.reduce((sum, d) => sum + d.remainingAmount, 0);
   const totalYearlySubs = subscriptions.reduce((sum, s) => sum + s.yearlyTotal, 0);
 
-  const tabs: Array<{ key: ScreenTab; label: string; emoji: string }> = [
-    { key: 'accounts', label: 'Računi', emoji: '🏦' },
-    { key: 'debts', label: 'Dugovi', emoji: '💸' },
-    { key: 'subscriptions', label: 'Pretplate', emoji: '🔄' },
+  const tabs: Array<{ key: ScreenTab; label: string; icon: string }> = [
+    { key: 'accounts', label: 'Računi', icon: 'business-outline' },
+    { key: 'debts', label: 'Dugovi', icon: 'trending-down-outline' },
+    { key: 'subscriptions', label: 'Pretplate', icon: 'repeat-outline' },
   ];
 
   const getFrequencyLabel = (f: string) => {
@@ -264,7 +265,7 @@ export const AccountsScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={[styles.backButton, { color: colors.primary }]}>← Natrag</Text>
+          <Ionicons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
         <Text style={[styles.screenTitle, { color: colors.text }]}>Financije</Text>
         <View style={{ width: 60 }} />
@@ -291,7 +292,7 @@ export const AccountsScreen: React.FC = () => {
               ]}
               onPress={() => setActiveTab(tab.key)}
             >
-              <Text style={styles.tabEmoji}>{tab.emoji}</Text>
+              <Ionicons name={tab.icon as any} size={14} color={activeTab === tab.key ? '#FFF' : colors.textSecondary} />
               <Text
                 style={[styles.tabLabel, { color: activeTab === tab.key ? '#FFF' : colors.textSecondary }]}
               >
@@ -322,7 +323,7 @@ export const AccountsScreen: React.FC = () => {
                   activeOpacity={0.7}
                 >
                   <View style={[styles.accountIcon, { backgroundColor: account.color + '20' }]}>
-                    <Text style={styles.accountEmoji}>{typeInfo?.emoji || '🏦'}</Text>
+                    <Ionicons name={(typeInfo?.icon || 'business-outline') as any} size={22} color={account.color || colors.primary} />
                   </View>
                   <View style={styles.accountInfo}>
                     <Text style={[styles.accountName, { color: colors.text }]}>{account.name}</Text>
@@ -371,7 +372,7 @@ export const AccountsScreen: React.FC = () => {
 
                 <View style={styles.strategyRow}>
                   <View style={[styles.strategyBox, { backgroundColor: colors.surfaceVariant }]}>
-                    <Text style={styles.strategyEmoji}>⛄</Text>
+                    <Ionicons name="snow-outline" size={28} color={colors.primary} style={{ marginBottom: 4 }} />
                     <Text style={[styles.strategyName, { color: colors.text }]}>Snowball</Text>
                     <Text style={[styles.strategyDesc, { color: colors.textSecondary }]}>
                       Najmanji dug prvo
@@ -385,7 +386,7 @@ export const AccountsScreen: React.FC = () => {
                   </View>
 
                   <View style={[styles.strategyBox, { backgroundColor: colors.surfaceVariant }]}>
-                    <Text style={styles.strategyEmoji}>🏔️</Text>
+                    <Ionicons name="snow-outline" size={28} color={colors.primary} style={{ marginBottom: 4 }} />
                     <Text style={[styles.strategyName, { color: colors.text }]}>Avalanche</Text>
                     <Text style={[styles.strategyDesc, { color: colors.textSecondary }]}>
                       Najveća kamata prvo
@@ -400,9 +401,10 @@ export const AccountsScreen: React.FC = () => {
                 </View>
 
                 {strategyComparison.savings > 0 && (
-                  <View style={[styles.savingsHint, { backgroundColor: colors.success + '15' }]}>
-                    <Text style={[styles.savingsHintText, { color: colors.success }]}>
-                      💡 Avalanche strategija štedi {formatAmount(strategyComparison.savings)} na kamatama!
+                  <View style={[styles.savingsHint, { backgroundColor: colors.success + '15', flexDirection: 'row', alignItems: 'center', gap: 6 }]}>
+                    <Ionicons name="information-circle-outline" size={14} color={colors.success} />
+                    <Text style={[styles.savingsHintText, { color: colors.success, flex: 1 }]}>
+                      Avalanche strategija štedi {formatAmount(strategyComparison.savings)} na kamatama!
                     </Text>
                   </View>
                 )}
@@ -422,7 +424,7 @@ export const AccountsScreen: React.FC = () => {
                   style={[styles.debtCard, { backgroundColor: colors.card, borderColor: colors.border }]}
                 >
                   <View style={styles.debtHeader}>
-                    <Text style={styles.debtEmoji}>{typeInfo?.emoji || '📋'}</Text>
+                    <Ionicons name={(typeInfo?.icon || 'list-outline') as any} size={28} color={colors.primary} style={{ marginRight: Spacing.md }} />
                     <View style={styles.debtInfo}>
                       <Text style={[styles.debtName, { color: colors.text }]}>{debt.name}</Text>
                       <Text style={[styles.debtType, { color: colors.textSecondary }]}>
@@ -472,7 +474,7 @@ export const AccountsScreen: React.FC = () => {
 
             {debts.length === 0 && (
               <View style={styles.emptyState}>
-                <Text style={styles.emptyEmoji}>🎉</Text>
+                <Ionicons name="checkmark-circle-outline" size={48} color={colors.success} style={{ marginBottom: Spacing.md }} />
                 <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
                   Nemate evidentiranih dugova!
                 </Text>
@@ -525,16 +527,17 @@ export const AccountsScreen: React.FC = () => {
 
             {subscriptions.length === 0 && (
               <View style={styles.emptyState}>
-                <Text style={styles.emptyEmoji}>🔄</Text>
+                <Ionicons name="repeat-outline" size={40} color={colors.textTertiary} style={{ marginBottom: 8 }} />
                 <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
                   Nema detektiranih pretplata.{'\n'}Dodajte ponavljajuće transakcije kako bi se prikazale ovdje.
                 </Text>
               </View>
             )}
 
-            <View style={[styles.hint, { backgroundColor: colors.surfaceVariant }]}>
-              <Text style={[styles.hintText, { color: colors.textSecondary }]}>
-                💡 Pretplate se automatski detektiraju iz vaših ponavljajućih transakcija.
+            <View style={[styles.hint, { backgroundColor: colors.surfaceVariant, flexDirection: 'row', gap: 6 }]}>
+              <Ionicons name="information-circle-outline" size={14} color={colors.textSecondary} style={{ marginTop: 2 }} />
+              <Text style={[styles.hintText, { color: colors.textSecondary, flex: 1 }]}>
+                Pretplate se automatski detektiraju iz vaših ponavljajućih transakcija.
                 Pregledajte ih redovito - mnogi ljudi plaćaju pretplate koje ne koriste!
               </Text>
             </View>
@@ -570,7 +573,7 @@ export const AccountsScreen: React.FC = () => {
                   ]}
                   onPress={() => setAccType(t.type)}
                 >
-                  <Text style={styles.typeEmoji}>{t.emoji}</Text>
+                  <Ionicons name={t.icon as any} size={18} color={accType === t.type ? colors.primary : colors.text} />
                   <Text style={[styles.typeLabel, { color: accType === t.type ? colors.primary : colors.text }]}>
                     {t.label}
                   </Text>
@@ -655,7 +658,7 @@ export const AccountsScreen: React.FC = () => {
                     ]}
                     onPress={() => setDebtType(t.type)}
                   >
-                    <Text style={styles.typeEmoji}>{t.emoji}</Text>
+                    <Ionicons name={t.icon as any} size={18} color={debtType === t.type ? colors.primary : colors.text} />
                     <Text style={[styles.typeLabel, { color: debtType === t.type ? colors.primary : colors.text }]}>
                       {t.label}
                     </Text>

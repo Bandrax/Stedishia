@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import { View, StyleSheet, ViewStyle, Platform } from 'react-native';
 import { useAppTheme } from '../../hooks';
 import { Spacing, BorderRadius } from '../../constants';
 
@@ -23,16 +23,33 @@ export const Card: React.FC<CardProps> = ({
   const variantStyles: Record<string, ViewStyle> = {
     default: {
       backgroundColor: colors.card,
+      ...Platform.select({
+        ios: {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.06,
+          shadowRadius: 4,
+        },
+        android: {
+          elevation: 1,
+        },
+      }),
       borderWidth: 1,
-      borderColor: colors.border,
+      borderColor: colors.borderLight,
     },
     elevated: {
       backgroundColor: colors.card,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.08,
-      shadowRadius: 8,
-      elevation: 3,
+      ...Platform.select({
+        ios: {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 12,
+        },
+        android: {
+          elevation: 4,
+        },
+      }),
     },
     glass: {
       backgroundColor: colors.glass,
@@ -57,6 +74,6 @@ export const Card: React.FC<CardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.xl,
   },
 });

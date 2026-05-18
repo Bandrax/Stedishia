@@ -13,6 +13,7 @@ import * as SecureStore from 'expo-secure-store';
 import { useAppTheme } from '../../hooks';
 import { useAuthStore } from '../../store';
 import { dbGetAll } from '../../services/database';
+import { Ionicons } from '@expo/vector-icons';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 
 const PIN_LENGTH = 4;
@@ -169,7 +170,7 @@ export const PinScreen: React.FC = () => {
         return 'Potvrdite PIN';
       case 'enter':
         return currentUser
-          ? `Bok, ${currentUser.name}! 👋`
+          ? `Bok, ${currentUser.name}!`
           : 'Unesite PIN';
     }
   };
@@ -190,7 +191,7 @@ export const PinScreen: React.FC = () => {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerEmoji}>🔐</Text>
+          <Ionicons name="lock-closed" size={40} color={colors.primary} style={{ marginBottom: 8 }} />
           <Text style={[styles.title, { color: colors.text }]}>
             {getTitle()}
           </Text>
@@ -247,9 +248,7 @@ export const PinScreen: React.FC = () => {
                       onPress={tryBiometric}
                       activeOpacity={0.6}
                     >
-                      <Text style={styles.keyBio}>
-                        {Platform.OS === 'ios' ? '👤' : '👆'}
-                      </Text>
+                      <Ionicons name="finger-print" size={24} color={colors.primary} />
                     </TouchableOpacity>
                   );
                 }

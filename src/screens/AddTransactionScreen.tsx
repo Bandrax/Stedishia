@@ -11,6 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useAccountStore, useTransactionStore } from '../store';
 import { Typography, Spacing, BorderRadius } from '../constants';
@@ -135,10 +136,10 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
     }
   };
 
-  const typeOptions: { value: TransactionType; emoji: string; label: string }[] = [
-    { value: 'expense', emoji: '📉', label: 'Rashod' },
-    { value: 'income', emoji: '📈', label: 'Prihod' },
-    { value: 'transfer', emoji: '🔄', label: 'Transfer' },
+  const typeOptions: { value: TransactionType; icon: keyof typeof Ionicons.glyphMap; label: string }[] = [
+    { value: 'expense', icon: 'trending-down-outline', label: 'Rashod' },
+    { value: 'income', icon: 'trending-up-outline', label: 'Prihod' },
+    { value: 'transfer', icon: 'swap-horizontal-outline', label: 'Transfer' },
   ];
 
   return (
@@ -176,7 +177,7 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
                 onPress={() => setType(opt.value)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.typeEmoji}>{opt.emoji}</Text>
+                <Ionicons name={opt.icon} size={20} color={type === opt.value ? colors.textOnPrimary : colors.text} style={{ marginRight: 6 }} />
                 <Text
                   style={[
                     styles.typeLabel,
@@ -207,10 +208,10 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
           <View style={styles.fieldGroup}>
             <Text style={[styles.label, { color: colors.textSecondary }]}>Za koga?</Text>
             <View style={styles.scopeRow}>
-              {[
-                { value: 'shared' as TransactionScope, emoji: '🏠', label: 'Zajedničko' },
-                { value: 'personal' as TransactionScope, emoji: '👤', label: 'Osobno' },
-              ].map((opt) => (
+              {([
+                { value: 'shared' as TransactionScope, icon: 'home-outline' as keyof typeof Ionicons.glyphMap, label: 'Zajedničko' },
+                { value: 'personal' as TransactionScope, icon: 'person-outline' as keyof typeof Ionicons.glyphMap, label: 'Osobno' },
+              ]).map((opt) => (
                 <TouchableOpacity
                   key={opt.value}
                   style={[
@@ -223,7 +224,7 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
                   onPress={() => setScope(opt.value)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.scopeEmoji}>{opt.emoji}</Text>
+                  <Ionicons name={opt.icon} size={20} color={scope === opt.value ? colors.primary : colors.textSecondary} style={{ marginRight: 6 }} />
                   <Text
                     style={[
                       styles.scopeLabel,
@@ -350,7 +351,7 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
         {/* Submit gumb */}
         <View style={[styles.footer, { borderTopColor: colors.border }]}>
           <Button
-            title={type === 'income' ? 'Dodaj prihod 📈' : 'Dodaj rashod 📉'}
+            title={type === 'income' ? 'Dodaj prihod' : 'Dodaj rashod'}
             variant="primary"
             size="lg"
             fullWidth
@@ -405,10 +406,6 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     borderWidth: 1,
   },
-  typeEmoji: {
-    fontSize: 16,
-    marginRight: 6,
-  },
   typeLabel: {
     fontSize: 14,
     fontWeight: '600',
@@ -461,10 +458,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.lg,
     borderWidth: 1.5,
-  },
-  scopeEmoji: {
-    fontSize: 18,
-    marginRight: 6,
   },
   scopeLabel: {
     fontSize: 14,

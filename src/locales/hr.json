@@ -73,7 +73,7 @@
     "useBiometric": "Koristite otisak prsta / Face ID",
     "wrongPin": "Pogrešan PIN. Pokušajte ponovo.",
     "pinMismatch": "PIN-ovi se ne podudaraju.",
-    "welcome": "Bok, {{name}}! 👋"
+    "welcome": "Bok, {{name}}!"
   },
 
   "dashboard": {
@@ -152,7 +152,7 @@
     "targetDate": "Do kada?",
     "monthlyNeeded": "Potrebno mjesečno",
     "progress": "{{percent}}% ostvareno",
-    "completed": "Cilj ostvaren! 🎉",
+    "completed": "Cilj ostvaren!",
     "emergencyFund": "Sigurnosni fond",
     "emergencyFundExplain": "Preporučuje se imati ušteđevinu koja pokriva 3-6 mjeseci vaših troškova. To je vaš financijski jastuk za neočekivane situacije.",
     "monthsCovered": "Pokriva {{months}} mjeseci troškova",
@@ -222,7 +222,7 @@
     "weeklyCheckIn": "Tjedni pregled",
     "tips": "Savjeti",
     "education": "Edukacija",
-    "infoIcon": "ℹ️ Što to znači?",
+    "infoIcon": "Što to znači?",
     "dismiss": "Odbaci",
     "markRead": "Označi kao pročitano"
   },
