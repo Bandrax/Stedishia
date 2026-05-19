@@ -81,7 +81,7 @@ export const initializeDatabase = async (): Promise<void> => {
     CREATE TABLE IF NOT EXISTS recurring_transactions (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
-      account_id TEXT NOT NULL,
+      account_id TEXT,
       type TEXT NOT NULL,
       scope TEXT DEFAULT 'personal',
       amount REAL NOT NULL,
@@ -89,15 +89,14 @@ export const initializeDatabase = async (): Promise<void> => {
       subcategory_id TEXT,
       description TEXT NOT NULL,
       frequency TEXT NOT NULL,
-      start_date TEXT NOT NULL,
+      start_date TEXT,
       end_date TEXT,
       next_due_date TEXT NOT NULL,
       is_active INTEGER DEFAULT 1,
       auto_add INTEGER DEFAULT 0,
       reminder_days_before INTEGER DEFAULT 1,
       created_at TEXT NOT NULL,
-      FOREIGN KEY (user_id) REFERENCES users(id),
-      FOREIGN KEY (account_id) REFERENCES accounts(id)
+      FOREIGN KEY (user_id) REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS budget_items (
@@ -182,6 +181,49 @@ export const initializeDatabase = async (): Promise<void> => {
       value TEXT NOT NULL
     );
 
+    -- Migracija: recurring_transactions bez FK na account_id (ponavljajuća plaćanja ne trebaju račun)
+  `);
+
+  // Provjeri treba li migracija za recurring_transactions
+  try {
+    const tableInfo = await database.getAllAsync(
+      "PRAGMA table_info(recurring_transactions)"
+    ) as any[];
+    const hasAccountNotNull = tableInfo.find(
+      (col: any) => col.name === 'account_id' && col.notnull === 1
+    );
+    if (hasAccountNotNull) {
+      await database.execAsync('PRAGMA foreign_keys = OFF;');
+      await database.execAsync(`
+        CREATE TABLE IF NOT EXISTS recurring_transactions_new (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          account_id TEXT,
+          type TEXT NOT NULL,
+          scope TEXT DEFAULT 'personal',
+          amount REAL NOT NULL,
+          category_id TEXT NOT NULL,
+          subcategory_id TEXT,
+          description TEXT NOT NULL,
+          frequency TEXT NOT NULL,
+          start_date TEXT,
+          end_date TEXT,
+          next_due_date TEXT NOT NULL,
+          is_active INTEGER DEFAULT 1,
+          auto_add INTEGER DEFAULT 0,
+          reminder_days_before INTEGER DEFAULT 1,
+          created_at TEXT NOT NULL,
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        );
+        INSERT OR IGNORE INTO recurring_transactions_new SELECT * FROM recurring_transactions;
+        DROP TABLE recurring_transactions;
+        ALTER TABLE recurring_transactions_new RENAME TO recurring_transactions;
+      `);
+      await database.execAsync('PRAGMA foreign_keys = ON;');
+    }
+  } catch (_) { /* tablica možda ne postoji još */ }
+
+  await database.execAsync(`
     -- Indeksi za performanse
     CREATE INDEX IF NOT EXISTS idx_transactions_user_date
       ON transactions(user_id, date DESC);

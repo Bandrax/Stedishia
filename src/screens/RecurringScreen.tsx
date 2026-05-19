@@ -52,9 +52,7 @@ export const RecurringScreen: React.FC = () => {
   const [amount, setAmount] = useState('');
   const [txType, setTxType] = useState<'expense' | 'income'>('expense');
   const [frequency, setFrequency] = useState<RecurringTransaction['frequency']>('monthly');
-  const [nextDate, setNextDate] = useState(
-    new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString().split('T')[0]
-  );
+  const [dueDay, setDueDay] = useState(1); // day of month (1-31)
 
   const loadData = useCallback(async () => {
     if (!userId) return;
@@ -70,28 +68,57 @@ export const RecurringScreen: React.FC = () => {
     setRefreshing(false);
   }, [loadData]);
 
+  // Compute next due date from dueDay
+  const computeNextDueDate = (day: number): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    // Clamp day to valid range for the month
+    const maxDay = new Date(year, month + 1, 0).getDate();
+    const clampedDay = Math.min(day, maxDay);
+    const candidate = new Date(year, month, clampedDay);
+    // If that date already passed this month, use next month
+    if (candidate.getTime() <= now.getTime()) {
+      const nextMaxDay = new Date(year, month + 2, 0).getDate();
+      return new Date(year, month + 1, Math.min(day, nextMaxDay)).toISOString().split('T')[0];
+    }
+    return candidate.toISOString().split('T')[0];
+  };
+
   const handleAdd = async () => {
-    if (!desc.trim() || !amount) return;
+    const cleaned = amount.replace(',', '.').replace(/[^0-9.]/g, '');
+    const parsedAmount = parseFloat(cleaned);
+    if (!desc.trim() || !cleaned || isNaN(parsedAmount) || parsedAmount <= 0) {
+      Alert.alert('Greška', 'Unesite opis i ispravan iznos.');
+      return;
+    }
 
-    await createRecurring({
-      userId,
-      description: desc.trim(),
-      amount: parseFloat(amount) || 0,
-      type: txType,
-      categoryId: 'other_expense',
-      accountId: '',
-      frequency,
-      nextDueDate: nextDate,
-      isActive: true,
-    });
+    try {
+      const nextDueDate = computeNextDueDate(dueDay);
 
-    setShowAdd(false);
-    setDesc('');
-    setAmount('');
-    setTxType('expense');
-    setFrequency('monthly');
-    await loadData();
-    if (userId) scheduleAllNotifications(userId).catch(console.error);
+      await createRecurring({
+        userId,
+        description: desc.trim(),
+        amount: parsedAmount,
+        type: txType,
+        categoryId: txType === 'expense' ? 'other_expense' : 'salary',
+        accountId: 'none',
+        frequency,
+        nextDueDate,
+        isActive: true,
+      });
+
+      setShowAdd(false);
+      setDesc('');
+      setAmount('');
+      setTxType('expense');
+      setFrequency('monthly');
+      setDueDay(1);
+      await loadData();
+      if (userId) scheduleAllNotifications(userId).catch(console.error);
+    } catch (err) {
+      Alert.alert('Greška', 'Spremanje nije uspjelo: ' + (err instanceof Error ? err.message : String(err)));
+    }
   };
 
   const handleDelete = (tx: RecurringTransaction) => {
@@ -203,7 +230,7 @@ export const RecurringScreen: React.FC = () => {
                 <View style={styles.txInfo}>
                   <Text style={[styles.txName, { color: colors.text }]}>{tx.description}</Text>
                   <Text style={[styles.txMeta, { color: colors.textSecondary }]}>
-                    {getFrequencyLabel(tx.frequency)} • Sljedeće: {daysText}
+                    {getFrequencyLabel(tx.frequency)} • {new Date(tx.nextDueDate).getDate()}. u mj. • {daysText}
                   </Text>
                 </View>
                 <View style={styles.txRight}>
@@ -358,17 +385,42 @@ export const RecurringScreen: React.FC = () => {
               ))}
             </View>
 
-            <TextInput
-              style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
-              placeholder="Sljedeći datum (YYYY-MM-DD)"
-              placeholderTextColor={colors.textTertiary}
-              value={nextDate}
-              onChangeText={setNextDate}
-            />
+            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>
+              Dan u mjesecu za plaćanje
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.dayPickerScroll}
+              contentContainerStyle={styles.dayPickerContent}
+            >
+              {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                <TouchableOpacity
+                  key={day}
+                  style={[
+                    styles.dayChip,
+                    {
+                      backgroundColor: dueDay === day ? colors.primary : colors.surfaceVariant,
+                      borderColor: dueDay === day ? colors.primary : colors.border,
+                    },
+                  ]}
+                  onPress={() => setDueDay(day)}
+                >
+                  <Text
+                    style={[
+                      styles.dayChipText,
+                      { color: dueDay === day ? '#fff' : colors.text },
+                    ]}
+                  >
+                    {day}.
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
 
             <View style={styles.modalButtons}>
               <Button title="Odustani" onPress={() => setShowAdd(false)} variant="ghost" />
-              <Button title="Spremi" onPress={handleAdd} disabled={!desc.trim() || !amount} />
+              <Button title="Spremi" onPress={handleAdd} disabled={!desc.trim() || !amount.replace(/[^0-9.,]/g, '')} />
             </View>
           </View>
         </View>
@@ -473,5 +525,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   freqLabel: { fontSize: 13, fontWeight: '500' },
+  dayPickerScroll: { marginBottom: Spacing.md, maxHeight: 44 },
+  dayPickerContent: { gap: 6 },
+  dayChip: {
+    width: 40,
+    height: 36,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dayChipText: { fontSize: 14, fontWeight: '600' },
   modalButtons: { flexDirection: 'row', justifyContent: 'space-between', marginTop: Spacing.md },
 });

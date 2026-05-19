@@ -50,6 +50,10 @@ interface DashboardData {
     category_id: string;
   }>;
   cashFlowData: number[];
+  overBudgetDetails: Array<{ categoryName: string; emoji: string; spent: number; allocated: number }>;
+  nearLimitDetails: Array<{ categoryName: string; emoji: string; spent: number; allocated: number }>;
+  totalAllocated: number;
+  totalSpent: number;
 }
 
 export const DashboardScreen: React.FC = () => {
@@ -86,15 +90,15 @@ export const DashboardScreen: React.FC = () => {
 
       // Odredi budget status na temelju potrošnje
       let budgetStatus: BudgetStatus = 'good';
-      const overBudgetCount = budgetProgress.filter(
+      const overBudgetItems = budgetProgress.filter(
         (b) => b.allocated > 0 && b.spent > b.allocated
-      ).length;
-      const nearLimitCount = budgetProgress.filter(
+      );
+      const nearLimitItems = budgetProgress.filter(
         (b) => b.allocated > 0 && b.spent / b.allocated > 0.8 && b.spent <= b.allocated
-      ).length;
+      );
 
-      if (overBudgetCount > 0) budgetStatus = 'over';
-      else if (nearLimitCount > 0) budgetStatus = 'warning';
+      if (overBudgetItems.length > 0) budgetStatus = 'over';
+      else if (nearLimitItems.length > 0) budgetStatus = 'warning';
 
       // Ako nema budgeta postavljenog, koristi omjer prihoda/rashoda
       if (budgetProgress.length === 0 && monthlyStats.income > 0) {
@@ -102,6 +106,19 @@ export const DashboardScreen: React.FC = () => {
         if (ratio > 1) budgetStatus = 'over';
         else if (ratio > 0.8) budgetStatus = 'warning';
       }
+
+      const totalAllocated = budgetProgress.reduce((s, b) => s + b.allocated, 0);
+      const totalSpent = budgetProgress.reduce((s, b) => s + b.spent, 0);
+
+      const mapToDetail = (b: { category_id: string; allocated: number; spent: number }) => {
+        const catInfo = getCategoryInfo(b.category_id);
+        return {
+          categoryName: catInfo?.name ?? b.category_id,
+          emoji: catInfo?.emoji ?? '📌',
+          spent: b.spent,
+          allocated: b.allocated,
+        };
+      };
 
       setData({
         totalBalance,
@@ -113,6 +130,10 @@ export const DashboardScreen: React.FC = () => {
         topExpenses: topExp,
         upcomingPayments: upcoming,
         cashFlowData: cashFlow,
+        overBudgetDetails: overBudgetItems.map(mapToDetail),
+        nearLimitDetails: nearLimitItems.map(mapToDetail),
+        totalAllocated,
+        totalSpent,
       });
     } catch (err) {
       console.error('Dashboard load error:', err);
@@ -172,7 +193,13 @@ export const DashboardScreen: React.FC = () => {
 
         {/* Semafor */}
         <View style={styles.section}>
-          <StatusSemaphore status={data?.budgetStatus ?? 'good'} />
+          <StatusSemaphore
+            status={data?.budgetStatus ?? 'good'}
+            overBudgetItems={data?.overBudgetDetails}
+            nearLimitItems={data?.nearLimitDetails}
+            totalSpent={data?.totalSpent}
+            totalAllocated={data?.totalAllocated}
+          />
         </View>
 
         {/* Budget Progress */}

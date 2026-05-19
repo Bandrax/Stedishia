@@ -13,29 +13,32 @@ export interface RecurringTransaction {
   nextDueDate: string;
   isActive: boolean;
   createdAt: string;
-  updatedAt: string;
 }
 
 export const createRecurring = async (
-  tx: Omit<RecurringTransaction, 'id' | 'createdAt' | 'updatedAt'>
+  tx: Omit<RecurringTransaction, 'id' | 'createdAt'>
 ): Promise<string> => {
   const now = new Date().toISOString();
   const id = Crypto.randomUUID();
 
-  await dbInsert('recurring_transactions', {
+  const record: Record<string, unknown> = {
     id,
     user_id: tx.userId,
     description: tx.description,
     amount: tx.amount,
     type: tx.type,
     category_id: tx.categoryId,
-    account_id: tx.accountId,
     frequency: tx.frequency,
+    start_date: now,
     next_due_date: tx.nextDueDate,
     is_active: tx.isActive ? 1 : 0,
     created_at: now,
-    updated_at: now,
-  });
+  };
+  if (tx.accountId && tx.accountId !== 'none') {
+    record.account_id = tx.accountId;
+  }
+
+  await dbInsert('recurring_transactions', record);
 
   return id;
 };
@@ -54,8 +57,7 @@ export const updateRecurring = async (
   id: string,
   updates: Partial<RecurringTransaction>
 ): Promise<void> => {
-  const now = new Date().toISOString();
-  const dbUpdates: Record<string, unknown> = { updated_at: now };
+  const dbUpdates: Record<string, unknown> = {};
 
   if (updates.description !== undefined) dbUpdates.description = updates.description;
   if (updates.amount !== undefined) dbUpdates.amount = updates.amount;
@@ -66,7 +68,9 @@ export const updateRecurring = async (
   if (updates.nextDueDate !== undefined) dbUpdates.next_due_date = updates.nextDueDate;
   if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive ? 1 : 0;
 
-  await dbUpdate('recurring_transactions', id, dbUpdates);
+  if (Object.keys(dbUpdates).length > 0) {
+    await dbUpdate('recurring_transactions', id, dbUpdates);
+  }
 };
 
 export const deleteRecurring = async (id: string): Promise<void> => {
@@ -89,5 +93,4 @@ const mapRow = (row: any): RecurringTransaction => ({
   nextDueDate: row.next_due_date,
   isActive: !!row.is_active,
   createdAt: row.created_at,
-  updatedAt: row.updated_at,
 });

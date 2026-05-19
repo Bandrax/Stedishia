@@ -97,32 +97,40 @@ export const copyBudgetFromPreviousMonth = async (
   return count;
 };
 
-// Generiraj 50/30/20 budžet
+// Preporučeni postoci prema financijskim stručnjacima (Elizabeth Warren 50/30/20,
+// NerdWallet, Ramsey Solutions). Svaka kategorija ima težinski udio unutar svoje grupe.
+// Postoci su od UKUPNOG prihoda.
+const RECOMMENDED_PERCENTAGES: Record<string, number> = {
+  // Potrebe (50%)
+  housing:       0.27,  // 27% — najam/kredit + namještaj + održavanje
+  food:          0.13,  // 13% — namirnice + restorani
+  transport:     0.05,  // 5%  — gorivo, javni prijevoz
+  utilities:     0.03,  // 3%  — struja, voda, internet
+  health:        0.02,  // 2%  — lijekovi, pregledi
+  // Želje (30%)
+  entertainment: 0.10,  // 10% — kino, izlasci, hobi
+  clothing:      0.05,  // 5%  — odjeća, obuća
+  personal:      0.05,  // 5%  — njega, kozmetika
+  education:     0.05,  // 5%  — tečajevi, knjige
+  gifts:         0.05,  // 5%  — pokloni, donacije
+  // Ušteđevina (20%)
+  savings:       0.10,  // 10% — štednja, hitni fond
+  debt:          0.10,  // 10% — otplata dugova
+  // UKUPNO: 100%
+};
+
+// Generiraj 50/30/20 budžet s preporučenim postocima
 export const generate503020Budget = async (
   userId: string,
   monthlyIncome: number,
   month?: string
 ): Promise<BudgetItem[]> => {
   const m = month || getCurrentMonth();
-  const needs = monthlyIncome * 0.5;   // 50% potrebe
-  const wants = monthlyIncome * 0.3;   // 30% želje
-  const savings = monthlyIncome * 0.2; // 20% štednja
 
-  // Mapiranje kategorija u 50/30/20
-  const needsCategories = ['housing', 'food', 'transport', 'utilities', 'health'];
-  const wantsCategories = ['entertainment', 'clothing', 'personal', 'gifts', 'education'];
-  const savingsCategories = ['savings', 'debt'];
-
-  const distribute = async (categoryIds: string[], totalAmount: number) => {
-    const perCategory = totalAmount / categoryIds.length;
-    for (const catId of categoryIds) {
-      await upsertBudgetItem(userId, catId, m, Math.round(perCategory));
-    }
-  };
-
-  await distribute(needsCategories, needs);
-  await distribute(wantsCategories, wants);
-  await distribute(savingsCategories, savings);
+  for (const [catId, pct] of Object.entries(RECOMMENDED_PERCENTAGES)) {
+    const allocated = Math.round(monthlyIncome * pct);
+    await upsertBudgetItem(userId, catId, m, allocated);
+  }
 
   return getBudgetForMonth(userId, m);
 };

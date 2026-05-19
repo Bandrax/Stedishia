@@ -29,9 +29,9 @@ export const BudgetSummaryHeader: React.FC<BudgetSummaryHeaderProps> = ({
       {/* Glavni prikaz */}
       <View style={styles.mainRow}>
         <View style={styles.mainInfo}>
-          <Text style={styles.mainLabel}>Dostupno za raspodjelu</Text>
+          <Text style={styles.mainLabel}>Ukupno stanje</Text>
           <Text style={styles.mainAmount}>
-            {formatAmount(Math.max(0, availableToAllocate))}
+            {formatAmount(totalIncome)}
           </Text>
         </View>
         <View style={[styles.percentBadge, {
@@ -71,11 +71,6 @@ export const BudgetSummaryHeader: React.FC<BudgetSummaryHeaderProps> = ({
       {/* Detalji */}
       <View style={styles.detailRow}>
         <View style={styles.detail}>
-          <View style={[styles.detailDot, { backgroundColor: 'rgba(255,255,255,0.9)' }]} />
-          <Text style={styles.detailLabel}>Prihod</Text>
-          <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalIncome)}</Text>
-        </View>
-        <View style={styles.detail}>
           <View style={[styles.detailDot, { backgroundColor: 'rgba(255,255,255,0.5)' }]} />
           <Text style={styles.detailLabel}>Raspod.</Text>
           <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalAllocated)}</Text>
@@ -84,6 +79,11 @@ export const BudgetSummaryHeader: React.FC<BudgetSummaryHeaderProps> = ({
           <View style={[styles.detailDot, { backgroundColor: '#FFD700' }]} />
           <Text style={styles.detailLabel}>Potrošeno</Text>
           <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalSpent)}</Text>
+        </View>
+        <View style={styles.detail}>
+          <View style={[styles.detailDot, { backgroundColor: availableToAllocate > 0 ? '#FF9800' : 'rgba(255,255,255,0.3)' }]} />
+          <Text style={styles.detailLabel}>Slobodno</Text>
+          <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(Math.max(0, availableToAllocate))}</Text>
         </View>
       </View>
     </View>

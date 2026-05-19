@@ -24,6 +24,7 @@ import {
   copyBudgetFromPreviousMonth,
   getUnbudgetedSpending,
 } from '../services/budgetService';
+import { getTotalBalance } from '../services/dashboardService';
 import type { BudgetSummary } from '../services/budgetService';
 import { Card, Button } from '../components/atoms';
 import { BudgetSummaryHeader } from '../components/molecules/BudgetSummaryHeader';
@@ -45,13 +46,19 @@ export const BudgetScreen: React.FC = () => {
   const [showSetup, setShowSetup] = useState(false);
   const [isSettingUp, setIsSettingUp] = useState(false);
 
-  const monthlyIncome = currentUser?.monthlyIncome || 0;
+  const [effectiveIncome, setEffectiveIncome] = useState(currentUser?.monthlyIncome || 0);
 
   const loadBudget = useCallback(async () => {
     if (!currentUser) return;
     try {
+      // Koristi veći iznos: ukupno stanje računa ili mjesečni prihod iz profila
+      const totalBalance = await getTotalBalance(currentUser.id);
+      const profileIncome = currentUser.monthlyIncome || 0;
+      const income = Math.max(totalBalance, profileIncome);
+      setEffectiveIncome(income);
+
       const [budgetSummary, unbudgetedData] = await Promise.all([
-        getBudgetSummary(currentUser.id, monthlyIncome, currentMonth),
+        getBudgetSummary(currentUser.id, income, currentMonth),
         getUnbudgetedSpending(currentUser.id, currentMonth),
       ]);
       setSummary(budgetSummary);
@@ -59,7 +66,7 @@ export const BudgetScreen: React.FC = () => {
     } catch (err) {
       console.error('Error loading budget:', err);
     }
-  }, [currentUser, currentMonth, monthlyIncome]);
+  }, [currentUser, currentMonth]);
 
   useFocusEffect(
     useCallback(() => {
@@ -84,7 +91,12 @@ export const BudgetScreen: React.FC = () => {
     if (!currentUser) return;
     setIsSettingUp(true);
     try {
-      await generate503020Budget(currentUser.id, monthlyIncome, currentMonth);
+      // Uvijek dohvati svježe stanje računa
+      const totalBalance = await getTotalBalance(currentUser.id);
+      const profileIncome = currentUser.monthlyIncome || 0;
+      const freshIncome = Math.max(totalBalance, profileIncome);
+      setEffectiveIncome(freshIncome);
+      await generate503020Budget(currentUser.id, freshIncome, currentMonth);
       await loadBudget();
       setShowSetup(false);
     } catch (err) {
@@ -230,7 +242,7 @@ export const BudgetScreen: React.FC = () => {
             {/* Summary header */}
             <View style={{ marginTop: Spacing.base }}>
               <BudgetSummaryHeader
-                totalIncome={monthlyIncome}
+                totalIncome={effectiveIncome}
                 totalAllocated={summary!.totalAllocated}
                 totalSpent={summary!.totalSpent}
                 availableToAllocate={summary!.availableToAllocate}
@@ -268,9 +280,9 @@ export const BudgetScreen: React.FC = () => {
             {mode === '50-30-20' ? (
               <View style={{ marginTop: Spacing.base }}>
                 {[
-                  { label: 'Potrebe (50%)', icon: 'home-outline' as const, target: monthlyIncome * 0.5, categories: needsCategories, color: colors.primary },
-                  { label: 'Želje (30%)', icon: 'heart-outline' as const, target: monthlyIncome * 0.3, categories: wantsCategories, color: colors.accent },
-                  { label: 'Štednja & dugovi (20%)', icon: 'save-outline' as const, target: monthlyIncome * 0.2, categories: savingsCategories, color: colors.success },
+                  { label: 'Potrebe (50%)', icon: 'home-outline' as const, target: effectiveIncome * 0.5, categories: needsCategories, color: colors.primary },
+                  { label: 'Želje (30%)', icon: 'heart-outline' as const, target: effectiveIncome * 0.3, categories: wantsCategories, color: colors.accent },
+                  { label: 'Štednja & dugovi (20%)', icon: 'save-outline' as const, target: effectiveIncome * 0.2, categories: savingsCategories, color: colors.success },
                 ].map((group) => {
                   const spent = groupSpent(group.categories);
                   const percent = group.target > 0 ? (spent / group.target) * 100 : 0;
@@ -352,10 +364,28 @@ export const BudgetScreen: React.FC = () => {
               </Card>
             )}
 
-            {/* Gumb za uređivanje raspodjele */}
-            <View style={{ marginTop: Spacing.lg }}>
+            {/* Gumbi za upravljanje budžetom */}
+            <View style={{ marginTop: Spacing.lg, gap: Spacing.sm }}>
               <Button
-                title="Uredi raspodjelu"
+                title="Regeneriraj 50/30/20"
+                variant="primary"
+                size="md"
+                fullWidth
+                icon="refresh-outline"
+                onPress={() => {
+                  Alert.alert(
+                    'Regeneriraj budžet',
+                    'Ovo će resetirati sve kategorije na preporučene postotke prema 50/30/20 pravilu. Nastaviti?',
+                    [
+                      { text: 'Odustani', style: 'cancel' },
+                      { text: 'Regeneriraj', onPress: handleSetup503020 },
+                    ]
+                  );
+                }}
+                loading={isSettingUp}
+              />
+              <Button
+                title="Uredi raspodjelu ručno"
                 variant="outline"
                 size="md"
                 fullWidth
@@ -383,7 +413,7 @@ export const BudgetScreen: React.FC = () => {
           {/* Preostalo */}
           <View style={[styles.remainingBar, { backgroundColor: colors.surfaceVariant }]}>
             <Text style={[styles.remainingText, { color: colors.text }]}>
-              Preostaje za raspodjelu: {formatAmount(summary?.availableToAllocate ?? monthlyIncome)}
+              Preostaje za raspodjelu: {formatAmount(summary?.availableToAllocate ?? effectiveIncome)}
             </Text>
           </View>
 
