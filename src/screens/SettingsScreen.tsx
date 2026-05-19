@@ -16,28 +16,37 @@ import { useThemeStore } from '../store/useThemeStore';
 import { Ionicons } from '@expo/vector-icons';
 import { Typography, Spacing, BorderRadius } from '../constants';
 import { Button } from '../components/atoms';
+import { useTranslation } from 'react-i18next';
+import i18n from '../locales/i18n';
 
 export const SettingsScreen: React.FC = () => {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const navigation = useNavigation();
   const currentUser = useAuthStore((s) => s.currentUser);
   const { logout } = useAuthStore();
   const { mode, setMode } = useThemeStore();
+  const [language, setLanguage] = useState<'hr' | 'en'>(i18n.language as 'hr' | 'en' || 'hr');
+
+  const handleLanguageChange = (lang: 'hr' | 'en') => {
+    setLanguage(lang);
+    i18n.changeLanguage(lang);
+  };
 
   const themeOptions: Array<{ key: 'light' | 'dark' | 'system'; label: string; icon: keyof typeof Ionicons.glyphMap }> = [
-    { key: 'light', label: 'Svijetla', icon: 'sunny-outline' },
-    { key: 'dark', label: 'Tamna', icon: 'moon-outline' },
-    { key: 'system', label: 'Sustav', icon: 'phone-portrait-outline' },
+    { key: 'light', label: t('settings.themeLight'), icon: 'sunny-outline' },
+    { key: 'dark', label: t('settings.themeDark'), icon: 'moon-outline' },
+    { key: 'system', label: t('settings.themeSystem'), icon: 'phone-portrait-outline' },
   ];
 
   const handleLogout = () => {
     Alert.alert(
-      'Odjava',
-      'Jeste li sigurni da se želite odjaviti? Vaši podaci ostaju spremljeni.',
+      t('settings.logoutTitle'),
+      t('settings.logoutConfirm'),
       [
-        { text: 'Odustani', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Odjavi se',
+          text: t('settings.logout'),
           style: 'destructive',
           onPress: () => logout(),
         },
@@ -51,7 +60,7 @@ export const SettingsScreen: React.FC = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={[styles.screenTitle, { color: colors.text }]}>Postavke</Text>
+        <Text style={[styles.screenTitle, { color: colors.text }]}>{t('settings.title')}</Text>
         <View style={{ width: 60 }} />
       </View>
 
@@ -60,7 +69,7 @@ export const SettingsScreen: React.FC = () => {
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
             <Ionicons name="person-outline" size={18} color={colors.primary} />
-            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>Profil</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>{t('settings.profile')}</Text>
           </View>
           <View style={styles.profileRow}>
             <View style={[styles.avatar, { backgroundColor: colors.primary + '20' }]}>
@@ -68,13 +77,13 @@ export const SettingsScreen: React.FC = () => {
             </View>
             <View style={styles.profileInfo}>
               <Text style={[styles.profileName, { color: colors.text }]}>
-                {currentUser?.name || 'Korisnik'}
+                {currentUser?.name || t('settings.profile')}
               </Text>
               <Text style={[styles.profileDetail, { color: colors.textSecondary }]}>
-                Mjesečni prihod: {currentUser?.monthlyIncome || 0} €
+                {t('settings.monthlyIncome', { amount: currentUser?.monthlyIncome || 0 })}
               </Text>
               <Text style={[styles.profileDetail, { color: colors.textSecondary }]}>
-                Budget mod: {currentUser?.budgetMode === 'envelope' ? 'Envelope' : '50/30/20'}
+                {t('settings.budgetMode', { mode: currentUser?.budgetMode === 'envelope' ? t('settings.budgetModeEnvelope') : t('settings.budgetMode503020') })}
               </Text>
             </View>
           </View>
@@ -84,7 +93,7 @@ export const SettingsScreen: React.FC = () => {
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
             <Ionicons name="color-palette-outline" size={18} color={colors.primary} />
-            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>Tema</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>{t('settings.theme')}</Text>
           </View>
           <View style={styles.themeRow}>
             {themeOptions.map((option) => (
@@ -114,15 +123,37 @@ export const SettingsScreen: React.FC = () => {
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
             <Ionicons name="globe-outline" size={18} color={colors.primary} />
-            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>Regionalno</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>{t('settings.regional')}</Text>
           </View>
           <View style={styles.settingRow}>
-            <Text style={[styles.settingLabel, { color: colors.text }]}>Valuta</Text>
+            <Text style={[styles.settingLabel, { color: colors.text }]}>{t('settings.currency')}</Text>
             <Text style={[styles.settingValue, { color: colors.textSecondary }]}>EUR (€)</Text>
           </View>
-          <View style={styles.settingRow}>
-            <Text style={[styles.settingLabel, { color: colors.text }]}>Jezik</Text>
-            <Text style={[styles.settingValue, { color: colors.textSecondary }]}>Hrvatski</Text>
+          <View style={{ marginTop: Spacing.sm }}>
+            <Text style={[styles.settingLabel, { color: colors.text, marginBottom: Spacing.sm }]}>{t('settings.language')}</Text>
+            <View style={styles.themeRow}>
+              {([
+                { key: 'hr' as const, label: 'Hrvatski', icon: 'flag-outline' as keyof typeof Ionicons.glyphMap },
+                { key: 'en' as const, label: 'English', icon: 'globe-outline' as keyof typeof Ionicons.glyphMap },
+              ]).map((option) => (
+                <TouchableOpacity
+                  key={option.key}
+                  style={[
+                    styles.themeOption,
+                    {
+                      backgroundColor: language === option.key ? colors.primary + '20' : colors.surfaceVariant,
+                      borderColor: language === option.key ? colors.primary : colors.border,
+                    },
+                  ]}
+                  onPress={() => handleLanguageChange(option.key)}
+                >
+                  <Ionicons name={option.icon} size={20} color={language === option.key ? colors.primary : colors.textSecondary} style={{ marginBottom: 4 }} />
+                  <Text style={[styles.themeLabel, { color: language === option.key ? colors.primary : colors.text }]}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
 
@@ -130,16 +161,16 @@ export const SettingsScreen: React.FC = () => {
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
             <Ionicons name="lock-closed-outline" size={18} color={colors.primary} />
-            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>Sigurnost</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>{t('settings.security')}</Text>
           </View>
           <View style={styles.settingRow}>
-            <Text style={[styles.settingLabel, { color: colors.text }]}>PIN zaključavanje</Text>
-            <Text style={[styles.settingValue, { color: colors.success }]}>Aktivno</Text>
+            <Text style={[styles.settingLabel, { color: colors.text }]}>{t('settings.pinLock')}</Text>
+            <Text style={[styles.settingValue, { color: colors.success }]}>{t('common.active')}</Text>
           </View>
           <View style={styles.settingRow}>
-            <Text style={[styles.settingLabel, { color: colors.text }]}>Biometrija</Text>
+            <Text style={[styles.settingLabel, { color: colors.text }]}>{t('settings.biometric')}</Text>
             <Text style={[styles.settingValue, { color: currentUser?.biometricEnabled ? colors.success : colors.textSecondary }]}>
-              {currentUser?.biometricEnabled ? 'Aktivno' : 'Neaktivno'}
+              {currentUser?.biometricEnabled ? t('common.active') : t('common.inactive')}
             </Text>
           </View>
         </View>
@@ -148,14 +179,14 @@ export const SettingsScreen: React.FC = () => {
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
             <Ionicons name="information-circle-outline" size={18} color={colors.primary} />
-            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>O aplikaciji</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>{t('settings.about')}</Text>
           </View>
           <View style={styles.settingRow}>
-            <Text style={[styles.settingLabel, { color: colors.text }]}>Verzija</Text>
+            <Text style={[styles.settingLabel, { color: colors.text }]}>{t('settings.version')}</Text>
             <Text style={[styles.settingValue, { color: colors.textSecondary }]}>1.0.0</Text>
           </View>
           <View style={styles.settingRow}>
-            <Text style={[styles.settingLabel, { color: colors.text }]}>Izrađeno s</Text>
+            <Text style={[styles.settingLabel, { color: colors.text }]}>{t('settings.madeWith')}</Text>
             <Text style={[styles.settingValue, { color: colors.textSecondary }]}>React Native + Expo</Text>
           </View>
         </View>
@@ -163,7 +194,7 @@ export const SettingsScreen: React.FC = () => {
         {/* Odjava */}
         <View style={styles.logoutSection}>
           <Button
-            title="Odjavi se"
+            title={t('settings.logout')}
             onPress={handleLogout}
             variant="outline"
             fullWidth
@@ -172,8 +203,7 @@ export const SettingsScreen: React.FC = () => {
         </View>
 
         <Text style={[styles.footer, { color: colors.textTertiary }]}>
-          Sthedisia v1.0.0{'\n'}
-          Vaši podaci su pohranjeni lokalno na uređaju.
+          {t('settings.footer')}
         </Text>
       </ScrollView>
     </SafeAreaView>

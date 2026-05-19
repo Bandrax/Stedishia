@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
 import { useAuthStore } from '../store';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,6 +33,7 @@ export const HouseholdScreen: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(getCurrentMonth());
   const [loading, setLoading] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const [householdStats, setHouseholdStats] = useState<{
     totalIncome: number;
@@ -74,10 +76,10 @@ export const HouseholdScreen: React.FC = () => {
     setLoading(true);
     try {
       await exportToFile(userId, householdId);
-      setSyncMessage('Podaci eksportirani uspješno!');
+      setSyncMessage(t('household.exportSuccess'));
       setTimeout(() => setSyncMessage(null), 3000);
     } catch (error) {
-      Alert.alert('Greška', 'Nije moguće eksportirati podatke.');
+      Alert.alert(t('common.error'), t('household.exportError'));
     } finally {
       setLoading(false);
     }
@@ -85,12 +87,12 @@ export const HouseholdScreen: React.FC = () => {
 
   const handleImport = async () => {
     Alert.alert(
-      'Import podataka',
-      'Ovo će dodati podatke iz datoteke u vašu bazu. Postojeći podaci neće biti zamijenjeni.',
+      t('household.importConfirmTitle'),
+      t('household.importConfirmMessage'),
       [
-        { text: 'Odustani', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Nastavi',
+          text: t('common.confirm'),
           onPress: async () => {
             setLoading(true);
             try {
@@ -103,18 +105,19 @@ export const HouseholdScreen: React.FC = () => {
               const result = await mergeImportedData(data, userId, 'merge');
 
               Alert.alert(
-                'Import završen',
-                `Uvezeno:\n` +
-                `• ${result.transactionsImported} transakcija\n` +
-                `• ${result.accountsImported} računa\n` +
-                `• ${result.goalsImported} ciljeva\n` +
-                `• ${result.debtsImported} dugova\n` +
-                (result.conflicts > 0 ? `\n${result.conflicts} zapisa već postoji.` : '')
+                t('household.importSuccessTitle'),
+                t('household.importResult', {
+                  transactions: result.transactionsImported,
+                  accounts: result.accountsImported,
+                  goals: result.goalsImported,
+                  debts: result.debtsImported,
+                }) +
+                (result.conflicts > 0 ? `\n${t('household.existingRecords', { count: result.conflicts })}` : '')
               );
 
               loadData();
             } catch (error) {
-              Alert.alert('Greška', 'Nevaljan format datoteke ili greška pri importu.');
+              Alert.alert(t('common.error'), t('household.importError'));
             } finally {
               setLoading(false);
             }
@@ -134,7 +137,7 @@ export const HouseholdScreen: React.FC = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={[styles.screenTitle, { color: colors.text }]}>Kućanstvo</Text>
+        <Text style={[styles.screenTitle, { color: colors.text }]}>{t('household.title')}</Text>
         <View style={{ width: 60 }} />
       </View>
 
@@ -147,7 +150,7 @@ export const HouseholdScreen: React.FC = () => {
         {/* Household info */}
         <View style={[styles.householdCard, { backgroundColor: colors.primary }]}>
           <Ionicons name="home" size={40} color="#FFFFFF" style={{ marginBottom: 8 }} />
-          <Text style={styles.householdName}>{household?.name || 'Naše kućanstvo'}</Text>
+          <Text style={styles.householdName}>{household?.name || t('household.ourHousehold')}</Text>
           <Text style={styles.householdMembers}>
             {householdStats?.memberStats.map((m) => m.name).join(' & ') || currentUser?.name || 'Učitavanje...'}
           </Text>
@@ -169,7 +172,7 @@ export const HouseholdScreen: React.FC = () => {
         {/* Zajednički troškovi */}
         <View style={[styles.sharedCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Zajednički troškovi
+            {t('household.sharedExpenses')}
           </Text>
 
           <View style={styles.sharedTotal}>
@@ -177,14 +180,14 @@ export const HouseholdScreen: React.FC = () => {
               {formatAmount(totalShared)}
             </Text>
             <Text style={[styles.sharedLabel, { color: colors.textSecondary }]}>
-              ukupno zajedničkih troškova
+              {t('household.totalShared')}
             </Text>
           </View>
 
           {householdStats && householdStats.memberStats.length > 1 && (
             <View style={[styles.splitInfo, { backgroundColor: colors.surfaceVariant }]}>
               <Text style={[styles.splitText, { color: colors.text }]}>
-                Podijeljeno na {householdStats.memberStats.length}: po {formatAmount(perPerson)} svako
+                {t('household.splitInfo', { count: householdStats.memberStats.length, amount: formatAmount(perPerson) })}
               </Text>
             </View>
           )}
@@ -194,7 +197,7 @@ export const HouseholdScreen: React.FC = () => {
         {householdStats && householdStats.memberStats.length > 0 && (
           <View style={[styles.membersCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Članovi kućanstva
+              {t('household.members')}
             </Text>
 
             {householdStats.memberStats.map((member, index) => {
@@ -216,17 +219,17 @@ export const HouseholdScreen: React.FC = () => {
                     <Ionicons name={isCurrentUser ? 'person' : 'people'} size={20} color={colors.primary} style={{ marginRight: 8 }} />
                     <View>
                       <Text style={[styles.memberName, { color: colors.text }]}>
-                        {member.name} {isCurrentUser ? '(vi)' : ''}
+                        {member.name} {isCurrentUser ? t('household.you') : ''}
                       </Text>
                       <Text style={[styles.memberStats, { color: colors.textSecondary }]}>
-                        Prihodi: {formatAmount(member.income)} • Rashodi: {formatAmount(member.expenses)}
+                        {t('household.memberStats', { income: formatAmount(member.income), expenses: formatAmount(member.expenses) })}
                       </Text>
                     </View>
                   </View>
 
                   <View style={styles.memberBalance}>
                     <Text style={[styles.memberShared, { color: colors.textSecondary }]}>
-                      Zajedničko: {formatAmount(member.sharedExpenses)}
+                      {t('household.memberShared', { amount: formatAmount(member.sharedExpenses) })}
                     </Text>
                     {householdStats.memberStats.length > 1 && (
                       <Text
@@ -235,9 +238,9 @@ export const HouseholdScreen: React.FC = () => {
                           { color: balance > 0 ? colors.success : balance < 0 ? colors.error : colors.textSecondary },
                         ]}
                       >
-                        {balance > 0 ? `Duguje im se ${formatAmount(balance)}` :
-                         balance < 0 ? `Duguje ${formatAmount(Math.abs(balance))}` :
-                         'Izbalansirano'}
+                        {balance > 0 ? t('household.owedToThem', { amount: formatAmount(balance) }) :
+                         balance < 0 ? t('household.theyOwe', { amount: formatAmount(Math.abs(balance)) }) :
+                         t('household.balanced')}
                       </Text>
                     )}
                   </View>
@@ -251,17 +254,17 @@ export const HouseholdScreen: React.FC = () => {
         {householdStats && (
           <View style={[styles.overviewCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Kućanski pregled
+              {t('household.householdOverview')}
             </Text>
             <View style={styles.overviewRow}>
               <View style={styles.overviewItem}>
-                <Text style={[styles.overviewLabel, { color: colors.textSecondary }]}>Ukupni prihodi</Text>
+                <Text style={[styles.overviewLabel, { color: colors.textSecondary }]}>{t('household.totalIncome')}</Text>
                 <Text style={[styles.overviewValue, { color: colors.success }]}>
                   {formatAmount(householdStats.totalIncome)}
                 </Text>
               </View>
               <View style={styles.overviewItem}>
-                <Text style={[styles.overviewLabel, { color: colors.textSecondary }]}>Ukupni rashodi</Text>
+                <Text style={[styles.overviewLabel, { color: colors.textSecondary }]}>{t('household.totalExpenses')}</Text>
                 <Text style={[styles.overviewValue, { color: colors.error }]}>
                   {formatAmount(householdStats.totalExpenses)}
                 </Text>
@@ -269,7 +272,7 @@ export const HouseholdScreen: React.FC = () => {
             </View>
             <View style={styles.overviewRow}>
               <View style={styles.overviewItem}>
-                <Text style={[styles.overviewLabel, { color: colors.textSecondary }]}>Razlika</Text>
+                <Text style={[styles.overviewLabel, { color: colors.textSecondary }]}>{t('household.difference')}</Text>
                 <Text
                   style={[
                     styles.overviewValue,
@@ -284,7 +287,7 @@ export const HouseholdScreen: React.FC = () => {
                 </Text>
               </View>
               <View style={styles.overviewItem}>
-                <Text style={[styles.overviewLabel, { color: colors.textSecondary }]}>Zajedničko</Text>
+                <Text style={[styles.overviewLabel, { color: colors.textSecondary }]}>{t('household.shared')}</Text>
                 <Text style={[styles.overviewValue, { color: colors.text }]}>
                   {formatAmount(householdStats.sharedExpenses)}
                 </Text>
@@ -296,11 +299,10 @@ export const HouseholdScreen: React.FC = () => {
         {/* Sync section */}
         <View style={[styles.syncCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Sinkronizacija
+            {t('household.sync')}
           </Text>
           <Text style={[styles.syncDesc, { color: colors.textSecondary }]}>
-            Eksportirajte svoje podatke kao JSON datoteku i podijelite je s partnerom/icom
-            putem Google Drivea, AirDropa ili druge metode.
+            {t('household.syncDescription')}
           </Text>
 
           {syncMessage && (
@@ -317,7 +319,7 @@ export const HouseholdScreen: React.FC = () => {
 
           <View style={styles.syncButtons}>
             <Button
-              title="Eksportiraj podatke"
+              title={t('household.exportData')}
               icon="cloud-upload-outline"
               onPress={handleExport}
               variant="primary"
@@ -326,7 +328,7 @@ export const HouseholdScreen: React.FC = () => {
             />
             <View style={{ height: Spacing.sm }} />
             <Button
-              title="Importiraj podatke"
+              title={t('household.importData')}
               icon="cloud-download-outline"
               onPress={handleImport}
               variant="outline"
@@ -337,11 +339,7 @@ export const HouseholdScreen: React.FC = () => {
 
           <View style={[styles.hint, { backgroundColor: colors.surfaceVariant }]}>
             <Text style={[styles.hintText, { color: colors.textSecondary }]}>
-              Kako funkcionira sync:{'\n'}
-              1. Svako eksportira svoje podatke{'\n'}
-              2. Stavite datoteke u zajedničku Google Drive mapu{'\n'}
-              3. Svako importira podatke onog drugog{'\n'}
-              4. Ponovite po potrebi (novi podaci se dodaju, duplikati se preskaču)
+              {t('household.syncHint')}
             </Text>
           </View>
         </View>

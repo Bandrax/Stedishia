@@ -77,6 +77,7 @@ export const DEFAULT_EXPENSE_CATEGORIES: Category[] = [
       { id: 'gas', name: 'Plin', nameEn: 'Gas', emoji: '🔥' },
       { id: 'internet', name: 'Internet', nameEn: 'Internet', emoji: '🌐' },
       { id: 'phone', name: 'Mobitel', nameEn: 'Phone', emoji: '📱' },
+      { id: 'taxes', name: 'Porezi i davanja', nameEn: 'Taxes & Duties', emoji: '🏛️' },
     ],
   },
   {

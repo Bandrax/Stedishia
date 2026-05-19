@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../hooks';
 import { Typography, Spacing, BorderRadius } from '../constants';
@@ -11,23 +12,24 @@ type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 interface MenuItem {
   icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-  sublabel?: string;
+  labelKey: string;
+  sublabelKey?: string;
   screen?: keyof RootStackParamList;
   iconColor?: string;
 }
 
 const menuItems: MenuItem[] = [
-  { icon: 'card-outline', label: 'Računi', sublabel: 'Upravljajte računima i karticama', screen: 'Accounts', iconColor: '#2196F3' },
-  { icon: 'bar-chart-outline', label: 'Izvještaji', sublabel: 'Mjesečni i godišnji pregledi', screen: 'Reports', iconColor: '#9C27B0' },
-  { icon: 'bulb-outline', label: 'Financijski savjetnik', sublabel: 'Personalizirani savjeti', screen: 'Advisor', iconColor: '#FF9800' },
-  { icon: 'people-outline', label: 'Kućanstvo', sublabel: 'Zajednički budžet i sync', screen: 'Household', iconColor: '#4CAF50' },
-  { icon: 'repeat-outline', label: 'Ponavljajuća plaćanja', sublabel: 'Pretplate i režije', screen: 'RecurringPayments', iconColor: '#00BCD4' },
-  { icon: 'settings-outline', label: 'Postavke', sublabel: 'Tema, jezik, sigurnost', screen: 'Settings', iconColor: '#607D8B' },
+  { icon: 'card-outline', labelKey: 'more.accounts', sublabelKey: 'more.accountsSub', screen: 'Accounts', iconColor: '#2196F3' },
+  { icon: 'bar-chart-outline', labelKey: 'more.reports', sublabelKey: 'more.reportsSub', screen: 'Reports', iconColor: '#9C27B0' },
+  { icon: 'bulb-outline', labelKey: 'more.advisor', sublabelKey: 'more.advisorSub', screen: 'Advisor', iconColor: '#FF9800' },
+  { icon: 'people-outline', labelKey: 'more.household', sublabelKey: 'more.householdSub', screen: 'Household', iconColor: '#4CAF50' },
+  { icon: 'repeat-outline', labelKey: 'more.recurring', sublabelKey: 'more.recurringSub', screen: 'RecurringPayments', iconColor: '#00BCD4' },
+  { icon: 'settings-outline', labelKey: 'more.settings', sublabelKey: 'more.settingsSub', screen: 'Settings', iconColor: '#607D8B' },
 ];
 
 export const MoreScreen: React.FC = () => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp>();
 
   return (
@@ -36,7 +38,7 @@ export const MoreScreen: React.FC = () => {
       contentContainerStyle={styles.content}
     >
       <Text style={[styles.title, { color: colors.text }]}>
-        Više
+        {t('more.title')}
       </Text>
 
       {menuItems.map((item, index) => (
@@ -57,11 +59,11 @@ export const MoreScreen: React.FC = () => {
           </View>
           <View style={styles.menuText}>
             <Text style={[styles.menuLabel, { color: colors.text }]}>
-              {item.label}
+              {t(item.labelKey)}
             </Text>
-            {item.sublabel && (
+            {item.sublabelKey && (
               <Text style={[styles.menuSublabel, { color: colors.textSecondary }]}>
-                {item.sublabel}
+                {t(item.sublabelKey)}
               </Text>
             )}
           </View>

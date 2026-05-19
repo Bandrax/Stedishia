@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useAccountStore } from '../store';
 import { Ionicons } from '@expo/vector-icons';
@@ -38,19 +39,19 @@ import type { Account, AccountType, Debt } from '../types';
 
 type ScreenTab = 'accounts' | 'debts' | 'subscriptions';
 
-const ACCOUNT_TYPES: Array<{ type: AccountType; label: string; icon: string }> = [
-  { type: 'checking', label: 'Tekući račun', icon: 'business-outline' },
-  { type: 'savings', label: 'Štedni račun', icon: 'save-outline' },
-  { type: 'cash', label: 'Gotovina', icon: 'cash-outline' },
-  { type: 'credit_card', label: 'Kreditna kartica', icon: 'card-outline' },
+const ACCOUNT_TYPES: Array<{ type: AccountType; labelKey: string; icon: string }> = [
+  { type: 'checking', labelKey: 'accounts.types.checking', icon: 'business-outline' },
+  { type: 'savings', labelKey: 'accounts.types.savings', icon: 'save-outline' },
+  { type: 'cash', labelKey: 'accounts.types.cash', icon: 'cash-outline' },
+  { type: 'credit_card', labelKey: 'accounts.types.credit_card', icon: 'card-outline' },
 ];
 
-const DEBT_TYPES: Array<{ type: Debt['type']; label: string; icon: string }> = [
-  { type: 'mortgage', label: 'Stambeni kredit', icon: 'home-outline' },
-  { type: 'personal_loan', label: 'Osobni kredit', icon: 'document-text-outline' },
-  { type: 'car_loan', label: 'Auto kredit', icon: 'car-outline' },
-  { type: 'credit_card', label: 'Kreditna kartica', icon: 'card-outline' },
-  { type: 'other', label: 'Ostalo', icon: 'list-outline' },
+const DEBT_TYPES: Array<{ type: Debt['type']; labelKey: string; icon: string }> = [
+  { type: 'mortgage', labelKey: 'accounts.debtTypes.mortgage', icon: 'home-outline' },
+  { type: 'personal_loan', labelKey: 'accounts.debtTypes.personal', icon: 'document-text-outline' },
+  { type: 'car_loan', labelKey: 'accounts.debtTypes.car', icon: 'car-outline' },
+  { type: 'credit_card', labelKey: 'accounts.debtTypes.credit_card', icon: 'card-outline' },
+  { type: 'other', labelKey: 'accounts.debtTypes.other', icon: 'list-outline' },
 ];
 
 const ACCOUNT_COLORS = ['#0F4C3A', '#1A6B52', '#2196F3', '#9C27B0', '#FF9800', '#E91E63', '#00BCD4', '#795548'];
@@ -61,6 +62,7 @@ export const AccountsScreen: React.FC = () => {
   const currentUser = useAuthStore((s) => s.currentUser);
   const { setAccounts } = useAccountStore();
   const userId = currentUser?.id || '';
+  const { t } = useTranslation();
 
   const [activeTab, setActiveTab] = useState<ScreenTab>('accounts');
   const [refreshing, setRefreshing] = useState(false);
@@ -158,12 +160,12 @@ export const AccountsScreen: React.FC = () => {
 
   const handleDeleteAccount = (account: Account) => {
     Alert.alert(
-      'Obriši račun',
-      `Jeste li sigurni da želite obrisati "${account.name}"?\n\nSve transakcije vezane uz ovaj račun će biti obrisane, a stanje računa maknuto iz ukupnog izračuna.`,
+      t('accounts.deleteAccount'),
+      t('accounts.deleteAccountConfirm'),
       [
-        { text: 'Odustani', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Obriši',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             // Delete transactions tied to this account
@@ -208,11 +210,11 @@ export const AccountsScreen: React.FC = () => {
   const handleAccountPress = (account: Account) => {
     Alert.alert(
       account.name,
-      `Stanje: ${formatAmount(account.balance)}`,
+      t('accounts.balanceLabel', { amount: formatAmount(account.balance) }),
       [
-        { text: 'Zatvori', style: 'cancel' },
-        { text: 'Uredi', onPress: () => handleEditAccount(account) },
-        { text: 'Obriši', style: 'destructive', onPress: () => handleDeleteAccount(account) },
+        { text: t('accounts.actionClose'), style: 'cancel' },
+        { text: t('common.edit'), onPress: () => handleEditAccount(account) },
+        { text: t('common.delete'), style: 'destructive', onPress: () => handleDeleteAccount(account) },
       ]
     );
   };
@@ -242,12 +244,12 @@ export const AccountsScreen: React.FC = () => {
 
   const handleDeleteDebt = (debt: Debt) => {
     Alert.alert(
-      'Obriši dug',
-      `Jeste li sigurni da želite obrisati "${debt.name}"?`,
+      t('accounts.deleteDebt'),
+      t('accounts.deleteDebtConfirm', { name: debt.name }),
       [
-        { text: 'Odustani', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Obriši',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             await deleteDebtById(debt.id);
@@ -293,17 +295,13 @@ export const AccountsScreen: React.FC = () => {
   const totalYearlySubs = subscriptions.reduce((sum, s) => sum + s.yearlyTotal, 0);
 
   const tabs: Array<{ key: ScreenTab; label: string; icon: string }> = [
-    { key: 'accounts', label: 'Računi', icon: 'business-outline' },
-    { key: 'debts', label: 'Dugovi', icon: 'trending-down-outline' },
-    { key: 'subscriptions', label: 'Pretplate', icon: 'repeat-outline' },
+    { key: 'accounts', label: t('accounts.tabAccounts'), icon: 'business-outline' },
+    { key: 'debts', label: t('accounts.tabDebts'), icon: 'trending-down-outline' },
+    { key: 'subscriptions', label: t('accounts.tabSubscriptions'), icon: 'repeat-outline' },
   ];
 
   const getFrequencyLabel = (f: string) => {
-    const labels: Record<string, string> = {
-      weekly: 'Tjedno', biweekly: 'Dvotjedno', monthly: 'Mjesečno',
-      quarterly: 'Kvartalno', yearly: 'Godišnje',
-    };
-    return labels[f] || f;
+    return t('recurring.frequencies.' + f, f);
   };
 
   return (
@@ -313,7 +311,7 @@ export const AccountsScreen: React.FC = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={[styles.screenTitle, { color: colors.text }]}>Financije</Text>
+        <Text style={[styles.screenTitle, { color: colors.text }]}>{t('accounts.title')}</Text>
         <View style={{ width: 60 }} />
       </View>
 
@@ -353,9 +351,9 @@ export const AccountsScreen: React.FC = () => {
           <View>
             {/* Ukupno stanje */}
             <View style={[styles.totalCard, { backgroundColor: colors.primary }]}>
-              <Text style={styles.totalLabel}>Ukupno stanje</Text>
+              <Text style={styles.totalLabel}>{t('accounts.totalBalance')}</Text>
               <Text style={styles.totalAmount}>{formatAmount(totalBalance)}</Text>
-              <Text style={styles.totalSub}>{accounts.length} računa</Text>
+              <Text style={styles.totalSub}>{t('accounts.accountCount', { count: accounts.length })}</Text>
             </View>
 
             {/* Lista računa */}
@@ -374,7 +372,7 @@ export const AccountsScreen: React.FC = () => {
                   <View style={styles.accountInfo}>
                     <Text style={[styles.accountName, { color: colors.text }]}>{account.name}</Text>
                     <Text style={[styles.accountType, { color: colors.textSecondary }]}>
-                      {typeInfo?.label || account.type}
+                      {typeInfo ? t(typeInfo.labelKey) : account.type}
                     </Text>
                   </View>
                   <Text
@@ -392,7 +390,7 @@ export const AccountsScreen: React.FC = () => {
             })}
 
             <Button
-              title="+ Dodaj račun"
+              title={t('accounts.addAccount')}
               onPress={() => setShowAddAccount(true)}
               variant="outline"
               fullWidth
@@ -405,9 +403,9 @@ export const AccountsScreen: React.FC = () => {
           <View>
             {totalDebt > 0 && (
               <View style={[styles.totalCard, { backgroundColor: colors.error }]}>
-                <Text style={styles.totalLabel}>Ukupni dugovi</Text>
+                <Text style={styles.totalLabel}>{t('accounts.totalDebts')}</Text>
                 <Text style={styles.totalAmount}>{formatAmount(totalDebt)}</Text>
-                <Text style={styles.totalSub}>{debts.length} obveza</Text>
+                <Text style={styles.totalSub}>{t('accounts.debtCount', { count: debts.length })}</Text>
               </View>
             )}
 
@@ -415,35 +413,35 @@ export const AccountsScreen: React.FC = () => {
             {strategyComparison && debts.length > 1 && (
               <View style={[styles.strategyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <Text style={[styles.strategyTitle, { color: colors.text }]}>
-                  🧮 Usporedba strategija otplate
+                  🧮 {t('accounts.strategyComparison')}
                 </Text>
 
                 <View style={styles.strategyRow}>
                   <View style={[styles.strategyBox, { backgroundColor: colors.surfaceVariant }]}>
                     <Ionicons name="snow-outline" size={28} color={colors.primary} style={{ marginBottom: 4 }} />
-                    <Text style={[styles.strategyName, { color: colors.text }]}>Snowball</Text>
+                    <Text style={[styles.strategyName, { color: colors.text }]}>{t('accounts.snowball')}</Text>
                     <Text style={[styles.strategyDesc, { color: colors.textSecondary }]}>
-                      Najmanji dug prvo
+                      {t('accounts.snowballShort')}
                     </Text>
                     <Text style={[styles.strategyMonths, { color: colors.primary }]}>
-                      {strategyComparison.snowball.monthsToPayoff} mj.
+                      {strategyComparison.snowball.monthsToPayoff} {t('accounts.months')}
                     </Text>
                     <Text style={[styles.strategyInterest, { color: colors.error }]}>
-                      Kamata: {formatAmount(strategyComparison.snowball.totalInterest)}
+                      {t('accounts.interest', { amount: formatAmount(strategyComparison.snowball.totalInterest) })}
                     </Text>
                   </View>
 
                   <View style={[styles.strategyBox, { backgroundColor: colors.surfaceVariant }]}>
                     <Ionicons name="snow-outline" size={28} color={colors.primary} style={{ marginBottom: 4 }} />
-                    <Text style={[styles.strategyName, { color: colors.text }]}>Avalanche</Text>
+                    <Text style={[styles.strategyName, { color: colors.text }]}>{t('accounts.avalanche')}</Text>
                     <Text style={[styles.strategyDesc, { color: colors.textSecondary }]}>
-                      Najveća kamata prvo
+                      {t('accounts.avalancheShort')}
                     </Text>
                     <Text style={[styles.strategyMonths, { color: colors.primary }]}>
-                      {strategyComparison.avalanche.monthsToPayoff} mj.
+                      {strategyComparison.avalanche.monthsToPayoff} {t('accounts.months')}
                     </Text>
                     <Text style={[styles.strategyInterest, { color: colors.error }]}>
-                      Kamata: {formatAmount(strategyComparison.avalanche.totalInterest)}
+                      {t('accounts.interest', { amount: formatAmount(strategyComparison.avalanche.totalInterest) })}
                     </Text>
                   </View>
                 </View>
@@ -452,7 +450,7 @@ export const AccountsScreen: React.FC = () => {
                   <View style={[styles.savingsHint, { backgroundColor: colors.success + '15', flexDirection: 'row', alignItems: 'center', gap: 6 }]}>
                     <Ionicons name="information-circle-outline" size={14} color={colors.success} />
                     <Text style={[styles.savingsHintText, { color: colors.success, flex: 1 }]}>
-                      Avalanche strategija štedi {formatAmount(strategyComparison.savings)} na kamatama!
+                      {t('accounts.savedInterest', { amount: formatAmount(strategyComparison.savings) })}
                     </Text>
                   </View>
                 )}
@@ -476,7 +474,7 @@ export const AccountsScreen: React.FC = () => {
                     <View style={styles.debtInfo}>
                       <Text style={[styles.debtName, { color: colors.text }]}>{debt.name}</Text>
                       <Text style={[styles.debtType, { color: colors.textSecondary }]}>
-                        {typeInfo?.label} • {debt.interestRate}% kamata
+                        {typeInfo ? t(typeInfo.labelKey) : debt.type} • {t('accounts.debtInterestLabel', { rate: debt.interestRate })}
                       </Text>
                     </View>
                     <TouchableOpacity
@@ -504,7 +502,7 @@ export const AccountsScreen: React.FC = () => {
 
                   <View style={styles.debtFooter}>
                     <Text style={[styles.debtPaidPercent, { color: colors.textSecondary }]}>
-                      {paidPercent.toFixed(0)}% otplaćeno
+                      {t('accounts.paidPercent', { percent: paidPercent.toFixed(0) })}
                     </Text>
                     <TouchableOpacity
                       style={[styles.payButton, { backgroundColor: colors.primary + '15' }]}
@@ -513,7 +511,7 @@ export const AccountsScreen: React.FC = () => {
                         setShowPayment(true);
                       }}
                     >
-                      <Text style={[styles.payButtonText, { color: colors.primary }]}>Uplati</Text>
+                      <Text style={[styles.payButtonText, { color: colors.primary }]}>{t('accounts.pay')}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -524,13 +522,13 @@ export const AccountsScreen: React.FC = () => {
               <View style={styles.emptyState}>
                 <Ionicons name="checkmark-circle-outline" size={48} color={colors.success} style={{ marginBottom: Spacing.md }} />
                 <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                  Nemate evidentiranih dugova!
+                  {t('accounts.noDebts')}
                 </Text>
               </View>
             )}
 
             <Button
-              title="+ Dodaj dug/kredit"
+              title={t('accounts.addDebt')}
               onPress={() => setShowAddDebt(true)}
               variant="outline"
               fullWidth
@@ -543,10 +541,10 @@ export const AccountsScreen: React.FC = () => {
           <View>
             {subscriptions.length > 0 && (
               <View style={[styles.totalCard, { backgroundColor: '#FF9800' }]}>
-                <Text style={styles.totalLabel}>Godišnji trošak pretplata</Text>
+                <Text style={styles.totalLabel}>{t('accounts.yearlySubscriptionCost')}</Text>
                 <Text style={styles.totalAmount}>{formatAmount(totalYearlySubs)}</Text>
                 <Text style={styles.totalSub}>
-                  {formatAmount(totalYearlySubs / 12)}/mj • {subscriptions.length} pretplata
+                  {t('accounts.subscriptionSummary', { amount: formatAmount(totalYearlySubs / 12), count: subscriptions.length })}
                 </Text>
               </View>
             )}
@@ -567,7 +565,7 @@ export const AccountsScreen: React.FC = () => {
                     {formatAmount(sub.amount)}
                   </Text>
                   <Text style={[styles.subYearly, { color: colors.textSecondary }]}>
-                    {formatAmount(sub.yearlyTotal)}/god
+                    {formatAmount(sub.yearlyTotal)}{t('accounts.perYear')}
                   </Text>
                 </View>
               </View>
@@ -577,7 +575,7 @@ export const AccountsScreen: React.FC = () => {
               <View style={styles.emptyState}>
                 <Ionicons name="repeat-outline" size={40} color={colors.textTertiary} style={{ marginBottom: 8 }} />
                 <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                  Nema detektiranih pretplata.{'\n'}Dodajte ponavljajuće transakcije kako bi se prikazale ovdje.
+                  {t('accounts.noSubscriptions')}
                 </Text>
               </View>
             )}
@@ -585,8 +583,7 @@ export const AccountsScreen: React.FC = () => {
             <View style={[styles.hint, { backgroundColor: colors.surfaceVariant, flexDirection: 'row', gap: 6 }]}>
               <Ionicons name="information-circle-outline" size={14} color={colors.textSecondary} style={{ marginTop: 2 }} />
               <Text style={[styles.hintText, { color: colors.textSecondary, flex: 1 }]}>
-                Pretplate se automatski detektiraju iz vaših ponavljajućih transakcija.
-                Pregledajte ih redovito - mnogi ljudi plaćaju pretplate koje ne koriste!
+                {t('accounts.subscriptionHint')}
               </Text>
             </View>
           </View>
@@ -597,33 +594,33 @@ export const AccountsScreen: React.FC = () => {
       <Modal visible={showAddAccount} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Novi račun</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>{t('accounts.newAccount')}</Text>
 
             <TextInput
               style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
-              placeholder="Naziv računa"
+              placeholder={t('accounts.accountName')}
               placeholderTextColor={colors.textTertiary}
               value={accName}
               onChangeText={setAccName}
             />
 
-            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Vrsta računa</Text>
+            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>{t('accounts.accountType')}</Text>
             <View style={styles.typeGrid}>
-              {ACCOUNT_TYPES.map((t) => (
+              {ACCOUNT_TYPES.map((item) => (
                 <TouchableOpacity
-                  key={t.type}
+                  key={item.type}
                   style={[
                     styles.typeChip,
                     {
-                      backgroundColor: accType === t.type ? colors.primary + '20' : colors.surfaceVariant,
-                      borderColor: accType === t.type ? colors.primary : colors.border,
+                      backgroundColor: accType === item.type ? colors.primary + '20' : colors.surfaceVariant,
+                      borderColor: accType === item.type ? colors.primary : colors.border,
                     },
                   ]}
-                  onPress={() => setAccType(t.type)}
+                  onPress={() => setAccType(item.type)}
                 >
-                  <Ionicons name={t.icon as any} size={18} color={accType === t.type ? colors.primary : colors.text} />
-                  <Text style={[styles.typeLabel, { color: accType === t.type ? colors.primary : colors.text }]}>
-                    {t.label}
+                  <Ionicons name={item.icon as any} size={18} color={accType === item.type ? colors.primary : colors.text} />
+                  <Text style={[styles.typeLabel, { color: accType === item.type ? colors.primary : colors.text }]}>
+                    {t(item.labelKey)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -631,14 +628,14 @@ export const AccountsScreen: React.FC = () => {
 
             <TextInput
               style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
-              placeholder="Početni saldo (€)"
+              placeholder={t('accounts.initialBalance')}
               placeholderTextColor={colors.textTertiary}
               value={accBalance}
               onChangeText={setAccBalance}
               keyboardType="decimal-pad"
             />
 
-            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Boja</Text>
+            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>{t('accounts.color')}</Text>
             <View style={styles.colorRow}>
               {ACCOUNT_COLORS.map((c) => (
                 <TouchableOpacity
@@ -653,7 +650,7 @@ export const AccountsScreen: React.FC = () => {
             </View>
 
             <View style={styles.switchRow}>
-              <Text style={[styles.switchLabel, { color: colors.text }]}>Uključi u ukupno stanje</Text>
+              <Text style={[styles.switchLabel, { color: colors.text }]}>{t('accounts.includeInTotal')}</Text>
               <Switch
                 value={accIncludeInTotal}
                 onValueChange={setAccIncludeInTotal}
@@ -663,12 +660,12 @@ export const AccountsScreen: React.FC = () => {
 
             <View style={styles.modalButtons}>
               <Button
-                title="Odustani"
+                title={t('common.cancel')}
                 onPress={() => { setShowAddAccount(false); resetAccountForm(); }}
                 variant="ghost"
               />
               <Button
-                title="Spremi"
+                title={t('common.save')}
                 onPress={handleAddAccount}
                 disabled={!accName.trim() || !accBalance}
               />
@@ -681,33 +678,33 @@ export const AccountsScreen: React.FC = () => {
       <Modal visible={showEditAccount !== null} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Uredi račun</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>{t('accounts.editAccount')}</Text>
 
             <TextInput
               style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
-              placeholder="Naziv računa"
+              placeholder={t('accounts.accountName')}
               placeholderTextColor={colors.textTertiary}
               value={accName}
               onChangeText={setAccName}
             />
 
-            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Vrsta računa</Text>
+            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>{t('accounts.accountType')}</Text>
             <View style={styles.typeGrid}>
-              {ACCOUNT_TYPES.map((t) => (
+              {ACCOUNT_TYPES.map((item) => (
                 <TouchableOpacity
-                  key={t.type}
+                  key={item.type}
                   style={[
                     styles.typeChip,
                     {
-                      backgroundColor: accType === t.type ? colors.primary + '20' : colors.surfaceVariant,
-                      borderColor: accType === t.type ? colors.primary : colors.border,
+                      backgroundColor: accType === item.type ? colors.primary + '20' : colors.surfaceVariant,
+                      borderColor: accType === item.type ? colors.primary : colors.border,
                     },
                   ]}
-                  onPress={() => setAccType(t.type)}
+                  onPress={() => setAccType(item.type)}
                 >
-                  <Ionicons name={t.icon as any} size={18} color={accType === t.type ? colors.primary : colors.text} />
-                  <Text style={[styles.typeLabel, { color: accType === t.type ? colors.primary : colors.text }]}>
-                    {t.label}
+                  <Ionicons name={item.icon as any} size={18} color={accType === item.type ? colors.primary : colors.text} />
+                  <Text style={[styles.typeLabel, { color: accType === item.type ? colors.primary : colors.text }]}>
+                    {t(item.labelKey)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -715,14 +712,14 @@ export const AccountsScreen: React.FC = () => {
 
             <TextInput
               style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
-              placeholder="Stanje (€)"
+              placeholder={t('accounts.balance')}
               placeholderTextColor={colors.textTertiary}
               value={accBalance}
               onChangeText={setAccBalance}
               keyboardType="decimal-pad"
             />
 
-            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Boja</Text>
+            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>{t('accounts.color')}</Text>
             <View style={styles.colorRow}>
               {ACCOUNT_COLORS.map((c) => (
                 <TouchableOpacity
@@ -737,7 +734,7 @@ export const AccountsScreen: React.FC = () => {
             </View>
 
             <View style={styles.switchRow}>
-              <Text style={[styles.switchLabel, { color: colors.text }]}>Uključi u ukupno stanje</Text>
+              <Text style={[styles.switchLabel, { color: colors.text }]}>{t('accounts.includeInTotal')}</Text>
               <Switch
                 value={accIncludeInTotal}
                 onValueChange={setAccIncludeInTotal}
@@ -747,12 +744,12 @@ export const AccountsScreen: React.FC = () => {
 
             <View style={styles.modalButtons}>
               <Button
-                title="Odustani"
+                title={t('common.cancel')}
                 onPress={() => { setShowEditAccount(null); resetAccountForm(); }}
                 variant="ghost"
               />
               <Button
-                title="Spremi"
+                title={t('common.save')}
                 onPress={handleSaveEditAccount}
                 disabled={!accName.trim()}
               />
@@ -766,33 +763,33 @@ export const AccountsScreen: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={[styles.modalTitle, { color: colors.text }]}>Novi dug/kredit</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>{t('accounts.newDebt')}</Text>
 
               <TextInput
                 style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
-                placeholder="Naziv (npr. Stambeni kredit)"
+                placeholder={t('accounts.debtName')}
                 placeholderTextColor={colors.textTertiary}
                 value={debtName}
                 onChangeText={setDebtName}
               />
 
-              <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Vrsta</Text>
+              <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>{t('accounts.debtType')}</Text>
               <View style={styles.typeGrid}>
-                {DEBT_TYPES.map((t) => (
+                {DEBT_TYPES.map((item) => (
                   <TouchableOpacity
-                    key={t.type}
+                    key={item.type}
                     style={[
                       styles.typeChip,
                       {
-                        backgroundColor: debtType === t.type ? colors.primary + '20' : colors.surfaceVariant,
-                        borderColor: debtType === t.type ? colors.primary : colors.border,
+                        backgroundColor: debtType === item.type ? colors.primary + '20' : colors.surfaceVariant,
+                        borderColor: debtType === item.type ? colors.primary : colors.border,
                       },
                     ]}
-                    onPress={() => setDebtType(t.type)}
+                    onPress={() => setDebtType(item.type)}
                   >
-                    <Ionicons name={t.icon as any} size={18} color={debtType === t.type ? colors.primary : colors.text} />
-                    <Text style={[styles.typeLabel, { color: debtType === t.type ? colors.primary : colors.text }]}>
-                      {t.label}
+                    <Ionicons name={item.icon as any} size={18} color={debtType === item.type ? colors.primary : colors.text} />
+                    <Text style={[styles.typeLabel, { color: debtType === item.type ? colors.primary : colors.text }]}>
+                      {t(item.labelKey)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -800,7 +797,7 @@ export const AccountsScreen: React.FC = () => {
 
               <TextInput
                 style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
-                placeholder="Ukupan iznos kredita (€)"
+                placeholder={t('accounts.totalDebtAmount')}
                 placeholderTextColor={colors.textTertiary}
                 value={debtTotal}
                 onChangeText={setDebtTotal}
@@ -809,7 +806,7 @@ export const AccountsScreen: React.FC = () => {
 
               <TextInput
                 style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
-                placeholder="Preostali iznos (€)"
+                placeholder={t('accounts.remainingDebt')}
                 placeholderTextColor={colors.textTertiary}
                 value={debtRemaining}
                 onChangeText={setDebtRemaining}
@@ -818,7 +815,7 @@ export const AccountsScreen: React.FC = () => {
 
               <TextInput
                 style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
-                placeholder="Godišnja kamata (%)"
+                placeholder={t('accounts.interestRate')}
                 placeholderTextColor={colors.textTertiary}
                 value={debtRate}
                 onChangeText={setDebtRate}
@@ -827,7 +824,7 @@ export const AccountsScreen: React.FC = () => {
 
               <TextInput
                 style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
-                placeholder="Mjesečna rata (€)"
+                placeholder={t('accounts.monthlyPayment')}
                 placeholderTextColor={colors.textTertiary}
                 value={debtMinPayment}
                 onChangeText={setDebtMinPayment}
@@ -836,7 +833,7 @@ export const AccountsScreen: React.FC = () => {
 
               <TextInput
                 style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
-                placeholder="Dan dospijeća (1-31)"
+                placeholder={t('accounts.dueDay')}
                 placeholderTextColor={colors.textTertiary}
                 value={debtDueDate}
                 onChangeText={setDebtDueDate}
@@ -845,12 +842,12 @@ export const AccountsScreen: React.FC = () => {
 
               <View style={styles.modalButtons}>
                 <Button
-                  title="Odustani"
+                  title={t('common.cancel')}
                   onPress={() => { setShowAddDebt(false); resetDebtForm(); }}
                   variant="ghost"
                 />
                 <Button
-                  title="Spremi"
+                  title={t('common.save')}
                   onPress={handleAddDebt}
                   disabled={!debtName.trim() || !debtTotal || !debtMinPayment}
                 />
@@ -865,15 +862,15 @@ export const AccountsScreen: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>
-              Uplata za {selectedDebt?.name}
+              {t('accounts.paymentFor', { name: selectedDebt?.name })}
             </Text>
             <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
-              Preostalo: {formatAmount(selectedDebt?.remainingAmount || 0)}
+              {t('accounts.remaining', { amount: formatAmount(selectedDebt?.remainingAmount || 0) })}
             </Text>
 
             <TextInput
               style={[styles.input, styles.amountInput, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
-              placeholder="Iznos uplate (€)"
+              placeholder={t('accounts.paymentAmount')}
               placeholderTextColor={colors.textTertiary}
               value={paymentAmount}
               onChangeText={setPaymentAmount}
@@ -883,12 +880,12 @@ export const AccountsScreen: React.FC = () => {
 
             <View style={styles.modalButtons}>
               <Button
-                title="Odustani"
+                title={t('common.cancel')}
                 onPress={() => { setShowPayment(false); setPaymentAmount(''); }}
                 variant="ghost"
               />
               <Button
-                title="Uplati"
+                title={t('accounts.pay')}
                 onPress={handleMakePayment}
                 disabled={!paymentAmount}
               />

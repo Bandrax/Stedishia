@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useTransactionStore } from '../store';
 import { Typography, Spacing, BorderRadius } from '../constants';
@@ -29,6 +30,7 @@ interface TransactionSection {
 }
 
 export const TransactionsScreen: React.FC = () => {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const { currentUser } = useAuthStore();
   const { transactions, setTransactions } = useTransactionStore();
@@ -71,17 +73,17 @@ export const TransactionsScreen: React.FC = () => {
 
   const handleTransactionPress = (tx: Transaction) => {
     const catInfo = getCategoryInfo(tx.categoryId);
-    const typeLabel = tx.type === 'income' ? 'Prihod' : tx.type === 'transfer' ? 'Transfer' : 'Rashod';
+    const typeLabel = t(`transactions.type.${tx.type}`);
     const sign = tx.type === 'income' ? '+' : '-';
     Alert.alert(
       `${catInfo?.emoji ?? '📌'} ${tx.description}`,
       [
         `${typeLabel}: ${sign}${formatAmount(tx.amount)}`,
-        `Kategorija: ${catInfo?.name ?? tx.categoryId}`,
-        `Datum: ${tx.date}`,
-        tx.scope === 'shared' ? 'Zajedničko' : 'Osobno',
-        tx.note ? `\nBilješka: ${tx.note}` : '',
-        tx.tags && tx.tags.length > 0 ? `Oznake: ${tx.tags.join(', ')}` : '',
+        `${t('transactions.category')}: ${catInfo?.name ?? tx.categoryId}`,
+        `${t('transactions.date')}: ${tx.date}`,
+        t(`transactions.scope.${tx.scope}`),
+        tx.note ? `\n${t('transactions.note')}: ${tx.note}` : '',
+        tx.tags && tx.tags.length > 0 ? `${t('transactions.tags')}: ${tx.tags.join(', ')}` : '',
       ].filter(Boolean).join('\n')
     );
   };
@@ -103,16 +105,16 @@ export const TransactionsScreen: React.FC = () => {
   }, [transactions]);
 
   const filterOptions: { value: TransactionType | 'all'; label: string }[] = [
-    { value: 'all', label: 'Sve' },
-    { value: 'expense', label: 'Rashodi' },
-    { value: 'income', label: 'Prihodi' },
+    { value: 'all', label: t('transactions.filterAll') },
+    { value: 'expense', label: t('transactions.filterExpenses') },
+    { value: 'income', label: t('transactions.filterIncome') },
   ];
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>Transakcije</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('transactions.title')}</Text>
       </View>
 
       {/* Pretraga */}
@@ -124,7 +126,7 @@ export const TransactionsScreen: React.FC = () => {
           ]}
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholder="🔍 Pretraži transakcije..."
+          placeholder={`🔍 ${t('transactions.searchPlaceholder')}`}
           placeholderTextColor={colors.textTertiary}
           returnKeyType="search"
         />
@@ -179,12 +181,12 @@ export const TransactionsScreen: React.FC = () => {
           <View style={styles.emptyState}>
             <Ionicons name="document-text-outline" size={48} color={colors.textTertiary} style={{ marginBottom: Spacing.base }} />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
-              Nema transakcija
+              {t('transactions.noTransactions')}
             </Text>
             <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
               {searchQuery
-                ? 'Pokušajte s drugim pojmom pretrage.'
-                : 'Dodajte prvu transakciju pritiskom na + gumb!'}
+                ? t('transactions.noResults')
+                : t('transactions.noTransactionsHint')}
             </Text>
           </View>
         }

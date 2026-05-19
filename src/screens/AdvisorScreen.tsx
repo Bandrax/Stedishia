@@ -22,6 +22,7 @@ import {
   type Advice,
 } from '../services/advisorService';
 import { getDailyTip } from '../services/tips';
+import { useTranslation } from 'react-i18next';
 
 type AdvisorTab = 'advice' | 'checkin' | 'learn' | 'glossary';
 
@@ -30,6 +31,7 @@ export const AdvisorScreen: React.FC = () => {
   const navigation = useNavigation();
   const currentUser = useAuthStore((s) => s.currentUser);
   const userId = currentUser?.id || '';
+  const { t } = useTranslation();
 
   const [activeTab, setActiveTab] = useState<AdvisorTab>('advice');
   const [refreshing, setRefreshing] = useState(false);
@@ -66,10 +68,10 @@ export const AdvisorScreen: React.FC = () => {
   }, [loadAdvice]);
 
   const tabs: Array<{ key: AdvisorTab; label: string; icon: string }> = [
-    { key: 'advice', label: 'Savjeti', icon: 'bulb-outline' },
-    { key: 'checkin', label: 'Check-in', icon: 'clipboard-outline' },
-    { key: 'learn', label: 'Nauči', icon: 'book-outline' },
-    { key: 'glossary', label: 'Pojmovi', icon: 'library-outline' },
+    { key: 'advice', label: t('advisor.tabTips'), icon: 'bulb-outline' },
+    { key: 'checkin', label: t('advisor.tabCheckin'), icon: 'clipboard-outline' },
+    { key: 'learn', label: t('advisor.tabLearn'), icon: 'book-outline' },
+    { key: 'glossary', label: t('advisor.tabTerms'), icon: 'library-outline' },
   ];
 
   const getPriorityStyle = (priority: string) => {
@@ -85,9 +87,9 @@ export const AdvisorScreen: React.FC = () => {
 
   const getPriorityLabel = (priority: string) => {
     switch (priority) {
-      case 'high': return 'Važno';
-      case 'medium': return 'Preporuka';
-      default: return 'Informacija';
+      case 'high': return t('advisor.priority.high');
+      case 'medium': return t('advisor.priority.medium');
+      default: return t('advisor.priority.low');
     }
   };
 
@@ -96,21 +98,21 @@ export const AdvisorScreen: React.FC = () => {
       {/* Savjet dana */}
       <View style={[styles.tipCard, { backgroundColor: colors.primary + '10', borderColor: colors.primary + '30' }]}>
         <Text style={[styles.tipTitle, { color: colors.primary }]}>
-          <Ionicons name="bulb-outline" size={14} color={colors.primary} /> Savjet dana
+          <Ionicons name="bulb-outline" size={14} color={colors.primary} /> {t('advisor.tipOfDay')}
         </Text>
         <Text style={[styles.tipText, { color: colors.text }]}>{dailyTip}</Text>
       </View>
 
       {/* Personalizirani savjeti */}
       <Text style={[styles.sectionTitle, { color: colors.text }]}>
-        <Ionicons name="sparkles-outline" size={16} color={colors.text} /> Personalizirani savjeti
+        <Ionicons name="sparkles-outline" size={16} color={colors.text} /> {t('advisor.personalizedTips')}
       </Text>
 
       {advice.length === 0 && (
         <View style={styles.emptyState}>
           <Ionicons name="sync-outline" size={40} color={colors.textSecondary} style={{ marginBottom: Spacing.sm }} />
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            Analiziram vaše financije...
+            {t('advisor.analyzing')}
           </Text>
         </View>
       )}
@@ -165,9 +167,9 @@ export const AdvisorScreen: React.FC = () => {
     <View>
       <View style={[styles.checkInHeader, { backgroundColor: colors.primary + '10' }]}>
         <Ionicons name="clipboard-outline" size={40} color={colors.primary} style={{ marginBottom: Spacing.sm }} />
-        <Text style={[styles.checkInTitle, { color: colors.text }]}>Tjedni check-in</Text>
+        <Text style={[styles.checkInTitle, { color: colors.text }]}>{t('advisor.weeklyCheckin')}</Text>
         <Text style={[styles.checkInSubtitle, { color: colors.textSecondary }]}>
-          Odvojite 2 minute da razmislite o svojim financijama ovaj tjedan
+          {t('advisor.checkinDescription')}
         </Text>
       </View>
 
@@ -182,10 +184,10 @@ export const AdvisorScreen: React.FC = () => {
             {item.type === 'yes_no' && (
               <View style={styles.yesNoRow}>
                 <TouchableOpacity style={[styles.yesNoBtn, { backgroundColor: colors.success + '15' }]}>
-                  <Text style={[styles.yesNoText, { color: colors.success }]}>Da <Ionicons name="checkmark" size={16} color={colors.success} /></Text>
+                  <Text style={[styles.yesNoText, { color: colors.success }]}>{t('common.yes')} <Ionicons name="checkmark" size={16} color={colors.success} /></Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.yesNoBtn, { backgroundColor: colors.error + '15' }]}>
-                  <Text style={[styles.yesNoText, { color: colors.error }]}>Ne <Ionicons name="close" size={16} color={colors.error} /></Text>
+                  <Text style={[styles.yesNoText, { color: colors.error }]}>{t('common.no')} <Ionicons name="close" size={16} color={colors.error} /></Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -204,7 +206,7 @@ export const AdvisorScreen: React.FC = () => {
             {item.type === 'reflection' && (
               <View style={[styles.reflectionBox, { backgroundColor: colors.surfaceVariant }]}>
                 <Text style={[styles.reflectionPlaceholder, { color: colors.textTertiary }]}>
-                  Zapišite svoju misao...
+                  {t('advisor.writeThought')}
                 </Text>
               </View>
             )}
@@ -214,8 +216,7 @@ export const AdvisorScreen: React.FC = () => {
 
       <View style={[styles.hint, { backgroundColor: colors.surfaceVariant }]}>
         <Text style={[styles.hintText, { color: colors.textSecondary }]}>
-          <Ionicons name="information-circle-outline" size={12} color={colors.textSecondary} /> Tjedni check-in je navika koja pomaže graditi financijsku svjesnost.
-          Pitanja se mijenjaju svaki tjedan.
+          <Ionicons name="information-circle-outline" size={12} color={colors.textSecondary} /> {t('advisor.checkinHint')}
         </Text>
       </View>
     </View>
@@ -224,7 +225,7 @@ export const AdvisorScreen: React.FC = () => {
   const renderLearnTab = () => (
     <View>
       <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
-        Kratki članci za bolje razumijevanje financija
+        {t('advisor.learnDescription')}
       </Text>
 
       {articles.map((article) => (
@@ -248,7 +249,7 @@ export const AdvisorScreen: React.FC = () => {
               {article.summary}
             </Text>
             <Text style={[styles.articleMeta, { color: colors.textTertiary }]}>
-              ⏱ {article.readTimeMin} min čitanja
+              ⏱ {t('advisor.readTime', { min: article.readTimeMin })}
             </Text>
           </View>
           <Text style={{ color: colors.textTertiary, fontSize: 18 }}>›</Text>
@@ -260,7 +261,7 @@ export const AdvisorScreen: React.FC = () => {
   const renderGlossaryTab = () => (
     <View>
       <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
-        Financijski pojmovi objašnjeni jednostavnim jezikom
+        {t('advisor.termsDescription')}
       </Text>
 
       {glossary.map((item, index) => (
@@ -287,7 +288,7 @@ export const AdvisorScreen: React.FC = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={[styles.screenTitle, { color: colors.text }]}>Savjetnik</Text>
+        <Text style={[styles.screenTitle, { color: colors.text }]}>{t('advisor.title')}</Text>
         <View style={{ width: 60 }} />
       </View>
 
@@ -347,7 +348,7 @@ export const AdvisorScreen: React.FC = () => {
               style={[styles.closeButton, { backgroundColor: colors.primary }]}
               onPress={() => setShowArticle(false)}
             >
-              <Text style={styles.closeButtonText}>Zatvori</Text>
+              <Text style={styles.closeButtonText}>{t('common.close')}</Text>
             </TouchableOpacity>
           </View>
         </View>

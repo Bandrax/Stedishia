@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useAccountStore } from '../store';
 import { Typography, Spacing, ALL_DEFAULT_CATEGORIES } from '../constants';
@@ -57,6 +58,7 @@ interface DashboardData {
 }
 
 export const DashboardScreen: React.FC = () => {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const { currentUser, household } = useAuthStore();
   const [scope, setScope] = useState<Scope>('personal');
@@ -171,10 +173,10 @@ export const DashboardScreen: React.FC = () => {
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.greeting, { color: colors.textSecondary }]}>
-            Bok, {userName}!
+            {t('dashboard.greeting', { name: userName })}
           </Text>
           <Text style={[styles.headerTitle, { color: colors.text }]}>
-            Početna
+            {t('dashboard.title')}
           </Text>
         </View>
 
@@ -208,7 +210,7 @@ export const DashboardScreen: React.FC = () => {
             <View style={styles.sectionTitleRow}>
               <Ionicons name="wallet-outline" size={18} color={colors.primary} />
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Budžet ovog mjeseca
+                {t('dashboard.budgetThisMonth')}
               </Text>
             </View>
             {data.budgetItems.slice(0, 5).map((item) => {
@@ -233,7 +235,7 @@ export const DashboardScreen: React.FC = () => {
             <View style={styles.sectionTitleRow}>
               <Ionicons name="flame-outline" size={18} color={colors.warning} />
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Najveći troškovi
+                {t('dashboard.topExpenses')}
               </Text>
             </View>
             {data.topExpenses.map((expense, index) => {
@@ -260,7 +262,7 @@ export const DashboardScreen: React.FC = () => {
             <View style={styles.sectionTitleRow}>
               <Ionicons name="calendar-outline" size={18} color={colors.primary} />
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Predstojeća plaćanja
+                {t('dashboard.upcomingPayments')}
               </Text>
             </View>
             {data.upcomingPayments.map((payment) => {
@@ -291,7 +293,7 @@ export const DashboardScreen: React.FC = () => {
             <View style={styles.sectionTitleRow}>
               <Ionicons name="trending-up-outline" size={18} color={colors.success} />
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Tok novca (30 dana)
+                {t('dashboard.cashFlow')}
               </Text>
             </View>
             <MiniCashFlowChart data={data.cashFlowData} />
@@ -310,10 +312,10 @@ export const DashboardScreen: React.FC = () => {
           <View style={styles.emptyState}>
             <Ionicons name="document-text-outline" size={56} color={colors.textTertiary} style={{ marginBottom: Spacing.base }} />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
-              Još nemate transakcija
+              {t('dashboard.noTransactions')}
             </Text>
             <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-              Dodajte prvu transakciju pritiskom na tab "Transakcije" i krenite pratiti svoje financije!
+              {t('dashboard.noTransactionsHint')}
             </Text>
           </View>
         )}

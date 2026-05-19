@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 import { formatAmount } from '../../utils';
@@ -18,6 +19,7 @@ export const BudgetSummaryHeader: React.FC<BudgetSummaryHeaderProps> = ({
   totalSpent,
   availableToAllocate,
 }) => {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const allocationPercent = totalIncome > 0
     ? Math.round((totalAllocated / totalIncome) * 100)
@@ -29,7 +31,7 @@ export const BudgetSummaryHeader: React.FC<BudgetSummaryHeaderProps> = ({
       {/* Glavni prikaz */}
       <View style={styles.mainRow}>
         <View style={styles.mainInfo}>
-          <Text style={styles.mainLabel}>Ukupno stanje</Text>
+          <Text style={styles.mainLabel}>{t('budget.totalBalance')}</Text>
           <Text style={styles.mainAmount}>
             {formatAmount(totalIncome)}
           </Text>
@@ -45,7 +47,7 @@ export const BudgetSummaryHeader: React.FC<BudgetSummaryHeaderProps> = ({
             </Text>
           )}
           <Text style={styles.percentLabel}>
-            {isFullyAllocated ? 'Raspoređeno' : 'raspoređeno'}
+            {t('budget.allocated')}
           </Text>
         </View>
       </View>
@@ -72,17 +74,17 @@ export const BudgetSummaryHeader: React.FC<BudgetSummaryHeaderProps> = ({
       <View style={styles.detailRow}>
         <View style={styles.detail}>
           <View style={[styles.detailDot, { backgroundColor: 'rgba(255,255,255,0.5)' }]} />
-          <Text style={styles.detailLabel}>Raspod.</Text>
+          <Text style={styles.detailLabel}>{t('budget.allocated')}</Text>
           <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalAllocated)}</Text>
         </View>
         <View style={styles.detail}>
           <View style={[styles.detailDot, { backgroundColor: '#FFD700' }]} />
-          <Text style={styles.detailLabel}>Potrošeno</Text>
+          <Text style={styles.detailLabel}>{t('budget.spent')}</Text>
           <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalSpent)}</Text>
         </View>
         <View style={styles.detail}>
           <View style={[styles.detailDot, { backgroundColor: availableToAllocate > 0 ? '#FF9800' : 'rgba(255,255,255,0.3)' }]} />
-          <Text style={styles.detailLabel}>Slobodno</Text>
+          <Text style={styles.detailLabel}>{t('budget.free')}</Text>
           <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(Math.max(0, availableToAllocate))}</Text>
         </View>
       </View>

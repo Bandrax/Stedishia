@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useBudgetStore } from '../store';
 import { Typography, Spacing, BorderRadius, DEFAULT_EXPENSE_CATEGORIES } from '../constants';
@@ -34,6 +35,7 @@ import { BudgetAllocationSlider } from '../components/molecules/BudgetAllocation
 
 export const BudgetScreen: React.FC = () => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
   const { currentUser } = useAuthStore();
   const { currentMonth, setCurrentMonth } = useBudgetStore();
 
@@ -100,7 +102,7 @@ export const BudgetScreen: React.FC = () => {
       await loadBudget();
       setShowSetup(false);
     } catch (err) {
-      Alert.alert('Greška', 'Nije moguće kreirati budžet.');
+      Alert.alert(t('common.error'), t('budget.createError'));
     } finally {
       setIsSettingUp(false);
     }
@@ -112,13 +114,13 @@ export const BudgetScreen: React.FC = () => {
     try {
       const count = await copyBudgetFromPreviousMonth(currentUser.id, currentMonth);
       if (count === 0) {
-        Alert.alert('Info', 'Nema budžeta u prošlom mjesecu za kopiranje.');
+        Alert.alert(t('common.info'), t('budget.noPreviousBudget'));
       } else {
         await loadBudget();
         setShowSetup(false);
       }
     } catch (err) {
-      Alert.alert('Greška', 'Nije moguće kopirati budžet.');
+      Alert.alert(t('common.error'), t('budget.copyError'));
     } finally {
       setIsSettingUp(false);
     }
@@ -155,7 +157,7 @@ export const BudgetScreen: React.FC = () => {
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Header s mjesecom */}
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>Budžet</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('budget.title')}</Text>
         <View style={styles.monthNav}>
           <TouchableOpacity onPress={() => navigateMonth(-1)} style={styles.navButton}>
             <Text style={[styles.navArrow, { color: colors.primary }]}>‹</Text>
@@ -182,34 +184,32 @@ export const BudgetScreen: React.FC = () => {
           <View style={styles.setupContainer}>
             <Ionicons name="cash-outline" size={64} color={colors.primary} style={{ marginBottom: Spacing.base }} />
             <Text style={[styles.setupTitle, { color: colors.text }]}>
-              Postavite budžet za {formatMonth(currentMonth)}
+              {t('budget.setupTitle', { month: formatMonth(currentMonth) })}
             </Text>
             <Text style={[styles.setupSubtitle, { color: colors.textSecondary }]}>
-              Dajte svakom euru svoju svrhu! Odaberite metodu koja vam odgovara.
+              {t('budget.setupSubtitle')}
             </Text>
 
             {/* Objašnjenje metoda */}
             <Card style={styles.explainCard} variant="default" padding="base">
               <Ionicons name="mail-outline" size={28} color={colors.primary} style={{ marginBottom: Spacing.sm }} />
-              <Text style={[styles.explainTitle, { color: colors.text }]}>Metoda kuverti</Text>
+              <Text style={[styles.explainTitle, { color: colors.text }]}>{t('budget.envelopeTitle')}</Text>
               <Text style={[styles.explainText, { color: colors.textSecondary }]}>
-                Zamislite da svaki euro stavljate u posebnu kuvertu. Svaka kuverta ima svoju
-                namjenu — stan, hrana, zabava... Kad kuvertu potrošite, to je to za taj mjesec!
+                {t('budget.envelopeExplain')}
               </Text>
             </Card>
 
             <Card style={styles.explainCard} variant="default" padding="base">
               <Ionicons name="bar-chart-outline" size={28} color={colors.accent} style={{ marginBottom: Spacing.sm }} />
-              <Text style={[styles.explainTitle, { color: colors.text }]}>50/30/20 pravilo</Text>
+              <Text style={[styles.explainTitle, { color: colors.text }]}>{t('budget.rule503020Title')}</Text>
               <Text style={[styles.explainText, { color: colors.textSecondary }]}>
-                Jednostavno pravilo: 50% za potrebe (stan, režije, hrana), 30% za želje
-                (zabava, odjeća), 20% za štednju i otplatu dugova.
+                {t('budget.rule503020Explain')}
               </Text>
             </Card>
 
             <View style={styles.setupButtons}>
               <Button
-                title="50/30/20 — brzi start"
+                title={t('budget.quickStart')}
                 variant="primary"
                 size="lg"
                 fullWidth
@@ -218,7 +218,7 @@ export const BudgetScreen: React.FC = () => {
                 icon="bar-chart-outline"
               />
               <Button
-                title="Kopiraj iz prošlog mjeseca"
+                title={t('budget.copyPrevious')}
                 variant="outline"
                 size="md"
                 fullWidth
@@ -226,7 +226,7 @@ export const BudgetScreen: React.FC = () => {
                 icon="copy-outline"
               />
               <Button
-                title="Ručno rasporedi"
+                title={t('budget.manualSetup')}
                 variant="ghost"
                 size="md"
                 fullWidth
@@ -255,9 +255,9 @@ export const BudgetScreen: React.FC = () => {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Ionicons name="close-circle" size={16} color={colors.error} />
                   <Text style={[styles.warningText, { color: colors.error, flex: 1 }]}>
-                    Prekoračenje u {summary!.overBudgetCategories.length} {
-                      summary!.overBudgetCategories.length === 1 ? 'kategoriji' : 'kategorija'
-                    }
+                    {summary!.overBudgetCategories.length === 1
+                      ? t('budget.overBudgetCount', { count: summary!.overBudgetCategories.length })
+                      : t('budget.overBudgetCountPlural', { count: summary!.overBudgetCategories.length })}
                   </Text>
                 </View>
               </Card>
@@ -268,9 +268,9 @@ export const BudgetScreen: React.FC = () => {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Ionicons name="alert-circle" size={16} color={colors.warning} />
                   <Text style={[styles.warningText, { color: colors.warning, flex: 1 }]}>
-                    Približavate se limitu u {summary!.nearLimitCategories.length} {
-                      summary!.nearLimitCategories.length === 1 ? 'kategoriji' : 'kategorija'
-                    }
+                    {summary!.nearLimitCategories.length === 1
+                      ? t('budget.nearLimitCount', { count: summary!.nearLimitCategories.length })
+                      : t('budget.nearLimitCountPlural', { count: summary!.nearLimitCategories.length })}
                   </Text>
                 </View>
               </Card>
@@ -280,9 +280,9 @@ export const BudgetScreen: React.FC = () => {
             {mode === '50-30-20' ? (
               <View style={{ marginTop: Spacing.base }}>
                 {[
-                  { label: 'Potrebe (50%)', icon: 'home-outline' as const, target: effectiveIncome * 0.5, categories: needsCategories, color: colors.primary },
-                  { label: 'Želje (30%)', icon: 'heart-outline' as const, target: effectiveIncome * 0.3, categories: wantsCategories, color: colors.accent },
-                  { label: 'Štednja & dugovi (20%)', icon: 'save-outline' as const, target: effectiveIncome * 0.2, categories: savingsCategories, color: colors.success },
+                  { label: t('budget.needs'), icon: 'home-outline' as const, target: effectiveIncome * 0.5, categories: needsCategories, color: colors.primary },
+                  { label: t('budget.wants'), icon: 'heart-outline' as const, target: effectiveIncome * 0.3, categories: wantsCategories, color: colors.accent },
+                  { label: t('budget.savingsDebt'), icon: 'save-outline' as const, target: effectiveIncome * 0.2, categories: savingsCategories, color: colors.success },
                 ].map((group) => {
                   const spent = groupSpent(group.categories);
                   const percent = group.target > 0 ? (spent / group.target) * 100 : 0;
@@ -316,7 +316,7 @@ export const BudgetScreen: React.FC = () => {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
                   <Ionicons name="mail-outline" size={18} color={colors.primary} />
                   <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>
-                    Kuverte
+                    {t('budget.envelopes')}
                   </Text>
                 </View>
                 {summary!.items.map((item) => {
@@ -341,11 +341,11 @@ export const BudgetScreen: React.FC = () => {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
                   <Ionicons name="warning-outline" size={18} color={colors.warning} />
                   <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>
-                    Troškovi bez budžeta
+                    {t('budget.unbudgetedTitle')}
                   </Text>
                 </View>
                 <Text style={[styles.unbudgetedHint, { color: colors.textSecondary }]}>
-                  Ove kategorije imaju troškove ali nemaju postavljeni budžet.
+                  {t('budget.unbudgetedHint')}
                 </Text>
                 {unbudgeted.map((ub) => {
                   const catInfo = getCategoryInfo(ub.categoryId);
@@ -367,25 +367,25 @@ export const BudgetScreen: React.FC = () => {
             {/* Gumbi za upravljanje budžetom */}
             <View style={{ marginTop: Spacing.lg, gap: Spacing.sm }}>
               <Button
-                title="Regeneriraj 50/30/20"
+                title={t('budget.regenerate')}
                 variant="primary"
                 size="md"
                 fullWidth
                 icon="refresh-outline"
                 onPress={() => {
                   Alert.alert(
-                    'Regeneriraj budžet',
-                    'Ovo će resetirati sve kategorije na preporučene postotke prema 50/30/20 pravilu. Nastaviti?',
+                    t('budget.regenerateTitle'),
+                    t('budget.regenerateConfirm'),
                     [
-                      { text: 'Odustani', style: 'cancel' },
-                      { text: 'Regeneriraj', onPress: handleSetup503020 },
+                      { text: t('common.cancel'), style: 'cancel' },
+                      { text: t('budget.regenerate'), onPress: handleSetup503020 },
                     ]
                   );
                 }}
                 loading={isSettingUp}
               />
               <Button
-                title="Uredi raspodjelu ručno"
+                title={t('budget.editManually')}
                 variant="outline"
                 size="md"
                 fullWidth
@@ -404,16 +404,16 @@ export const BudgetScreen: React.FC = () => {
         <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
           <View style={styles.setupModalHeader}>
             <TouchableOpacity onPress={() => { setShowSetup(false); loadBudget(); }}>
-              <Text style={[styles.setupModalClose, { color: colors.primary }]}>Gotovo</Text>
+              <Text style={[styles.setupModalClose, { color: colors.primary }]}>{t('common.done')}</Text>
             </TouchableOpacity>
-            <Text style={[styles.setupModalTitle, { color: colors.text }]}>Raspodjela budžeta</Text>
+            <Text style={[styles.setupModalTitle, { color: colors.text }]}>{t('budget.allocationTitle')}</Text>
             <View style={{ width: 50 }} />
           </View>
 
           {/* Preostalo */}
           <View style={[styles.remainingBar, { backgroundColor: colors.surfaceVariant }]}>
             <Text style={[styles.remainingText, { color: colors.text }]}>
-              Preostaje za raspodjelu: {formatAmount(summary?.availableToAllocate ?? effectiveIncome)}
+              {t('budget.remainingToAllocate', { amount: formatAmount(summary?.availableToAllocate ?? effectiveIncome) })}
             </Text>
           </View>
 

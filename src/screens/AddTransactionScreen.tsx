@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useAccountStore, useTransactionStore } from '../store';
 import { Typography, Spacing, BorderRadius } from '../constants';
@@ -32,6 +33,7 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
   onClose,
   initialType = 'expense',
 }) => {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const { currentUser } = useAuthStore();
   const { accounts, setAccounts } = useAccountStore();
@@ -87,13 +89,13 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
 
   const handleSubmit = async () => {
     if (!currentUser || !amount || !categoryId || !accountId) {
-      Alert.alert('Greška', 'Popunite iznos, kategoriju i račun.');
+      Alert.alert(t('common.error'), t('transactions.fillRequired'));
       return;
     }
 
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      Alert.alert('Greška', 'Unesite ispravan iznos.');
+      Alert.alert(t('common.error'), t('transactions.invalidAmount'));
       return;
     }
 
@@ -151,16 +153,16 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
       onClose();
     } catch (err) {
       console.error('Error creating transaction:', err);
-      Alert.alert('Greška', 'Nije moguće spremiti transakciju.');
+      Alert.alert(t('common.error'), t('transactions.saveError'));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const typeOptions: { value: TransactionType; icon: keyof typeof Ionicons.glyphMap; label: string }[] = [
-    { value: 'expense', icon: 'trending-down-outline', label: 'Rashod' },
-    { value: 'income', icon: 'trending-up-outline', label: 'Prihod' },
-    { value: 'transfer', icon: 'swap-horizontal-outline', label: 'Transfer' },
+    { value: 'expense', icon: 'trending-down-outline', label: t('transactions.type.expense') },
+    { value: 'income', icon: 'trending-up-outline', label: t('transactions.type.income') },
+    { value: 'transfer', icon: 'swap-horizontal-outline', label: t('transactions.type.transfer') },
   ];
 
   return (
@@ -172,9 +174,9 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose}>
-            <Text style={[styles.headerButton, { color: colors.textSecondary }]}>Odustani</Text>
+            <Text style={[styles.headerButton, { color: colors.textSecondary }]}>{t('common.cancel')}</Text>
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Nova transakcija</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>{t('transactions.addNew')}</Text>
           <View style={{ width: 60 }} />
         </View>
 
@@ -227,11 +229,11 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
 
           {/* Scope: osobno / zajedničko */}
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Za koga?</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('transactions.forWhom')}</Text>
             <View style={styles.scopeRow}>
               {([
-                { value: 'shared' as TransactionScope, icon: 'home-outline' as keyof typeof Ionicons.glyphMap, label: 'Zajedničko' },
-                { value: 'personal' as TransactionScope, icon: 'person-outline' as keyof typeof Ionicons.glyphMap, label: 'Osobno' },
+                { value: 'shared' as TransactionScope, icon: 'home-outline' as keyof typeof Ionicons.glyphMap, label: t('transactions.scope.shared') },
+                { value: 'personal' as TransactionScope, icon: 'person-outline' as keyof typeof Ionicons.glyphMap, label: t('transactions.scope.personal') },
               ]).map((opt) => (
                 <TouchableOpacity
                   key={opt.value}
@@ -261,7 +263,7 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
 
           {/* Kategorija */}
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Kategorija</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('transactions.category')}</Text>
             <CategoryPicker
               selectedCategoryId={categoryId}
               selectedSubcategoryId={subcategoryId}
@@ -275,7 +277,7 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
 
           {/* Račun */}
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Račun</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('transactions.account')}</Text>
             <AccountPicker
               selectedAccountId={accountId}
               onSelect={setAccountId}
@@ -284,21 +286,21 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
 
           {/* Opis */}
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Opis</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('transactions.description')}</Text>
             <TextInput
               style={[styles.textInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
               value={description}
               onChangeText={setDescription}
-              placeholder="npr. Konzum namirnice"
+              placeholder={t('transactions.descriptionPlaceholder')}
               placeholderTextColor={colors.textTertiary}
             />
           </View>
 
           {/* Datum */}
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Datum</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('transactions.date')}</Text>
             <View style={styles.dateRow}>
-              {['Danas', 'Jučer'].map((label, i) => {
+              {[t('common.today'), t('common.yesterday')].map((label, i) => {
                 const d = new Date();
                 if (i === 1) d.setDate(d.getDate() - 1);
                 const dateStr = d.toISOString().split('T')[0];
@@ -341,12 +343,12 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
 
           {/* Bilješka */}
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Bilješka (opcionalno)</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('transactions.note')}</Text>
             <TextInput
               style={[styles.textInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
               value={note}
               onChangeText={setNote}
-              placeholder="Dodatne informacije..."
+              placeholder={t('transactions.notePlaceholder')}
               placeholderTextColor={colors.textTertiary}
               multiline
             />
@@ -355,13 +357,13 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
           {/* Oznake */}
           <View style={styles.fieldGroup}>
             <Text style={[styles.label, { color: colors.textSecondary }]}>
-              Oznake (opcionalno, odvojene zarezom)
+              {t('transactions.tags')}
             </Text>
             <TextInput
               style={[styles.textInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
               value={tags}
               onChangeText={setTags}
-              placeholder="npr. odmor, auto"
+              placeholder={t('transactions.tagsPlaceholder')}
               placeholderTextColor={colors.textTertiary}
             />
           </View>
@@ -372,7 +374,7 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
         {/* Submit gumb */}
         <View style={[styles.footer, { borderTopColor: colors.border }]}>
           <Button
-            title={type === 'income' ? 'Dodaj prihod' : 'Dodaj rashod'}
+            title={type === 'income' ? t('transactions.addIncome') : t('transactions.addExpense')}
             variant="primary"
             size="lg"
             fullWidth

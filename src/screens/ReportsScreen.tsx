@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { LineChart, BarChart } from 'react-native-chart-kit';
 import { useAppTheme } from '../hooks';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store';
 import { Typography, Spacing, BorderRadius } from '../constants';
 import { formatAmount, formatAmountShort, formatMonth, formatPercentage, getCurrentMonth } from '../utils';
@@ -34,6 +35,7 @@ export const ReportsScreen: React.FC = () => {
   const navigation = useNavigation();
   const currentUser = useAuthStore((s) => s.currentUser);
   const userId = currentUser?.id || '';
+  const { t } = useTranslation();
 
   const [activeTab, setActiveTab] = useState<ReportTab>('monthly');
   const [refreshing, setRefreshing] = useState(false);
@@ -92,10 +94,10 @@ export const ReportsScreen: React.FC = () => {
   }, [loadData]);
 
   const tabs: Array<{ key: ReportTab; label: string; icon: string }> = [
-    { key: 'monthly', label: 'Mjesečni', icon: 'calendar-outline' },
-    { key: 'yearly', label: 'Godišnji', icon: 'bar-chart-outline' },
-    { key: 'trends', label: 'Trendovi', icon: 'trending-up-outline' },
-    { key: 'forecast', label: 'Prognoza', icon: 'eye-outline' },
+    { key: 'monthly', label: t('reports.tabMonthly'), icon: 'calendar-outline' },
+    { key: 'yearly', label: t('reports.tabYearly'), icon: 'bar-chart-outline' },
+    { key: 'trends', label: t('reports.tabTrends'), icon: 'trending-up-outline' },
+    { key: 'forecast', label: t('reports.tabForecast'), icon: 'eye-outline' },
   ];
 
   const chartConfig = {
@@ -124,16 +126,16 @@ export const ReportsScreen: React.FC = () => {
         <View style={styles.emptyState}>
           <Ionicons name="mail-open-outline" size={48} color={colors.textSecondary} style={{ marginBottom: Spacing.md }} />
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            Nema dovoljno podataka za prikaz
+            {t('reports.noData')}
           </Text>
         </View>
       );
     }
 
+    const monthNamesShort = t('reports.months.short', { returnObjects: true }) as string[];
     const labels = monthlyData.map((d) => {
       const [, m] = d.month.split('-');
-      const monthNames = ['Sij', 'Velj', 'Ožu', 'Tra', 'Svi', 'Lip', 'Srp', 'Kol', 'Ruj', 'Lis', 'Stu', 'Pro'];
-      return monthNames[parseInt(m) - 1];
+      return monthNamesShort[parseInt(m) - 1];
     });
 
     const totalIncome = monthlyData.reduce((s, d) => s + d.income, 0);
@@ -146,17 +148,17 @@ export const ReportsScreen: React.FC = () => {
         {/* Sažetak */}
         <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.summaryTitle, { color: colors.text }]}>
-            Zadnjih 6 mjeseci
+            {t('reports.last6Months')}
           </Text>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Prihodi</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.income')}</Text>
               <Text style={[styles.summaryValue, { color: colors.success }]}>
                 {formatAmount(totalIncome)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Rashodi</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.expenses')}</Text>
               <Text style={[styles.summaryValue, { color: colors.error }]}>
                 {formatAmount(totalExpenses)}
               </Text>
@@ -164,13 +166,13 @@ export const ReportsScreen: React.FC = () => {
           </View>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Ušteđeno</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.saved')}</Text>
               <Text style={[styles.summaryValue, { color: totalSavings >= 0 ? colors.success : colors.error }]}>
                 {formatAmount(totalSavings)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Stopa štednje</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.savingsRate')}</Text>
               <Text style={[styles.summaryValue, { color: avgSavingsRate >= 20 ? colors.success : colors.warning }]}>
                 {formatPercentage(avgSavingsRate, 1)}
               </Text>
@@ -183,7 +185,7 @@ export const ReportsScreen: React.FC = () => {
           <View style={styles.sectionTitleRow}>
             <Ionicons name="bar-chart-outline" size={18} color={colors.text} />
             <Text style={[styles.chartTitle, { color: colors.text }]}>
-              Prihodi vs Rashodi
+              {t('reports.incomeVsExpenses')}
             </Text>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -212,11 +214,11 @@ export const ReportsScreen: React.FC = () => {
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
-              <Text style={[styles.legendText, { color: colors.textSecondary }]}>Prihodi</Text>
+              <Text style={[styles.legendText, { color: colors.textSecondary }]}>{t('reports.income')}</Text>
             </View>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: colors.primary + '66' }]} />
-              <Text style={[styles.legendText, { color: colors.textSecondary }]}>Rashodi</Text>
+              <Text style={[styles.legendText, { color: colors.textSecondary }]}>{t('reports.expenses')}</Text>
             </View>
           </View>
         </View>
@@ -226,7 +228,7 @@ export const ReportsScreen: React.FC = () => {
           <View style={styles.sectionTitleRow}>
             <Ionicons name="cash-outline" size={18} color={colors.text} />
             <Text style={[styles.chartTitle, { color: colors.text }]}>
-              Mjesečna štednja
+              {t('reports.monthlySavings')}
             </Text>
           </View>
           <LineChart
@@ -287,16 +289,16 @@ export const ReportsScreen: React.FC = () => {
         <View style={styles.emptyState}>
           <Ionicons name="mail-open-outline" size={48} color={colors.textSecondary} style={{ marginBottom: Spacing.md }} />
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            Učitavanje...
+            {t('reports.loading')}
           </Text>
         </View>
       );
     }
 
+    const monthNamesLetter = t('reports.months.letter', { returnObjects: true }) as string[];
     const labels = yearlyData.monthlyData.map((d) => {
       const [, m] = d.month.split('-');
-      const monthNames = ['S', 'V', 'O', 'T', 'S', 'L', 'S', 'K', 'R', 'L', 'S', 'P'];
-      return monthNames[parseInt(m) - 1];
+      return monthNamesLetter[parseInt(m) - 1];
     });
 
     return (
@@ -317,17 +319,17 @@ export const ReportsScreen: React.FC = () => {
         {/* Godišnji sažetak */}
         <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.summaryTitle, { color: colors.text }]}>
-            Godišnji pregled {selectedYear}
+            {t('reports.yearlyOverview', { year: selectedYear })}
           </Text>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Ukupni prihodi</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.totalIncome')}</Text>
               <Text style={[styles.summaryValue, { color: colors.success }]}>
                 {formatAmount(yearlyData.totalIncome)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Ukupni rashodi</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.totalExpenses')}</Text>
               <Text style={[styles.summaryValue, { color: colors.error }]}>
                 {formatAmount(yearlyData.totalExpenses)}
               </Text>
@@ -335,13 +337,13 @@ export const ReportsScreen: React.FC = () => {
           </View>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Ušteđeno</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.saved')}</Text>
               <Text style={[styles.summaryValue, { color: yearlyData.totalSavings >= 0 ? colors.success : colors.error }]}>
                 {formatAmount(yearlyData.totalSavings)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Stopa štednje</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.savingsRate')}</Text>
               <Text style={[styles.summaryValue, { color: yearlyData.savingsRate >= 20 ? colors.success : colors.warning }]}>
                 {formatPercentage(yearlyData.savingsRate, 1)}
               </Text>
@@ -354,7 +356,7 @@ export const ReportsScreen: React.FC = () => {
           <View style={styles.sectionTitleRow}>
             <Ionicons name="bar-chart-outline" size={18} color={colors.text} />
             <Text style={[styles.chartTitle, { color: colors.text }]}>
-              Mjesečni pregled
+              {t('reports.monthlyOverview')}
             </Text>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -381,7 +383,7 @@ export const ReportsScreen: React.FC = () => {
           <View style={styles.sectionTitleRow}>
             <Ionicons name="trophy-outline" size={18} color={colors.text} />
             <Text style={[styles.chartTitle, { color: colors.text }]}>
-              Top kategorije rashoda
+              {t('reports.topExpenseCategories')}
             </Text>
           </View>
           {yearlyData.topCategories.map((cat, index) => {
@@ -411,7 +413,7 @@ export const ReportsScreen: React.FC = () => {
                     />
                   </View>
                   <Text style={[styles.categoryPercent, { color: colors.textSecondary }]}>
-                    {formatPercentage(cat.percentage, 1)} ukupnih rashoda
+                    {formatPercentage(cat.percentage, 1)} {t('reports.ofTotalExpenses')}
                   </Text>
                 </View>
               </View>
@@ -428,7 +430,7 @@ export const ReportsScreen: React.FC = () => {
         <View style={styles.emptyState}>
           <Ionicons name="mail-open-outline" size={48} color={colors.textSecondary} style={{ marginBottom: Spacing.md }} />
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            Nema dovoljno podataka za trendove
+            {t('reports.noTrendData')}
           </Text>
         </View>
       );
@@ -437,17 +439,17 @@ export const ReportsScreen: React.FC = () => {
     return (
       <View>
         <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
-          Kako se troškovi mijenjaju kroz vrijeme
+          {t('reports.trendDescription')}
         </Text>
 
         {categoryTrends.slice(0, 8).map((trend) => {
           const info = getCategoryInfo(trend.categoryId);
           const trendColor = trend.trend > 5 ? colors.error : trend.trend < -5 ? colors.success : colors.textSecondary;
           const trendIconName = trend.trend > 5 ? 'trending-up' as const : trend.trend < -5 ? 'trending-down' as const : 'remove-outline' as const;
+          const monthNamesLetterTrend = t('reports.months.letter', { returnObjects: true }) as string[];
           const labels = trend.months.map((m) => {
             const [, month] = m.month.split('-');
-            const monthNames = ['S', 'V', 'O', 'T', 'S', 'L', 'S', 'K', 'R', 'L', 'S', 'P'];
-            return monthNames[parseInt(month) - 1];
+            return monthNamesLetterTrend[parseInt(month) - 1];
           });
 
           return (
@@ -471,10 +473,10 @@ export const ReportsScreen: React.FC = () => {
 
               <View style={styles.trendNumbers}>
                 <Text style={[styles.trendAvg, { color: colors.textSecondary }]}>
-                  Prosjek: {formatAmount(trend.average)}/mj
+                  {t('reports.average', { amount: formatAmount(trend.average) })}
                 </Text>
                 <Text style={[styles.trendTotal, { color: colors.text }]}>
-                  Ukupno: {formatAmount(trend.total)}
+                  {t('reports.totalAmount', { amount: formatAmount(trend.total) })}
                 </Text>
               </View>
 
@@ -517,7 +519,7 @@ export const ReportsScreen: React.FC = () => {
         <View style={styles.emptyState}>
           <Ionicons name="eye-outline" size={48} color={colors.textSecondary} style={{ marginBottom: Spacing.md }} />
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            Učitavanje prognoze...
+            {t('reports.loading')}
           </Text>
         </View>
       );
@@ -545,22 +547,22 @@ export const ReportsScreen: React.FC = () => {
           <View style={styles.sectionTitleRow}>
             <Ionicons name="eye-outline" size={18} color={colors.text} />
             <Text style={[styles.summaryTitle, { color: colors.text }]}>
-              Prognoza za 90 dana
+              {t('reports.forecast90')}
             </Text>
           </View>
           <Text style={[styles.forecastSubtitle, { color: colors.textSecondary }]}>
-            Na temelju vaših prošlih transakcija
+            {t('reports.forecastBasis')}
           </Text>
 
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Trenutni saldo</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.currentBalance')}</Text>
               <Text style={[styles.summaryValue, { color: colors.text }]}>
                 {formatAmount(forecastData.currentBalance)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Projekcija (90d)</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.projection90')}</Text>
               <Text style={[styles.summaryValue, { color: isPositive ? colors.success : colors.error }]}>
                 {formatAmount(forecastData.projectedBalance)}
               </Text>
@@ -571,7 +573,7 @@ export const ReportsScreen: React.FC = () => {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <Ionicons name={isPositive ? 'trending-up-outline' : 'trending-down-outline'} size={18} color={isPositive ? colors.success : colors.error} />
               <Text style={[styles.forecastChangeText, { color: isPositive ? colors.success : colors.error }]}>
-                Očekivana promjena: {formatAmount(balanceChange, 'EUR', true)}
+                {t('reports.expectedChange', { amount: formatAmount(balanceChange, 'EUR', true) })}
               </Text>
             </View>
           </View>
@@ -582,7 +584,7 @@ export const ReportsScreen: React.FC = () => {
           <View style={styles.sectionTitleRow}>
             <Ionicons name="trending-up-outline" size={18} color={colors.text} />
             <Text style={[styles.chartTitle, { color: colors.text }]}>
-              Projekcija salda
+              {t('reports.balanceProjection')}
             </Text>
           </View>
           <LineChart
@@ -609,11 +611,11 @@ export const ReportsScreen: React.FC = () => {
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
-              <Text style={[styles.legendText, { color: colors.textSecondary }]}>Stvarno</Text>
+              <Text style={[styles.legendText, { color: colors.textSecondary }]}>{t('reports.actual')}</Text>
             </View>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: colors.primary + '66' }]} />
-              <Text style={[styles.legendText, { color: colors.textSecondary }]}>Prognoza</Text>
+              <Text style={[styles.legendText, { color: colors.textSecondary }]}>{t('reports.forecast')}</Text>
             </View>
           </View>
         </View>
@@ -623,18 +625,18 @@ export const ReportsScreen: React.FC = () => {
           <View style={styles.sectionTitleRow}>
             <Ionicons name="analytics-outline" size={18} color={colors.text} />
             <Text style={[styles.chartTitle, { color: colors.text }]}>
-              Dnevni prosjeci (zadnjih 90 dana)
+              {t('reports.dailyAverages')}
             </Text>
           </View>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Prosjek prihoda</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.avgIncome')}</Text>
               <Text style={[styles.summaryValue, { color: colors.success }]}>
                 {formatAmount(forecastData.avgDailyIncome)}/dan
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Prosjek rashoda</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.avgExpenses')}</Text>
               <Text style={[styles.summaryValue, { color: colors.error }]}>
                 {formatAmount(forecastData.avgDailyExpense)}/dan
               </Text>
@@ -645,8 +647,7 @@ export const ReportsScreen: React.FC = () => {
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
               <Ionicons name="information-circle-outline" size={16} color={colors.textSecondary} style={{ marginTop: 1 }} />
               <Text style={[styles.hintText, { color: colors.textSecondary, flex: 1 }]}>
-                Ova prognoza se temelji na vašim prosječnim prihodima i rashodima
-                iz zadnjih 3 mjeseca. Što više podataka unesete, prognoza će biti točnija.
+                {t('reports.forecastHint')}
               </Text>
             </View>
           </View>
@@ -667,7 +668,7 @@ export const ReportsScreen: React.FC = () => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color={colors.primary} />
           </TouchableOpacity>
-          <Text style={[styles.title, { color: colors.text }]}>Izvještaji</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t('reports.title')}</Text>
           <View style={{ width: 24 }} />
         </View>
 

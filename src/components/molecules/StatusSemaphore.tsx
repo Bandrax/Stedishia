@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 
@@ -22,19 +23,10 @@ interface StatusSemaphoreProps {
   totalAllocated?: number;
 }
 
-const statusConfig = {
-  good: {
-    icon: 'checkmark-circle' as const,
-    defaultMessage: 'Odlično! Na pravom ste putu.',
-  },
-  warning: {
-    icon: 'alert-circle' as const,
-    defaultMessage: 'Pažnja — približavate se limitu u nekim kategorijama.',
-  },
-  over: {
-    icon: 'close-circle' as const,
-    defaultMessage: 'Prekoračili ste budžet u nekim kategorijama.',
-  },
+const statusIcons = {
+  good: 'checkmark-circle' as const,
+  warning: 'alert-circle' as const,
+  over: 'close-circle' as const,
 };
 
 export const StatusSemaphore: React.FC<StatusSemaphoreProps> = ({
@@ -45,8 +37,14 @@ export const StatusSemaphore: React.FC<StatusSemaphoreProps> = ({
   totalSpent = 0,
   totalAllocated = 0,
 }) => {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
-  const config = statusConfig[status];
+  const icon = statusIcons[status];
+  const defaultMessages: Record<BudgetStatus, string> = {
+    good: t('dashboard.statusGood'),
+    warning: t('dashboard.statusWarning'),
+    over: t('dashboard.statusOver'),
+  };
   const [showDetail, setShowDetail] = useState(false);
 
   const bgColorMap: Record<BudgetStatus, string> = {
@@ -70,16 +68,16 @@ export const StatusSemaphore: React.FC<StatusSemaphoreProps> = ({
         onPress={() => setShowDetail(true)}
         style={[styles.container, { backgroundColor: bgColorMap[status] }]}
       >
-        <Ionicons name={config.icon} size={28} color={iconColorMap[status]} />
+        <Ionicons name={icon} size={28} color={iconColorMap[status]} />
         <View style={styles.textContainer}>
           <Text style={[styles.title, { color: iconColorMap[status] }]}>
-            Kako mi ide ovaj mjesec?
+            {t('dashboard.howAmIDoing')}
           </Text>
           <Text style={[styles.message, { color: colors.text }]}>
-            {message || config.defaultMessage}
+            {message || defaultMessages[status]}
           </Text>
           <Text style={[styles.tapHint, { color: iconColorMap[status] }]}>
-            Dodirnite za detalje →
+            {t('dashboard.tapForDetails')}
           </Text>
         </View>
       </TouchableOpacity>
@@ -88,9 +86,9 @@ export const StatusSemaphore: React.FC<StatusSemaphoreProps> = ({
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
             <View style={styles.modalHeader}>
-              <Ionicons name={config.icon} size={32} color={iconColorMap[status]} />
+              <Ionicons name={icon} size={32} color={iconColorMap[status]} />
               <Text style={[styles.modalTitle, { color: colors.text }]}>
-                Financijski pregled
+                {t('dashboard.financialOverview')}
               </Text>
               <TouchableOpacity onPress={() => setShowDetail(false)}>
                 <Ionicons name="close" size={24} color={colors.textSecondary} />
@@ -102,13 +100,13 @@ export const StatusSemaphore: React.FC<StatusSemaphoreProps> = ({
               {totalAllocated > 0 && (
                 <View style={[styles.summaryBox, { backgroundColor: bgColorMap[status] }]}>
                   <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
-                    Ukupna potrošnja / budžet
+                    {t('dashboard.totalSpendingVsBudget')}
                   </Text>
                   <Text style={[styles.summaryAmount, { color: iconColorMap[status] }]}>
                     {formatAmount(totalSpent)} / {formatAmount(totalAllocated)}
                   </Text>
                   <Text style={[styles.summaryPercent, { color: colors.text }]}>
-                    Iskorišteno {totalAllocated > 0 ? Math.round((totalSpent / totalAllocated) * 100) : 0}% budžeta
+                    {t('dashboard.budgetUsed', { percent: totalAllocated > 0 ? Math.round((totalSpent / totalAllocated) * 100) : 0 })}
                   </Text>
                 </View>
               )}
@@ -119,7 +117,7 @@ export const StatusSemaphore: React.FC<StatusSemaphoreProps> = ({
                   <View style={styles.detailTitleRow}>
                     <Ionicons name="warning" size={16} color={colors.error} />
                     <Text style={[styles.detailTitle, { color: colors.error }]}>
-                      Prekoračene kategorije
+                      {t('dashboard.overBudgetCategories')}
                     </Text>
                   </View>
                   {overBudgetItems.map((item, i) => {
@@ -130,7 +128,7 @@ export const StatusSemaphore: React.FC<StatusSemaphoreProps> = ({
                         <View style={styles.detailInfo}>
                           <Text style={[styles.detailName, { color: colors.text }]}>{item.categoryName}</Text>
                           <Text style={[styles.detailSub, { color: colors.textSecondary }]}>
-                            Potrošeno {formatAmount(item.spent)} od {formatAmount(item.allocated)}
+                            {t('dashboard.spentOf', { spent: formatAmount(item.spent), allocated: formatAmount(item.allocated) })}
                           </Text>
                         </View>
                         <Text style={[styles.detailOver, { color: colors.error }]}>
@@ -148,7 +146,7 @@ export const StatusSemaphore: React.FC<StatusSemaphoreProps> = ({
                   <View style={styles.detailTitleRow}>
                     <Ionicons name="alert-circle-outline" size={16} color={colors.warning} />
                     <Text style={[styles.detailTitle, { color: colors.warning }]}>
-                      Blizu limita (80%+)
+                      {t('dashboard.nearLimitCategories')}
                     </Text>
                   </View>
                   {nearLimitItems.map((item, i) => {
@@ -176,24 +174,23 @@ export const StatusSemaphore: React.FC<StatusSemaphoreProps> = ({
                 <View style={styles.detailTitleRow}>
                   <Ionicons name="bulb-outline" size={16} color={colors.primary} />
                   <Text style={[styles.detailTitle, { color: colors.primary }]}>
-                    Kako funkcioniraju limiti?
+                    {t('dashboard.howLimitsWork')}
                   </Text>
                 </View>
                 <Text style={[styles.tipText, { color: colors.text }]}>
-                  Budžet koristi pravilo <Text style={{ fontWeight: '700' }}>50/30/20</Text> prema
-                  preporuci financijskih stručnjaka (Elizabeth Warren):
+                  {t('dashboard.limitsExplanation')}
                 </Text>
                 <Text style={[styles.tipBullet, { color: colors.text }]}>
-                  • <Text style={{ fontWeight: '600' }}>50% prihoda</Text> — potrebe (stanovanje 27%, hrana 13%, prijevoz 5%, režije 3%, zdravlje 2%)
+                  • {t('dashboard.limitsNeeds')}
                 </Text>
                 <Text style={[styles.tipBullet, { color: colors.text }]}>
-                  • <Text style={{ fontWeight: '600' }}>30% prihoda</Text> — želje (zabava 10%, odjeća 5%, osobno 5%, edukacija 5%, pokloni 5%)
+                  • {t('dashboard.limitsWants')}
                 </Text>
                 <Text style={[styles.tipBullet, { color: colors.text }]}>
-                  • <Text style={{ fontWeight: '600' }}>20% prihoda</Text> — štednja i otplate (po 10%)
+                  • {t('dashboard.limitsSavings')}
                 </Text>
                 <Text style={[styles.tipNote, { color: colors.textSecondary }]}>
-                  Ove granice možete prilagoditi u tabu Budžet → Envelope mod.
+                  {t('dashboard.limitsCustomize')}
                 </Text>
               </View>
             </ScrollView>

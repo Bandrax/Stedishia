@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
 import { useAuthStore } from '../store';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,15 +31,16 @@ import { scheduleAllNotifications } from '../services/notificationService';
 import { Button } from '../components/atoms';
 
 const FREQUENCIES = [
-  { key: 'weekly' as const, label: 'Tjedno', multiplier: 52 },
-  { key: 'biweekly' as const, label: 'Dvotjedno', multiplier: 26 },
-  { key: 'monthly' as const, label: 'Mjesečno', multiplier: 12 },
-  { key: 'quarterly' as const, label: 'Kvartalno', multiplier: 4 },
-  { key: 'yearly' as const, label: 'Godišnje', multiplier: 1 },
+  { key: 'weekly' as const, multiplier: 52 },
+  { key: 'biweekly' as const, multiplier: 26 },
+  { key: 'monthly' as const, multiplier: 12 },
+  { key: 'quarterly' as const, multiplier: 4 },
+  { key: 'yearly' as const, multiplier: 1 },
 ];
 
 export const RecurringScreen: React.FC = () => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const currentUser = useAuthStore((s) => s.currentUser);
   const userId = currentUser?.id || '';
@@ -89,7 +91,7 @@ export const RecurringScreen: React.FC = () => {
     const cleaned = amount.replace(',', '.').replace(/[^0-9.]/g, '');
     const parsedAmount = parseFloat(cleaned);
     if (!desc.trim() || !cleaned || isNaN(parsedAmount) || parsedAmount <= 0) {
-      Alert.alert('Greška', 'Unesite opis i ispravan iznos.');
+      Alert.alert(t('common.error'), t('recurring.invalidInput'));
       return;
     }
 
@@ -117,15 +119,15 @@ export const RecurringScreen: React.FC = () => {
       await loadData();
       if (userId) scheduleAllNotifications(userId).catch(console.error);
     } catch (err) {
-      Alert.alert('Greška', 'Spremanje nije uspjelo: ' + (err instanceof Error ? err.message : String(err)));
+      Alert.alert(t('common.error'), t('recurring.saveError', { error: err instanceof Error ? err.message : String(err) }));
     }
   };
 
   const handleDelete = (tx: RecurringTransaction) => {
-    Alert.alert('Obriši', `Obrisati "${tx.description}"?`, [
-      { text: 'Odustani', style: 'cancel' },
+    Alert.alert(t('recurring.deleteTitle'), t('recurring.deleteConfirm', { name: tx.description }), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Obriši',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
             await deleteRecurring(tx.id);
@@ -157,17 +159,17 @@ export const RecurringScreen: React.FC = () => {
   }, 0);
 
   const getFrequencyLabel = (f: string) =>
-    FREQUENCIES.find((fr) => fr.key === f)?.label || f;
+    t(`recurring.frequencies.${f}` as any, f);
 
   const getDaysUntil = (dateStr: string) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const target = new Date(dateStr);
     const diff = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    if (diff === 0) return 'Danas';
-    if (diff === 1) return 'Sutra';
-    if (diff < 0) return `${Math.abs(diff)}d kasni`;
-    return `za ${diff}d`;
+    if (diff === 0) return t('common.today');
+    if (diff === 1) return t('common.tomorrow');
+    if (diff < 0) return t('common.daysLate', { days: Math.abs(diff) });
+    return t('common.inDays', { days: diff });
   };
 
   return (
@@ -176,9 +178,9 @@ export const RecurringScreen: React.FC = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={[styles.screenTitle, { color: colors.text }]}>Ponavljajuća</Text>
+        <Text style={[styles.screenTitle, { color: colors.text }]}>{t('recurring.title')}</Text>
         <TouchableOpacity onPress={() => setShowAdd(true)}>
-          <Text style={[styles.addButton, { color: colors.primary }]}>+ Novo</Text>
+          <Text style={[styles.addButton, { color: colors.primary }]}>{t('recurring.new')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -193,13 +195,13 @@ export const RecurringScreen: React.FC = () => {
           <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={styles.summaryRow}>
               <View style={styles.summaryItem}>
-                <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Mjesečno</Text>
+                <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('recurring.summary.monthly')}</Text>
                 <Text style={[styles.summaryValue, { color: colors.error }]}>
                   {formatAmount(totalMonthly)}
                 </Text>
               </View>
               <View style={styles.summaryItem}>
-                <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Godišnje</Text>
+                <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('recurring.summary.yearly')}</Text>
                 <Text style={[styles.summaryValue, { color: colors.error }]}>
                   {formatAmount(totalYearly)}
                 </Text>
@@ -211,7 +213,7 @@ export const RecurringScreen: React.FC = () => {
         {/* Aktivne */}
         {activeTx.length > 0 && (
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Aktivna plaćanja ({activeTx.length})
+            {t('recurring.activePayments', { count: activeTx.length })}
           </Text>
         )}
 
@@ -244,7 +246,7 @@ export const RecurringScreen: React.FC = () => {
                   </Text>
                   {isOverdue && (
                     <Text style={[styles.overdueTag, { backgroundColor: colors.error + '20', color: colors.error }]}>
-                      Kasni!
+                      {t('recurring.overdue')}
                     </Text>
                   )}
                 </View>
@@ -257,7 +259,7 @@ export const RecurringScreen: React.FC = () => {
                   trackColor={{ true: colors.primary }}
                 />
                 <TouchableOpacity onPress={() => handleDelete(tx)}>
-                  <Text style={[styles.deleteText, { color: colors.error }]}>Obriši</Text>
+                  <Text style={[styles.deleteText, { color: colors.error }]}>{t('common.delete')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -268,7 +270,7 @@ export const RecurringScreen: React.FC = () => {
         {inactiveTx.length > 0 && (
           <>
             <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-              Pauzirane ({inactiveTx.length})
+              {t('recurring.paused', { count: inactiveTx.length })}
             </Text>
             {inactiveTx.map((tx) => (
               <View
@@ -280,7 +282,7 @@ export const RecurringScreen: React.FC = () => {
                   <View style={styles.txInfo}>
                     <Text style={[styles.txName, { color: colors.text }]}>{tx.description}</Text>
                     <Text style={[styles.txMeta, { color: colors.textSecondary }]}>
-                      {getFrequencyLabel(tx.frequency)} • Pauzirano
+                      {getFrequencyLabel(tx.frequency)} • {t('recurring.pausedLabel')}
                     </Text>
                   </View>
                   <Text style={[styles.txAmount, { color: colors.textSecondary }]}>
@@ -294,7 +296,7 @@ export const RecurringScreen: React.FC = () => {
                     trackColor={{ true: colors.primary }}
                   />
                   <TouchableOpacity onPress={() => handleDelete(tx)}>
-                    <Text style={[styles.deleteText, { color: colors.error }]}>Obriši</Text>
+                    <Text style={[styles.deleteText, { color: colors.error }]}>{t('common.delete')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -305,9 +307,9 @@ export const RecurringScreen: React.FC = () => {
         {transactions.length === 0 && (
           <View style={styles.emptyState}>
             <Ionicons name="repeat-outline" size={48} color={colors.textTertiary} style={{ marginBottom: Spacing.base }} />
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>Nema ponavljajućih plaćanja</Text>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>{t('recurring.noPayments')}</Text>
             <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-              Dodajte režije, pretplate i redovita plaćanja{'\n'}kako biste ih lakše pratili.
+              {t('recurring.noPaymentsHint')}
             </Text>
           </View>
         )}
@@ -317,7 +319,7 @@ export const RecurringScreen: React.FC = () => {
       <Modal visible={showAdd} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Novo ponavljajuće plaćanje</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>{t('recurring.newTitle')}</Text>
 
             {/* Tip */}
             <View style={styles.typeToggle}>
@@ -329,7 +331,7 @@ export const RecurringScreen: React.FC = () => {
                 onPress={() => setTxType('expense')}
               >
                 <Text style={[styles.typeBtnText, { color: txType === 'expense' ? colors.error : colors.textSecondary }]}>
-                  Rashod
+                  {t('recurring.expense')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -340,14 +342,14 @@ export const RecurringScreen: React.FC = () => {
                 onPress={() => setTxType('income')}
               >
                 <Text style={[styles.typeBtnText, { color: txType === 'income' ? colors.success : colors.textSecondary }]}>
-                  Prihod
+                  {t('recurring.income')}
                 </Text>
               </TouchableOpacity>
             </View>
 
             <TextInput
               style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
-              placeholder="Opis (npr. Netflix, Struja, Plaća)"
+              placeholder={t('recurring.descriptionPlaceholder')}
               placeholderTextColor={colors.textTertiary}
               value={desc}
               onChangeText={setDesc}
@@ -355,14 +357,14 @@ export const RecurringScreen: React.FC = () => {
 
             <TextInput
               style={[styles.input, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
-              placeholder="Iznos (€)"
+              placeholder={t('recurring.amountPlaceholder')}
               placeholderTextColor={colors.textTertiary}
               value={amount}
               onChangeText={setAmount}
               keyboardType="decimal-pad"
             />
 
-            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Učestalost</Text>
+            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>{t('recurring.frequency')}</Text>
             <View style={styles.freqRow}>
               {FREQUENCIES.map((f) => (
                 <TouchableOpacity
@@ -379,14 +381,14 @@ export const RecurringScreen: React.FC = () => {
                   <Text
                     style={[styles.freqLabel, { color: frequency === f.key ? colors.primary : colors.text }]}
                   >
-                    {f.label}
+                    {getFrequencyLabel(f.key)}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
 
             <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>
-              Dan u mjesecu za plaćanje
+              {t('recurring.dueDay')}
             </Text>
             <ScrollView
               horizontal
@@ -419,8 +421,8 @@ export const RecurringScreen: React.FC = () => {
             </ScrollView>
 
             <View style={styles.modalButtons}>
-              <Button title="Odustani" onPress={() => setShowAdd(false)} variant="ghost" />
-              <Button title="Spremi" onPress={handleAdd} disabled={!desc.trim() || !amount.replace(/[^0-9.,]/g, '')} />
+              <Button title={t('common.cancel')} onPress={() => setShowAdd(false)} variant="ghost" />
+              <Button title={t('common.save')} onPress={handleAdd} disabled={!desc.trim() || !amount.replace(/[^0-9.,]/g, '')} />
             </View>
           </View>
         </View>

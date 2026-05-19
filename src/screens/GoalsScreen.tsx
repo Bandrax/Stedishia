@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useGoalStore, useAccountStore } from '../store';
 import { Typography, Spacing, BorderRadius } from '../constants';
@@ -39,6 +40,7 @@ const GOAL_EMOJIS = ['🎯', '✈️', '🏠', '🚗', '💻', '📚', '🎓', '
 const GOAL_COLORS = ['#0F4C3A', '#D4AF37', '#2196F3', '#FF5722', '#9C27B0', '#4CAF50', '#FF9800', '#E91E63'];
 
 export const GoalsScreen: React.FC = () => {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const { currentUser } = useAuthStore();
   const { goals, setGoals } = useGoalStore();
@@ -107,7 +109,7 @@ export const GoalsScreen: React.FC = () => {
 
     const targetAmount = parseFloat(goalAmount.replace(',', '.'));
     if (isNaN(targetAmount) || targetAmount <= 0) {
-      Alert.alert('Greška', 'Unesite ispravan ciljani iznos.');
+      Alert.alert(t('common.error'), t('goals.invalidAmount'));
       return;
     }
 
@@ -139,7 +141,7 @@ export const GoalsScreen: React.FC = () => {
       resetGoalForm();
       await loadData();
     } catch (err) {
-      Alert.alert('Greška', 'Nije moguće kreirati cilj.');
+      Alert.alert(t('common.error'), t('goals.createError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -149,11 +151,11 @@ export const GoalsScreen: React.FC = () => {
     if (!showAddMoney || !currentUser) return;
     const amount = parseFloat(addMoneyAmount.replace(',', '.'));
     if (isNaN(amount) || amount <= 0) {
-      Alert.alert('Greška', 'Unesite ispravan iznos.');
+      Alert.alert(t('common.error'), t('goals.invalidAddAmount'));
       return;
     }
     if (!addMoneyAccountId) {
-      Alert.alert('Greška', 'Odaberite račun s kojeg skidate novac.');
+      Alert.alert(t('common.error'), t('goals.selectAccount'));
       return;
     }
 
@@ -180,25 +182,25 @@ export const GoalsScreen: React.FC = () => {
       // Update the goal progress
       const updated = await addToGoal(showAddMoney, amount);
       if (updated?.status === 'completed') {
-        Alert.alert('Čestitamo!', `Ostvarili ste cilj "${updated.name}"!`);
+        Alert.alert(t('goals.congratulations'), t('goals.goalCompleted', { name: updated.name }));
       }
       setShowAddMoney(null);
       setAddMoneyAmount('');
       setAddMoneyAccountId('');
       await loadData();
     } catch (err) {
-      Alert.alert('Greška', 'Nije moguće dodati iznos.');
+      Alert.alert(t('common.error'), t('goals.addError'));
     }
   };
 
   const handleDeleteGoal = (goal: SavingsGoal) => {
     Alert.alert(
-      'Obriši cilj',
-      `Jeste li sigurni da želite obrisati cilj "${goal.name}"?`,
+      t('goals.deleteGoal'),
+      t('goals.deleteConfirm', { name: goal.name }),
       [
-        { text: 'Odustani', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Obriši',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             await deleteGoalById(goal.id);
@@ -262,9 +264,9 @@ export const GoalsScreen: React.FC = () => {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>Ciljevi</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('goals.title')}</Text>
         <TouchableOpacity onPress={() => setShowAddGoal(true)}>
-          <Text style={[styles.addButton, { color: colors.primary }]}>+ Novi cilj</Text>
+          <Text style={[styles.addButton, { color: colors.primary }]}>{t('goals.newGoal')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -282,8 +284,8 @@ export const GoalsScreen: React.FC = () => {
           liabilities={netWorthData.liabilities}
           netWorth={netWorthData.netWorth}
           onInfoPress={() => Alert.alert(
-            'Neto vrijednost',
-            'Neto vrijednost = sve što imate (računi, štednja) minus sve što dugujete (krediti, kartice).\n\nCilj je da ovaj broj raste iz mjeseca u mjesec.'
+            t('goals.netWorth'),
+            t('goals.netWorthExplain')
           )}
         />
 
@@ -295,8 +297,8 @@ export const GoalsScreen: React.FC = () => {
             monthlyExpenses={monthlyExpenses}
             onAddMoney={handleEmergencyAddMoney}
             onInfoPress={() => Alert.alert(
-              'Sigurnosni fond',
-              'Sigurnosni fond je ušteđevina koja pokriva 3-6 mjeseci vaših troškova.\n\nTo je vaš financijski jastuk za neočekivane situacije poput gubitka posla, kvara auta ili zdravstvenih troškova.'
+              t('goals.emergencyFund'),
+              t('goals.emergencyFundExplain')
             )}
           />
         </View>
@@ -306,7 +308,7 @@ export const GoalsScreen: React.FC = () => {
           <View style={{ marginTop: Spacing.lg }}>
             <View style={styles.sectionTitleRow}>
               <Ionicons name="flag-outline" size={18} color={colors.primary} style={{ marginRight: 8 }} />
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>Aktivni ciljevi</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('goals.activeGoals')}</Text>
             </View>
             {activeGoals.map((goal) => (
               <GoalCard
@@ -324,7 +326,7 @@ export const GoalsScreen: React.FC = () => {
           <View style={{ marginTop: Spacing.lg }}>
             <View style={styles.sectionTitleRow}>
               <Ionicons name="trophy-outline" size={18} color={colors.primary} style={{ marginRight: 8 }} />
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>Ostvareni ciljevi</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('goals.completedGoals')}</Text>
             </View>
             {completedGoals.map((goal) => (
               <GoalCard key={goal.id} goal={goal} />
@@ -337,13 +339,13 @@ export const GoalsScreen: React.FC = () => {
           <View style={styles.emptyState}>
             <Ionicons name="flag-outline" size={56} color={colors.primary} style={{ marginBottom: Spacing.base }} />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
-              Nemate postavljenih ciljeva
+              {t('goals.noGoals')}
             </Text>
             <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-              Postavite prvi cilj i krenite štedjeti za nešto posebno!
+              {t('goals.noGoalsHint')}
             </Text>
             <Button
-              title="Postavi prvi cilj"
+              title={t('goals.setFirstGoal')}
               variant="primary"
               onPress={() => setShowAddGoal(true)}
               icon="flag-outline"
@@ -359,15 +361,15 @@ export const GoalsScreen: React.FC = () => {
         <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
           <View style={styles.modalHeader}>
             <TouchableOpacity onPress={() => { setShowAddGoal(false); resetGoalForm(); }}>
-              <Text style={[styles.modalClose, { color: colors.textSecondary }]}>Odustani</Text>
+              <Text style={[styles.modalClose, { color: colors.textSecondary }]}>{t('common.cancel')}</Text>
             </TouchableOpacity>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Novi cilj</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>{t('goals.newGoalTitle')}</Text>
             <View style={{ width: 60 }} />
           </View>
 
           <ScrollView contentContainerStyle={styles.modalContent} keyboardShouldPersistTaps="handled">
             {/* Emoji picker */}
-            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Ikona</Text>
+            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>{t('goals.goalIcon')}</Text>
             <View style={styles.emojiRow}>
               {GOAL_EMOJIS.map((e) => (
                 <TouchableOpacity
@@ -385,33 +387,33 @@ export const GoalsScreen: React.FC = () => {
             </View>
 
             {/* Naziv */}
-            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Naziv cilja</Text>
+            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>{t('goals.goalName')}</Text>
             <TextInput
               style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
               value={goalName}
               onChangeText={setGoalName}
-              placeholder="npr. Godišnji odmor u Grčkoj"
+              placeholder={t('goals.goalNamePlaceholder')}
               placeholderTextColor={colors.textTertiary}
             />
 
             {/* Ciljani iznos */}
-            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Ciljani iznos (€)</Text>
+            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>{t('goals.targetAmount')}</Text>
             <TextInput
               style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
               value={goalAmount}
-              onChangeText={(t) => setGoalAmount(t.replace(/[^0-9.,]/g, ''))}
-              placeholder="5000"
+              onChangeText={(v) => setGoalAmount(v.replace(/[^0-9.,]/g, ''))}
+              placeholder={t('goals.targetAmountPlaceholder')}
               placeholderTextColor={colors.textTertiary}
               keyboardType="decimal-pad"
             />
 
             {/* Datum */}
-            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Do kada? (YYYY-MM-DD)</Text>
+            <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>{t('goals.targetDate')}</Text>
             <TextInput
               style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
               value={goalDate}
               onChangeText={setGoalDate}
-              placeholder="2027-06-01 (default: za godinu dana)"
+              placeholder={t('goals.targetDatePlaceholder')}
               placeholderTextColor={colors.textTertiary}
             />
 
@@ -419,23 +421,21 @@ export const GoalsScreen: React.FC = () => {
             {goalAmount && (
               <Card style={{ marginTop: Spacing.md }} variant="default" padding="md">
                 <Text style={[styles.calcText, { color: colors.text }]}>
-                  Za ovaj cilj trebate odvajati približno{' '}
-                  <Text style={{ fontWeight: '700', color: colors.primary }}>
-                    {formatAmount(
+                  {t('goals.monthlyNeeded', {
+                    amount: formatAmount(
                       calculateMonthlyNeeded(
                         parseFloat(goalAmount.replace(',', '.')) || 0,
                         0,
                         goalDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
                       )
-                    )}
-                  </Text>
-                  {' '}mjesečno.
+                    ),
+                  })}
                 </Text>
               </Card>
             )}
 
             {/* Boja */}
-            <Text style={[styles.fieldLabel, { color: colors.textSecondary, marginTop: Spacing.md }]}>Boja</Text>
+            <Text style={[styles.fieldLabel, { color: colors.textSecondary, marginTop: Spacing.md }]}>{t('goals.goalColor')}</Text>
             <View style={styles.colorRow}>
               {GOAL_COLORS.map((c) => (
                 <TouchableOpacity
@@ -452,7 +452,7 @@ export const GoalsScreen: React.FC = () => {
 
             <View style={{ marginTop: Spacing.xl }}>
               <Button
-                title="Kreiraj cilj"
+                title={t('goals.createGoal')}
                 variant="primary"
                 size="lg"
                 fullWidth
@@ -469,10 +469,10 @@ export const GoalsScreen: React.FC = () => {
       <Modal visible={showAddMoney !== null} animationType="fade" transparent>
         <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
           <View style={[styles.addMoneyModal, { backgroundColor: colors.card }]}>
-            <Text style={[styles.addMoneyTitle, { color: colors.text }]}>Dodaj iznos</Text>
+            <Text style={[styles.addMoneyTitle, { color: colors.text }]}>{t('goals.addAmount')}</Text>
 
             {/* Odabir računa */}
-            <Text style={[styles.addMoneyLabel, { color: colors.textSecondary }]}>S kojeg računa?</Text>
+            <Text style={[styles.addMoneyLabel, { color: colors.textSecondary }]}>{t('goals.fromAccount')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.accountPickerRow}>
               {accounts.map((acc) => (
                 <TouchableOpacity
@@ -507,12 +507,12 @@ export const GoalsScreen: React.FC = () => {
             />
             <View style={styles.addMoneyButtons}>
               <Button
-                title="Odustani"
+                title={t('common.cancel')}
                 variant="ghost"
                 onPress={() => { setShowAddMoney(null); setAddMoneyAmount(''); setAddMoneyAccountId(''); }}
               />
               <Button
-                title="Dodaj"
+                title={t('common.add')}
                 variant="primary"
                 onPress={handleAddMoney}
                 disabled={!addMoneyAmount || !addMoneyAccountId}
