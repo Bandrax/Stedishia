@@ -179,6 +179,8 @@
     "allocated": "Raspod.",
     "spent": "Potrošeno",
     "free": "Slobodno",
+    "available": "Dostupno",
+    "remaining": "Preostalo",
     "setupTitle": "Postavite budžet za {{month}}",
     "setupSubtitle": "Dajte svakom euru svoju svrhu! Odaberite metodu koja vam odgovara.",
     "envelopeTitle": "Metoda kuverti",
@@ -409,6 +411,7 @@
     "savingsRate": "Stopa štednje",
     "incomeVsExpenses": "Prihodi vs Rashodi",
     "monthlySavings": "Mjesečna štednja",
+    "monthlyNetResult": "Mjesečni rezultat (neto)",
     "yearlyOverview": "Godišnji pregled {{year}}",
     "totalIncome": "Ukupni prihodi",
     "totalExpenses": "Ukupni rashodi",
@@ -433,6 +436,9 @@
     "avgIncome": "Prosjek prihoda",
     "avgExpenses": "Prosjek rashoda",
     "forecastHint": "Prognoza se temelji na prosjeku vaših prihoda i rashoda u zadnjih 90 dana. Stvarni rezultati mogu varirati.",
+    "before": "Prije",
+    "days90": "90d",
+    "detailedView": "Detaljan prikaz",
     "months": {
       "short": ["Sij", "Velj", "Ožu", "Tra", "Svi", "Lip", "Srp", "Kol", "Ruj", "Lis", "Stu", "Pro"],
       "letter": ["S", "V", "O", "T", "S", "L", "S", "K", "R", "L", "S", "P"]

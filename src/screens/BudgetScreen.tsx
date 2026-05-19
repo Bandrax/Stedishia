@@ -25,7 +25,7 @@ import {
   copyBudgetFromPreviousMonth,
   getUnbudgetedSpending,
 } from '../services/budgetService';
-import { getTotalBalance } from '../services/dashboardService';
+import { getTotalBalance, getMonthlyStats } from '../services/dashboardService';
 import type { BudgetSummary } from '../services/budgetService';
 import { Card, Button } from '../components/atoms';
 import { BudgetSummaryHeader } from '../components/molecules/BudgetSummaryHeader';
@@ -48,19 +48,28 @@ export const BudgetScreen: React.FC = () => {
   const [showSetup, setShowSetup] = useState(false);
   const [isSettingUp, setIsSettingUp] = useState(false);
 
-  const [effectiveIncome, setEffectiveIncome] = useState(currentUser?.monthlyIncome || 0);
+  const [actualBalance, setActualBalance] = useState(0);
+  const [monthlyExpenses, setMonthlyExpenses] = useState(0);
+  // budgetBase = stanje + rashodi = koliko je bilo dostupno ovaj mjesec
+  const [budgetBase, setBudgetBase] = useState(0);
 
   const loadBudget = useCallback(async () => {
     if (!currentUser) return;
     try {
-      // Koristi veći iznos: ukupno stanje računa ili mjesečni prihod iz profila
-      const totalBalance = await getTotalBalance(currentUser.id);
-      const profileIncome = currentUser.monthlyIncome || 0;
-      const income = Math.max(totalBalance, profileIncome);
-      setEffectiveIncome(income);
+      const [totalBalance, stats] = await Promise.all([
+        getTotalBalance(currentUser.id),
+        getMonthlyStats(currentUser.id, currentMonth),
+      ]);
+      setActualBalance(totalBalance);
+      setMonthlyExpenses(stats.expenses);
+
+      // Budžet baza = ukupno stanje + rashodi ovog mjeseca
+      // To je novac koji je bio dostupan ovaj mjesec
+      const base = totalBalance + stats.expenses;
+      setBudgetBase(base);
 
       const [budgetSummary, unbudgetedData] = await Promise.all([
-        getBudgetSummary(currentUser.id, income, currentMonth),
+        getBudgetSummary(currentUser.id, base, currentMonth),
         getUnbudgetedSpending(currentUser.id, currentMonth),
       ]);
       setSummary(budgetSummary);
@@ -93,12 +102,16 @@ export const BudgetScreen: React.FC = () => {
     if (!currentUser) return;
     setIsSettingUp(true);
     try {
-      // Uvijek dohvati svježe stanje računa
-      const totalBalance = await getTotalBalance(currentUser.id);
-      const profileIncome = currentUser.monthlyIncome || 0;
-      const freshIncome = Math.max(totalBalance, profileIncome);
-      setEffectiveIncome(freshIncome);
-      await generate503020Budget(currentUser.id, freshIncome, currentMonth);
+      // Dohvati svježe stanje i rashode
+      const [totalBalance, stats] = await Promise.all([
+        getTotalBalance(currentUser.id),
+        getMonthlyStats(currentUser.id, currentMonth),
+      ]);
+      const base = totalBalance + stats.expenses;
+      setActualBalance(totalBalance);
+      setMonthlyExpenses(stats.expenses);
+      setBudgetBase(base);
+      await generate503020Budget(currentUser.id, base, currentMonth);
       await loadBudget();
       setShowSetup(false);
     } catch (err) {
@@ -242,10 +255,12 @@ export const BudgetScreen: React.FC = () => {
             {/* Summary header */}
             <View style={{ marginTop: Spacing.base }}>
               <BudgetSummaryHeader
-                totalIncome={effectiveIncome}
+                totalBalance={actualBalance}
+                budgetBase={budgetBase}
+                monthlyExpenses={monthlyExpenses}
                 totalAllocated={summary!.totalAllocated}
                 totalSpent={summary!.totalSpent}
-                availableToAllocate={summary!.availableToAllocate}
+                mode={mode}
               />
             </View>
 
@@ -280,9 +295,9 @@ export const BudgetScreen: React.FC = () => {
             {mode === '50-30-20' ? (
               <View style={{ marginTop: Spacing.base }}>
                 {[
-                  { label: t('budget.needs'), icon: 'home-outline' as const, target: effectiveIncome * 0.5, categories: needsCategories, color: colors.primary },
-                  { label: t('budget.wants'), icon: 'heart-outline' as const, target: effectiveIncome * 0.3, categories: wantsCategories, color: colors.accent },
-                  { label: t('budget.savingsDebt'), icon: 'save-outline' as const, target: effectiveIncome * 0.2, categories: savingsCategories, color: colors.success },
+                  { label: t('budget.needs'), icon: 'home-outline' as const, target: budgetBase * 0.5, categories: needsCategories, color: colors.primary },
+                  { label: t('budget.wants'), icon: 'heart-outline' as const, target: budgetBase * 0.3, categories: wantsCategories, color: colors.accent },
+                  { label: t('budget.savingsDebt'), icon: 'save-outline' as const, target: budgetBase * 0.2, categories: savingsCategories, color: colors.success },
                 ].map((group) => {
                   const spent = groupSpent(group.categories);
                   const percent = group.target > 0 ? (spent / group.target) * 100 : 0;
@@ -413,7 +428,7 @@ export const BudgetScreen: React.FC = () => {
           {/* Preostalo */}
           <View style={[styles.remainingBar, { backgroundColor: colors.surfaceVariant }]}>
             <Text style={[styles.remainingText, { color: colors.text }]}>
-              {t('budget.remainingToAllocate', { amount: formatAmount(summary?.availableToAllocate ?? effectiveIncome) })}
+              {t('budget.remainingToAllocate', { amount: formatAmount(summary?.availableToAllocate ?? budgetBase) })}
             </Text>
           </View>
 

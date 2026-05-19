@@ -7,11 +7,12 @@ import {
   RefreshControl,
   TouchableOpacity,
   Dimensions,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { LineChart, BarChart } from 'react-native-chart-kit';
+import { LineChart } from 'react-native-chart-kit';
 import { useAppTheme } from '../hooks';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store';
@@ -60,6 +61,14 @@ export const ReportsScreen: React.FC = () => {
     currentBalance: number; projectedBalance: number;
     dailyData: Array<{ date: string; balance: number; isProjection: boolean }>;
     avgDailyIncome: number; avgDailyExpense: number;
+  } | null>(null);
+  const [expandedTrend, setExpandedTrend] = useState<{
+    categoryId: string;
+    name: string;
+    emoji: string;
+    color: string;
+    data: number[];
+    labels: string[];
   } | null>(null);
 
   const loadData = useCallback(async () => {
@@ -188,36 +197,33 @@ export const ReportsScreen: React.FC = () => {
               {t('reports.incomeVsExpenses')}
             </Text>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <BarChart
-              data={{
-                labels,
-                datasets: [
-                  { data: monthlyData.map((d) => d.income || 0) },
-                  { data: monthlyData.map((d) => d.expenses || 0) },
-                ],
-              }}
-              width={Math.max(CHART_WIDTH, labels.length * 70)}
-              height={220}
-              chartConfig={{
-                ...chartConfig,
-                color: (opacity = 1) => `rgba(15, 76, 58, ${opacity})`,
-                barPercentage: 0.4,
-              }}
-              style={styles.chart}
-              fromZero
-              showValuesOnTopOfBars
-              yAxisLabel=""
-              yAxisSuffix=" €"
-            />
-          </ScrollView>
+          <LineChart
+            data={{
+              labels,
+              datasets: [
+                { data: monthlyData.map((d) => d.income || 0.01), color: (opacity = 1) => `rgba(34, 197, 94, ${opacity})`, strokeWidth: 2 },
+                { data: monthlyData.map((d) => d.expenses || 0.01), color: (opacity = 1) => `rgba(239, 68, 68, ${opacity})`, strokeWidth: 2 },
+              ],
+            }}
+            width={CHART_WIDTH - Spacing.base * 2}
+            height={220}
+            chartConfig={{
+              ...chartConfig,
+              color: (opacity = 1) => `rgba(15, 76, 58, ${opacity})`,
+            }}
+            style={styles.chart}
+            bezier
+            withDots
+            yAxisLabel=""
+            yAxisSuffix=" €"
+          />
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
+              <View style={[styles.legendDot, { backgroundColor: '#22C55E' }]} />
               <Text style={[styles.legendText, { color: colors.textSecondary }]}>{t('reports.income')}</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: colors.primary + '66' }]} />
+              <View style={[styles.legendDot, { backgroundColor: '#EF4444' }]} />
               <Text style={[styles.legendText, { color: colors.textSecondary }]}>{t('reports.expenses')}</Text>
             </View>
           </View>
@@ -228,7 +234,7 @@ export const ReportsScreen: React.FC = () => {
           <View style={styles.sectionTitleRow}>
             <Ionicons name="cash-outline" size={18} color={colors.text} />
             <Text style={[styles.chartTitle, { color: colors.text }]}>
-              {t('reports.monthlySavings')}
+              {t('reports.monthlyNetResult')}
             </Text>
           </View>
           <LineChart
@@ -356,26 +362,39 @@ export const ReportsScreen: React.FC = () => {
           <View style={styles.sectionTitleRow}>
             <Ionicons name="bar-chart-outline" size={18} color={colors.text} />
             <Text style={[styles.chartTitle, { color: colors.text }]}>
-              {t('reports.monthlyOverview')}
+              {t('reports.incomeVsExpenses')}
             </Text>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <BarChart
-              data={{
-                labels,
-                datasets: [
-                  { data: yearlyData.monthlyData.map((d) => d.expenses || 0) },
-                ],
-              }}
-              width={Math.max(CHART_WIDTH, 400)}
-              height={220}
-              chartConfig={chartConfig}
-              style={styles.chart}
-              fromZero
-              yAxisLabel=""
-              yAxisSuffix=" €"
-            />
-          </ScrollView>
+          <LineChart
+            data={{
+              labels,
+              datasets: [
+                { data: yearlyData.monthlyData.map((d) => d.income || 0.01), color: (opacity = 1) => `rgba(34, 197, 94, ${opacity})`, strokeWidth: 2 },
+                { data: yearlyData.monthlyData.map((d) => d.expenses || 0.01), color: (opacity = 1) => `rgba(239, 68, 68, ${opacity})`, strokeWidth: 2 },
+              ],
+            }}
+            width={Math.max(CHART_WIDTH - Spacing.base * 2, 350)}
+            height={220}
+            chartConfig={{
+              ...chartConfig,
+              color: (opacity = 1) => `rgba(15, 76, 58, ${opacity})`,
+            }}
+            style={styles.chart}
+            bezier
+            withDots
+            yAxisLabel=""
+            yAxisSuffix=" €"
+          />
+          <View style={styles.legendRow}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: '#22C55E' }]} />
+              <Text style={[styles.legendText, { color: colors.textSecondary }]}>{t('reports.income')}</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: '#EF4444' }]} />
+              <Text style={[styles.legendText, { color: colors.textSecondary }]}>{t('reports.expenses')}</Text>
+            </View>
+          </View>
         </View>
 
         {/* Top kategorije */}
@@ -453,8 +472,17 @@ export const ReportsScreen: React.FC = () => {
           });
 
           return (
-            <View
+            <TouchableOpacity
               key={trend.categoryId}
+              activeOpacity={0.7}
+              onPress={() => setExpandedTrend({
+                categoryId: trend.categoryId,
+                name: info?.name || trend.categoryId,
+                emoji: info?.emoji || '📁',
+                color: info?.color || colors.primary,
+                data: trend.months.map((m) => m.amount || 0),
+                labels,
+              })}
               style={[styles.trendCard, { backgroundColor: colors.card, borderColor: colors.border }]}
             >
               <View style={styles.trendHeader}>
@@ -506,7 +534,7 @@ export const ReportsScreen: React.FC = () => {
                 yAxisLabel=""
                 yAxisSuffix=""
               />
-            </View>
+            </TouchableOpacity>
           );
         })}
       </View>
@@ -534,9 +562,9 @@ export const ReportsScreen: React.FC = () => {
     const projectionStartIndex = sampledData.findIndex((d) => d.isProjection);
 
     const labels = sampledData.map((d, i) => {
-      if (i === 0) return 'Prije';
-      if (i === projectionStartIndex) return 'Danas';
-      if (i === sampledData.length - 1) return '90d';
+      if (i === 0) return t('reports.before');
+      if (i === projectionStartIndex) return t('common.today');
+      if (i === sampledData.length - 1) return t('reports.days90');
       return '';
     });
 
@@ -710,6 +738,70 @@ export const ReportsScreen: React.FC = () => {
         {activeTab === 'trends' && renderTrendsTab()}
         {activeTab === 'forecast' && renderForecastTab()}
       </ScrollView>
+
+      {/* Expanded Trend Modal */}
+      <Modal
+        visible={!!expandedTrend}
+        animationType="slide"
+        onRequestClose={() => setExpandedTrend(null)}
+      >
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+          {expandedTrend && (
+            <View style={{ flex: 1, padding: Spacing.base }}>
+              <View style={styles.headerBar}>
+                <TouchableOpacity onPress={() => setExpandedTrend(null)}>
+                  <Ionicons name="arrow-back" size={24} color={colors.primary} />
+                </TouchableOpacity>
+                <Text style={[styles.title, { color: colors.text }]}>
+                  {expandedTrend.emoji} {expandedTrend.name}
+                </Text>
+                <View style={{ width: 24 }} />
+              </View>
+              <LineChart
+                data={{
+                  labels: expandedTrend.labels,
+                  datasets: [{
+                    data: expandedTrend.data.map((d) => d || 0.01),
+                    color: (opacity = 1) => {
+                      const c = expandedTrend.color;
+                      const r = parseInt(c.slice(1, 3), 16);
+                      const g = parseInt(c.slice(3, 5), 16);
+                      const b = parseInt(c.slice(5, 7), 16);
+                      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+                    },
+                    strokeWidth: 2,
+                  }],
+                }}
+                width={SCREEN_WIDTH - 32}
+                height={300}
+                chartConfig={{
+                  ...chartConfig,
+                  color: (opacity = 1) => `rgba(15, 76, 58, ${opacity})`,
+                }}
+                style={styles.chart}
+                bezier
+                withDots
+                yAxisLabel=""
+                yAxisSuffix=" €"
+              />
+              <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: Spacing.lg }}>
+                <View style={{ alignItems: 'center' }}>
+                  <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.averageLabel')}</Text>
+                  <Text style={[styles.summaryValue, { color: colors.text }]}>
+                    {formatAmount(expandedTrend.data.reduce((a, b) => a + b, 0) / (expandedTrend.data.length || 1))}
+                  </Text>
+                </View>
+                <View style={{ alignItems: 'center' }}>
+                  <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.totalLabel')}</Text>
+                  <Text style={[styles.summaryValue, { color: colors.text }]}>
+                    {formatAmount(expandedTrend.data.reduce((a, b) => a + b, 0))}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 };

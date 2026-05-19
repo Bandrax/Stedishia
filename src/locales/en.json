@@ -179,6 +179,8 @@
     "allocated": "Alloc.",
     "spent": "Spent",
     "free": "Free",
+    "available": "Available",
+    "remaining": "Remaining",
     "setupTitle": "Set up budget for {{month}}",
     "setupSubtitle": "Give every euro a purpose! Choose a method that works for you.",
     "envelopeTitle": "Envelope Method",
@@ -409,6 +411,7 @@
     "savingsRate": "Savings rate",
     "incomeVsExpenses": "Income vs Expenses",
     "monthlySavings": "Monthly Savings",
+    "monthlyNetResult": "Monthly Net Result",
     "yearlyOverview": "Yearly overview {{year}}",
     "totalIncome": "Total income",
     "totalExpenses": "Total expenses",
@@ -433,6 +436,9 @@
     "avgIncome": "Avg income",
     "avgExpenses": "Avg expenses",
     "forecastHint": "Forecast is based on average income and expenses over the last 90 days. Actual results may vary.",
+    "before": "Before",
+    "days90": "90d",
+    "detailedView": "Detailed view",
     "months": {
       "short": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
       "letter": ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]

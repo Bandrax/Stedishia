@@ -7,24 +7,46 @@ import { Typography, Spacing, BorderRadius } from '../../constants';
 import { formatAmount } from '../../utils';
 
 interface BudgetSummaryHeaderProps {
-  totalIncome: number;
+  totalBalance: number;
+  budgetBase: number;
+  monthlyExpenses: number;
   totalAllocated: number;
   totalSpent: number;
-  availableToAllocate: number;
+  mode: 'envelope' | '50-30-20';
 }
 
 export const BudgetSummaryHeader: React.FC<BudgetSummaryHeaderProps> = ({
-  totalIncome,
+  totalBalance,
+  budgetBase,
+  monthlyExpenses,
   totalAllocated,
   totalSpent,
-  availableToAllocate,
+  mode,
 }) => {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
-  const allocationPercent = totalIncome > 0
-    ? Math.round((totalAllocated / totalIncome) * 100)
-    : 0;
-  const isFullyAllocated = availableToAllocate <= 0;
+
+  const is503020 = mode === '50-30-20';
+
+  // 50/30/20: postotak potrošnje od dostupnog budžeta
+  // Envelope: postotak raspoređenog od dostupnog budžeta
+  const percent = is503020
+    ? (budgetBase > 0 ? Math.round((monthlyExpenses / budgetBase) * 100) : 0)
+    : (budgetBase > 0 ? Math.round((totalAllocated / budgetBase) * 100) : 0);
+
+  const badgeLabel = is503020 ? t('budget.spent') : t('budget.allocated');
+  const spentFull = is503020 && budgetBase > 0 && monthlyExpenses >= budgetBase;
+  const allocatedFull = !is503020 && totalAllocated >= budgetBase;
+  const badgeDone = is503020 ? spentFull : allocatedFull;
+
+  // Progress bar proporcije
+  const progressPercent = is503020
+    ? (budgetBase > 0 ? Math.min((monthlyExpenses / budgetBase) * 100, 100) : 0)
+    : (budgetBase > 0 ? Math.min((totalAllocated / budgetBase) * 100, 100) : 0);
+
+  const spentBarPercent = is503020
+    ? 0 // u 50/30/20 modu, glavni bar JE potrošnja
+    : (budgetBase > 0 ? Math.min((totalSpent / budgetBase) * 100, 100) : 0);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.primary }]}>
@@ -33,21 +55,21 @@ export const BudgetSummaryHeader: React.FC<BudgetSummaryHeaderProps> = ({
         <View style={styles.mainInfo}>
           <Text style={styles.mainLabel}>{t('budget.totalBalance')}</Text>
           <Text style={styles.mainAmount}>
-            {formatAmount(totalIncome)}
+            {formatAmount(totalBalance)}
           </Text>
         </View>
         <View style={[styles.percentBadge, {
-          backgroundColor: isFullyAllocated ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.15)',
+          backgroundColor: badgeDone ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.15)',
         }]}>
-          {isFullyAllocated ? (
+          {badgeDone ? (
             <Ionicons name="checkmark" size={20} color="#FFFFFF" />
           ) : (
             <Text style={styles.percentText}>
-              {`${allocationPercent}%`}
+              {`${percent}%`}
             </Text>
           )}
           <Text style={styles.percentLabel}>
-            {t('budget.allocated')}
+            {badgeLabel}
           </Text>
         </View>
       </View>
@@ -57,36 +79,58 @@ export const BudgetSummaryHeader: React.FC<BudgetSummaryHeaderProps> = ({
         <View
           style={[
             styles.progressAllocated,
-            { width: `${Math.min(allocationPercent, 100)}%` },
+            { width: `${progressPercent}%` },
           ]}
         />
-        {totalIncome > 0 && (
+        {spentBarPercent > 0 && (
           <View
             style={[
               styles.progressSpent,
-              { width: `${Math.min((totalSpent / totalIncome) * 100, 100)}%` },
+              { width: `${spentBarPercent}%` },
             ]}
           />
         )}
       </View>
 
-      {/* Detalji */}
+      {/* Detalji — ovise o modu */}
       <View style={styles.detailRow}>
-        <View style={styles.detail}>
-          <View style={[styles.detailDot, { backgroundColor: 'rgba(255,255,255,0.5)' }]} />
-          <Text style={styles.detailLabel}>{t('budget.allocated')}</Text>
-          <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalAllocated)}</Text>
-        </View>
-        <View style={styles.detail}>
-          <View style={[styles.detailDot, { backgroundColor: '#FFD700' }]} />
-          <Text style={styles.detailLabel}>{t('budget.spent')}</Text>
-          <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalSpent)}</Text>
-        </View>
-        <View style={styles.detail}>
-          <View style={[styles.detailDot, { backgroundColor: availableToAllocate > 0 ? '#FF9800' : 'rgba(255,255,255,0.3)' }]} />
-          <Text style={styles.detailLabel}>{t('budget.free')}</Text>
-          <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(Math.max(0, availableToAllocate))}</Text>
-        </View>
+        {is503020 ? (
+          <>
+            <View style={styles.detail}>
+              <View style={[styles.detailDot, { backgroundColor: 'rgba(255,255,255,0.5)' }]} />
+              <Text style={styles.detailLabel}>{t('budget.available')}</Text>
+              <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(budgetBase)}</Text>
+            </View>
+            <View style={styles.detail}>
+              <View style={[styles.detailDot, { backgroundColor: '#FFD700' }]} />
+              <Text style={styles.detailLabel}>{t('budget.spent')}</Text>
+              <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(monthlyExpenses)}</Text>
+            </View>
+            <View style={styles.detail}>
+              <View style={[styles.detailDot, { backgroundColor: totalBalance > 0 ? '#4CAF50' : '#FF9800' }]} />
+              <Text style={styles.detailLabel}>{t('budget.remaining')}</Text>
+              <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalBalance)}</Text>
+            </View>
+          </>
+        ) : (
+          <>
+            <View style={styles.detail}>
+              <View style={[styles.detailDot, { backgroundColor: 'rgba(255,255,255,0.5)' }]} />
+              <Text style={styles.detailLabel}>{t('budget.allocated')}</Text>
+              <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalAllocated)}</Text>
+            </View>
+            <View style={styles.detail}>
+              <View style={[styles.detailDot, { backgroundColor: '#FFD700' }]} />
+              <Text style={styles.detailLabel}>{t('budget.spent')}</Text>
+              <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalSpent)}</Text>
+            </View>
+            <View style={styles.detail}>
+              <View style={[styles.detailDot, { backgroundColor: (budgetBase - totalAllocated) > 0 ? '#FF9800' : 'rgba(255,255,255,0.3)' }]} />
+              <Text style={styles.detailLabel}>{t('budget.free')}</Text>
+              <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(Math.max(0, budgetBase - totalAllocated))}</Text>
+            </View>
+          </>
+        )}
       </View>
     </View>
   );
