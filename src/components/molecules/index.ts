@@ -6,7 +6,6 @@ export { UpcomingPaymentItem } from './UpcomingPaymentItem';
 export { TopExpenseItem } from './TopExpenseItem';
 export { MiniCashFlowChart } from './MiniCashFlowChart';
 export { DailyTipCard } from './DailyTipCard';
-export { ScopeToggle } from './ScopeToggle';
 export { CategoryPicker } from './CategoryPicker';
 export { AccountPicker } from './AccountPicker';
 export { TransactionListItem } from './TransactionListItem';

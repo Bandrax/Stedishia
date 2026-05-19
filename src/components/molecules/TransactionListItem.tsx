@@ -19,7 +19,6 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
   const { colors } = useAppTheme();
   const catInfo = getCategoryInfo(transaction.categoryId);
   const isIncome = transaction.type === 'income';
-  const isShared = transaction.scope === 'shared';
 
   return (
     <TouchableOpacity
@@ -38,11 +37,6 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
           <Text style={[styles.category, { color: colors.textTertiary }]}>
             {catInfo?.name || transaction.categoryId}
           </Text>
-          {isShared && (
-            <View style={[styles.scopeBadge, { backgroundColor: colors.primary + '15' }]}>
-              <Ionicons name="home" size={10} color={colors.primary} />
-            </View>
-          )}
           {transaction.tags.length > 0 && (
             <Text style={[styles.tags, { color: colors.textTertiary }]}>
               #{transaction.tags[0]}
@@ -95,14 +89,6 @@ const styles = StyleSheet.create({
   },
   category: {
     fontSize: 12,
-  },
-  scopeBadge: {
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderRadius: 4,
-  },
-  scopeText: {
-    fontSize: 10,
   },
   tags: {
     fontSize: 11,

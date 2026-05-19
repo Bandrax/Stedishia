@@ -31,7 +31,6 @@ export const getBudgetForMonth = async (
     month: row.month,
     allocated: row.allocated,
     spent: row.actual_spent,
-    scope: row.scope,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }));
@@ -42,16 +41,15 @@ export const upsertBudgetItem = async (
   userId: string,
   categoryId: string,
   month: string,
-  allocated: number,
-  scope: string = 'personal'
+  allocated: number
 ): Promise<string> => {
   const now = new Date().toISOString();
   const db = await getDatabase();
 
   // Provjeri postoji li već
   const existing = await dbQuery<any>(
-    'SELECT id FROM budget_items WHERE user_id = ? AND category_id = ? AND month = ? AND scope = ?',
-    [userId, categoryId, month, scope]
+    'SELECT id FROM budget_items WHERE user_id = ? AND category_id = ? AND month = ?',
+    [userId, categoryId, month]
   );
 
   if (existing.length > 0) {
@@ -69,7 +67,6 @@ export const upsertBudgetItem = async (
       month,
       allocated,
       spent: 0,
-      scope,
       created_at: now,
       updated_at: now,
     });
@@ -90,7 +87,7 @@ export const copyBudgetFromPreviousMonth = async (
   let count = 0;
 
   for (const item of prevBudget) {
-    await upsertBudgetItem(userId, item.categoryId, targetMonth, item.allocated, item.scope);
+    await upsertBudgetItem(userId, item.categoryId, targetMonth, item.allocated);
     count++;
   }
 

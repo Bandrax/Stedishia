@@ -35,6 +35,7 @@ export const initializeDatabase = async (): Promise<void> => {
     CREATE TABLE IF NOT EXISTS households (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
+      invite_code TEXT UNIQUE,
       created_at TEXT NOT NULL
     );
 
@@ -110,7 +111,7 @@ export const initializeDatabase = async (): Promise<void> => {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id),
-      UNIQUE(user_id, category_id, month, scope)
+      UNIQUE(user_id, category_id, month)
     );
 
     CREATE TABLE IF NOT EXISTS savings_goals (
@@ -231,13 +232,22 @@ export const initializeDatabase = async (): Promise<void> => {
       ON transactions(category_id, date DESC);
     CREATE INDEX IF NOT EXISTS idx_transactions_account
       ON transactions(account_id, date DESC);
-    CREATE INDEX IF NOT EXISTS idx_transactions_scope
-      ON transactions(scope, date DESC);
     CREATE INDEX IF NOT EXISTS idx_budget_items_month
       ON budget_items(user_id, month);
     CREATE INDEX IF NOT EXISTS idx_recurring_next_due
       ON recurring_transactions(next_due_date, is_active);
   `);
+
+  // Migracija: dodaj invite_code u households ako ne postoji
+  try {
+    const householdInfo = await database.getAllAsync(
+      "PRAGMA table_info(households)"
+    ) as any[];
+    const hasInviteCode = householdInfo.some((col: any) => col.name === 'invite_code');
+    if (!hasInviteCode) {
+      await database.execAsync('ALTER TABLE households ADD COLUMN invite_code TEXT UNIQUE');
+    }
+  } catch (_) { /* tablica možda ne postoji još */ }
 };
 
 // Pomoćne funkcije za CRUD operacije

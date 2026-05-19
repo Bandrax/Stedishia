@@ -81,6 +81,61 @@ export const toggleRecurring = async (id: string, isActive: boolean): Promise<vo
   await updateRecurring(id, { isActive });
 };
 
+// Detekcija pretplata i godišnji trošak
+export const getSubscriptionSummary = async (
+  userId: string
+): Promise<{
+  subscriptions: Array<{
+    id: string;
+    description: string;
+    amount: number;
+    frequency: string;
+    categoryId: string;
+    yearlyAmount: number;
+    isActive: boolean;
+  }>;
+  totalMonthly: number;
+  totalYearly: number;
+}> => {
+  const rows = await dbQuery<any>(
+    'SELECT * FROM recurring_transactions WHERE user_id = ? AND type = ?',
+    [userId, 'expense']
+  );
+
+  const frequencyMultipliers: Record<string, number> = {
+    weekly: 52,
+    biweekly: 26,
+    monthly: 12,
+    quarterly: 4,
+    yearly: 1,
+  };
+
+  const subscriptions = rows.map((row: any) => {
+    const multiplier = frequencyMultipliers[row.frequency] || 12;
+    const yearlyAmount = row.amount * multiplier;
+
+    return {
+      id: row.id,
+      description: row.description,
+      amount: row.amount,
+      frequency: row.frequency,
+      categoryId: row.category_id,
+      yearlyAmount,
+      isActive: !!row.is_active,
+    };
+  });
+
+  // Sort by yearlyAmount descending
+  subscriptions.sort((a, b) => b.yearlyAmount - a.yearlyAmount);
+
+  // Calculate totals from active subscriptions only
+  const activeSubscriptions = subscriptions.filter((s) => s.isActive);
+  const totalYearly = activeSubscriptions.reduce((sum, s) => sum + s.yearlyAmount, 0);
+  const totalMonthly = totalYearly / 12;
+
+  return { subscriptions, totalMonthly, totalYearly };
+};
+
 const mapRow = (row: any): RecurringTransaction => ({
   id: row.id,
   userId: row.user_id,

@@ -99,6 +99,7 @@ export const PinScreen: React.FC = () => {
           setHousehold({
             id: households[0].id,
             name: households[0].name,
+            inviteCode: households[0].invite_code || '',
             members: [user.id],
             createdAt: households[0].created_at,
           });

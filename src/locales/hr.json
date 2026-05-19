@@ -353,7 +353,13 @@
     "deleteTitle": "Obriši",
     "deleteConfirm": "Obrisati \"{{name}}\"?",
     "invalidInput": "Unesite opis i ispravan iznos.",
-    "saveError": "Spremanje nije uspjelo: {{error}}"
+    "saveError": "Spremanje nije uspjelo: {{error}}",
+    "subscriptionSummary": "Pregled pretplata",
+    "monthlyTotal": "Mjesečno ukupno",
+    "yearlyTotal": "Godišnje ukupno",
+    "perYear": "/god",
+    "perMonth": "/mj",
+    "noSubscriptions": "Nema aktivnih pretplata"
   },
 
   "settings": {
@@ -442,7 +448,10 @@
     "months": {
       "short": ["Sij", "Velj", "Ožu", "Tra", "Svi", "Lip", "Srp", "Kol", "Ruj", "Lis", "Stu", "Pro"],
       "letter": ["S", "V", "O", "T", "S", "L", "S", "K", "R", "L", "S", "P"]
-    }
+    },
+    "exportCSV": "Izvoz CSV",
+    "exportSuccess": "CSV izvezen uspješno!",
+    "exportError": "Greška pri izvozu."
   },
 
   "advisor": {
@@ -470,22 +479,35 @@
 
   "household": {
     "title": "Kućanstvo",
-    "ourHousehold": "Naše kućanstvo",
-    "sharedExpenses": "Zajednički troškovi",
-    "totalShared": "ukupno zajedničkih troškova",
-    "splitInfo": "Podijeljeno na {{count}}: po {{amount}} svako",
-    "members": "Članovi kućanstva",
+    "noHousehold": "Niste dio kućanstva",
+    "noHouseholdDesc": "Kreirajte novo kućanstvo ili se pridružite postojećem putem pozivnog koda.",
+    "createHousehold": "Kreiraj kućanstvo",
+    "joinHousehold": "Pridruži se",
+    "enterName": "Ime kućanstva",
+    "enterNamePlaceholder": "npr. Naše kućanstvo",
+    "enterInviteCode": "Pozivni kod",
+    "enterInviteCodePlaceholder": "npr. KUC-A3F9",
+    "createSuccess": "Kućanstvo kreirano!",
+    "joinSuccess": "Uspješno ste se pridružili kućanstvu!",
+    "joinError": "Pozivni kod nije pronađen. Provjerite kod i pokušajte ponovo.",
+    "inviteCode": "Pozivni kod",
+    "inviteCodeHint": "Podijelite ovaj kod s partnerom/icom da se pridruži vašem kućanstvu.",
+    "copyCode": "Kopiraj kod",
+    "codeCopied": "Kod kopiran!",
+    "leaveHousehold": "Napusti kućanstvo",
+    "leaveConfirmTitle": "Napusti kućanstvo?",
+    "leaveConfirmMessage": "Vaši podaci ostaju, ali više nećete vidjeti stanja drugih članova.",
+    "leaveSuccess": "Napustili ste kućanstvo.",
+    "members": "Članovi",
     "you": "(vi)",
-    "memberStats": "Prihodi: {{income}} • Rashodi: {{expenses}}",
-    "memberShared": "Zajedničko: {{amount}}",
-    "owedToThem": "Duguje im se {{amount}}",
-    "theyOwe": "Duguje {{amount}}",
-    "balanced": "Izbalansirano",
-    "householdOverview": "Kućanski pregled",
+    "totalBalance": "Ukupno stanje",
+    "monthlyExpenses": "Rashodi ovaj mjesec",
+    "householdTotal": "Ukupno stanje kućanstva",
+    "householdOverview": "Pregled kućanstva",
     "totalIncome": "Ukupni prihodi",
     "totalExpenses": "Ukupni rashodi",
     "difference": "Razlika",
-    "shared": "Zajedničko",
+    "memberStats": "Stanje: {{balance}} • Rashodi: {{expenses}}",
     "sync": "Sinkronizacija",
     "syncDescription": "Eksportirajte svoje podatke kao JSON datoteku i podijelite je s partnerom/icom putem Google Drivea, AirDropa ili druge metode.",
     "exportData": "Eksportiraj podatke",
@@ -495,7 +517,6 @@
     "importConfirmTitle": "Importiraj podatke",
     "importConfirmMessage": "Ovo će dodati podatke partnera u vaše kućanstvo. Vaši postojeći podaci neće biti obrisani.",
     "importSuccessTitle": "Import uspješan!",
-    "importSuccessMessage": "Podaci partnera su uspješno učitani. Sada možete vidjeti zajedničke troškove i kućanski pregled.",
     "importError": "Nevaljan format datoteke ili greška pri importu.",
     "syncHint": "Preporuka: Stvorite dijeljenu mapu na Google Driveu i tamo spremajte eksportirane datoteke. Tako oboje imate pristup najnovijim podacima.",
     "importResult": "Uvezeno:\n• {{transactions}} transakcija\n• {{accounts}} računa\n• {{goals}} ciljeva\n• {{debts}} dugova",

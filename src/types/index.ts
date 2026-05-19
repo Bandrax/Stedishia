@@ -16,6 +16,7 @@ export interface UserProfile {
 export interface Household {
   id: string;
   name: string;
+  inviteCode: string;
   members: string[]; // user IDs
   createdAt: string;
 }
@@ -40,14 +41,11 @@ export interface Account {
 
 // ===== Transakcije =====
 export type TransactionType = 'expense' | 'income' | 'transfer';
-export type TransactionScope = 'personal' | 'shared';
-
 export interface Transaction {
   id: string;
   userId: string;
   accountId: string;
   type: TransactionType;
-  scope: TransactionScope;
   amount: number;
   currency: string;
   categoryId: string;
@@ -84,7 +82,6 @@ export interface RecurringTransaction {
   userId: string;
   accountId: string;
   type: TransactionType;
-  scope: TransactionScope;
   amount: number;
   categoryId: string;
   subcategoryId?: string;
@@ -107,7 +104,6 @@ export interface BudgetItem {
   month: string; // YYYY-MM format
   allocated: number;
   spent: number;
-  scope: TransactionScope;
   createdAt: string;
   updatedAt: string;
 }
@@ -160,7 +156,6 @@ export interface FinancialAdvice {
   priority: AdvicePriority;
   isRead: boolean;
   isDismissed: boolean;
-  scope: 'personal' | 'household';
   actionLabel?: string;
   actionRoute?: string;
   createdAt: string;

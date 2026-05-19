@@ -25,6 +25,7 @@ import {
   createRecurring,
   deleteRecurring,
   toggleRecurring,
+  getSubscriptionSummary,
   type RecurringTransaction,
 } from '../services/recurringService';
 import { scheduleAllNotifications } from '../services/notificationService';
@@ -48,6 +49,19 @@ export const RecurringScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [transactions, setTransactions] = useState<RecurringTransaction[]>([]);
   const [showAdd, setShowAdd] = useState(false);
+  const [subSummary, setSubSummary] = useState<{
+    subscriptions: Array<{
+      id: string;
+      description: string;
+      amount: number;
+      frequency: string;
+      categoryId: string;
+      yearlyAmount: number;
+      isActive: boolean;
+    }>;
+    totalMonthly: number;
+    totalYearly: number;
+  } | null>(null);
 
   // Form
   const [desc, setDesc] = useState('');
@@ -58,8 +72,12 @@ export const RecurringScreen: React.FC = () => {
 
   const loadData = useCallback(async () => {
     if (!userId) return;
-    const data = await getRecurringTransactions(userId);
+    const [data, summary] = await Promise.all([
+      getRecurringTransactions(userId),
+      getSubscriptionSummary(userId),
+    ]);
     setTransactions(data);
+    setSubSummary(summary);
   }, [userId]);
 
   useFocusEffect(useCallback(() => { loadData(); }, [loadData]));
@@ -190,6 +208,77 @@ export const RecurringScreen: React.FC = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
       >
+        {/* Pretplate — subscription summary */}
+        {subSummary && subSummary.subscriptions.filter((s) => s.isActive).length > 0 ? (
+          <View style={[styles.subscriptionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={styles.subscriptionHeader}>
+              <Ionicons name="card-outline" size={20} color={colors.primary} />
+              <Text style={[styles.subscriptionTitle, { color: colors.text }]}>
+                {t('recurring.subscriptionSummary')}
+              </Text>
+            </View>
+
+            <View style={styles.subscriptionTotals}>
+              <View style={styles.subscriptionTotalItem}>
+                <Text style={[styles.subscriptionTotalLabel, { color: colors.textSecondary }]}>
+                  {t('recurring.monthlyTotal')}
+                </Text>
+                <Text style={[styles.subscriptionTotalValue, { color: colors.error }]}>
+                  {formatAmount(subSummary.totalMonthly)}{t('recurring.perMonth')}
+                </Text>
+              </View>
+              <View style={[styles.subscriptionDivider, { backgroundColor: colors.border }]} />
+              <View style={styles.subscriptionTotalItem}>
+                <Text style={[styles.subscriptionTotalLabel, { color: colors.textSecondary }]}>
+                  {t('recurring.yearlyTotal')}
+                </Text>
+                <Text style={[styles.subscriptionTotalValue, { color: colors.error }]}>
+                  {formatAmount(subSummary.totalYearly)}{t('recurring.perYear')}
+                </Text>
+              </View>
+            </View>
+
+            {/* Top subscriptions */}
+            {subSummary.subscriptions
+              .filter((s) => s.isActive)
+              .slice(0, 5)
+              .map((sub) => {
+                const catInfo = getCategoryInfo(sub.categoryId);
+                const monthlyEquiv = sub.yearlyAmount / 12;
+                return (
+                  <View key={sub.id} style={[styles.subscriptionItem, { borderTopColor: colors.border }]}>
+                    <Text style={{ fontSize: 16, marginRight: Spacing.sm }}>
+                      {catInfo?.emoji || '🔄'}
+                    </Text>
+                    <Text style={[styles.subscriptionName, { color: colors.text }]} numberOfLines={1}>
+                      {sub.description}
+                    </Text>
+                    <View style={styles.subscriptionAmounts}>
+                      <Text style={[styles.subscriptionAmountSmall, { color: colors.textSecondary }]}>
+                        {formatAmount(monthlyEquiv)}{t('recurring.perMonth')}
+                      </Text>
+                      <Text style={[styles.subscriptionAmountMain, { color: colors.error }]}>
+                        {formatAmount(sub.yearlyAmount)}{t('recurring.perYear')}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
+          </View>
+        ) : subSummary && subSummary.subscriptions.length === 0 ? (
+          <View style={[styles.subscriptionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={styles.subscriptionHeader}>
+              <Ionicons name="card-outline" size={20} color={colors.primary} />
+              <Text style={[styles.subscriptionTitle, { color: colors.text }]}>
+                {t('recurring.subscriptionSummary')}
+              </Text>
+            </View>
+            <Text style={[styles.noSubscriptionsText, { color: colors.textSecondary }]}>
+              {t('recurring.noSubscriptions')}
+            </Text>
+          </View>
+        ) : null}
+
         {/* Sažetak */}
         {activeTx.length > 0 && (
           <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -444,6 +533,70 @@ const styles = StyleSheet.create({
   screenTitle: { ...Typography.heading2 },
   addButton: { fontSize: 14, fontWeight: '700' },
   content: { padding: Spacing.base, paddingBottom: Spacing['3xl'] },
+
+  subscriptionCard: {
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+    padding: Spacing.base,
+    marginBottom: Spacing.lg,
+  },
+  subscriptionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+    gap: Spacing.sm,
+  },
+  subscriptionTitle: {
+    ...Typography.subtitle,
+  },
+  subscriptionTotals: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  subscriptionTotalItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  subscriptionTotalLabel: {
+    fontSize: 12,
+    marginBottom: 2,
+  },
+  subscriptionTotalValue: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  subscriptionDivider: {
+    width: 1,
+    height: 36,
+    marginHorizontal: Spacing.sm,
+  },
+  subscriptionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingVertical: Spacing.sm,
+  },
+  subscriptionName: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  subscriptionAmounts: {
+    alignItems: 'flex-end',
+  },
+  subscriptionAmountSmall: {
+    fontSize: 11,
+  },
+  subscriptionAmountMain: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  noSubscriptionsText: {
+    fontSize: 13,
+    textAlign: 'center',
+    paddingVertical: Spacing.md,
+  },
 
   summaryCard: {
     borderRadius: BorderRadius.xl,

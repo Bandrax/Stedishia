@@ -169,7 +169,6 @@ export const GoalsScreen: React.FC = () => {
         userId: currentUser.id,
         accountId: addMoneyAccountId,
         type: 'expense',
-        scope: 'personal',
         amount,
         currency: 'EUR',
         categoryId: 'savings',

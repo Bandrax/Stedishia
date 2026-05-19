@@ -22,7 +22,7 @@ import { AccountPicker } from '../components/molecules/AccountPicker';
 import { createTransaction } from '../services/transactionService';
 import { getAccounts } from '../services/accountService';
 import { autoDetectCategory } from '../services/autoCategory';
-import type { TransactionType, TransactionScope } from '../types';
+import type { TransactionType } from '../types';
 
 interface AddTransactionScreenProps {
   onClose: () => void;
@@ -65,7 +65,6 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
       setAccountId(defaultAcc?.id || accounts[0].id);
     }
   }, [accounts]);
-  const [scope, setScope] = useState<TransactionScope>('shared');
   const [note, setNote] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [tags, setTags] = useState('');
@@ -110,7 +109,6 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
         userId: currentUser.id,
         accountId,
         type,
-        scope,
         amount: parsedAmount,
         currency: 'EUR',
         categoryId,
@@ -128,7 +126,6 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
         userId: currentUser.id,
         accountId,
         type,
-        scope,
         amount: parsedAmount,
         currency: 'EUR',
         categoryId,
@@ -225,40 +222,6 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
               autoFocus
             />
             <Text style={[styles.amountCurrency, { color: colors.textSecondary }]}>€</Text>
-          </View>
-
-          {/* Scope: osobno / zajedničko */}
-          <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('transactions.forWhom')}</Text>
-            <View style={styles.scopeRow}>
-              {([
-                { value: 'shared' as TransactionScope, icon: 'home-outline' as keyof typeof Ionicons.glyphMap, label: t('transactions.scope.shared') },
-                { value: 'personal' as TransactionScope, icon: 'person-outline' as keyof typeof Ionicons.glyphMap, label: t('transactions.scope.personal') },
-              ]).map((opt) => (
-                <TouchableOpacity
-                  key={opt.value}
-                  style={[
-                    styles.scopeOption,
-                    {
-                      backgroundColor: scope === opt.value ? colors.primary + '15' : colors.surface,
-                      borderColor: scope === opt.value ? colors.primary : colors.border,
-                    },
-                  ]}
-                  onPress={() => setScope(opt.value)}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name={opt.icon} size={20} color={scope === opt.value ? colors.primary : colors.textSecondary} style={{ marginRight: 6 }} />
-                  <Text
-                    style={[
-                      styles.scopeLabel,
-                      { color: scope === opt.value ? colors.primary : colors.text },
-                    ]}
-                  >
-                    {opt.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
           </View>
 
           {/* Kategorija */}
@@ -468,23 +431,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.base,
     ...Typography.body,
-  },
-  scopeRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  scopeOption: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1.5,
-  },
-  scopeLabel: {
-    fontSize: 14,
-    fontWeight: '600',
   },
   dateRow: {
     flexDirection: 'row',

@@ -157,6 +157,7 @@ export const OnboardingScreen: React.FC = () => {
       setHousehold({
         id: householdId,
         name: `${name} kućanstvo`,
+        inviteCode: '',
         members: [userId],
         createdAt: now,
       });

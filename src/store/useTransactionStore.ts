@@ -7,7 +7,6 @@ interface TransactionFilters {
   categoryId?: string;
   accountId?: string;
   type?: TransactionType;
-  scope?: 'personal' | 'shared';
   tags?: string[];
   searchQuery?: string;
 }

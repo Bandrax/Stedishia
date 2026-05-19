@@ -81,7 +81,6 @@ export const TransactionsScreen: React.FC = () => {
         `${typeLabel}: ${sign}${formatAmount(tx.amount)}`,
         `${t('transactions.category')}: ${catInfo?.name ?? tx.categoryId}`,
         `${t('transactions.date')}: ${tx.date}`,
-        t(`transactions.scope.${tx.scope}`),
         tx.note ? `\n${t('transactions.note')}: ${tx.note}` : '',
         tx.tags && tx.tags.length > 0 ? `${t('transactions.tags')}: ${tx.tags.join(', ')}` : '',
       ].filter(Boolean).join('\n')

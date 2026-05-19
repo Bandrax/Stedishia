@@ -65,16 +65,16 @@ const createTestTransactions = async (
     const monthStr = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`;
 
     // Prihodi
-    await insertTx(userId, mainAccount, 'income', 'personal', 3200, 'salary', 'Plaća', `${monthStr}-10`, []);
+    await insertTx(userId, mainAccount, 'income', 3200, 'salary', 'Plaća', `${monthStr}-10`, []);
     if (monthOffset === 0) {
-      await insertTx(userId, mainAccount, 'income', 'personal', 150, 'freelance', 'Freelance projekt', `${monthStr}-18`, ['bonus']);
+      await insertTx(userId, mainAccount, 'income', 150, 'freelance', 'Freelance projekt', `${monthStr}-18`, ['bonus']);
     }
 
     // Stanovanje (zajednički)
-    await insertTx(userId, mainAccount, 'expense', 'shared', 450, 'housing', 'Najam stana', `${monthStr}-01`, ['režije']);
-    await insertTx(userId, mainAccount, 'expense', 'shared', 85, 'utilities', 'Struja - HEP', `${monthStr}-05`, ['režije']);
-    await insertTx(userId, mainAccount, 'expense', 'shared', 35, 'utilities', 'Voda', `${monthStr}-05`, ['režije']);
-    await insertTx(userId, mainAccount, 'expense', 'shared', 30, 'utilities', 'Internet - A1', `${monthStr}-03`, ['režije']);
+    await insertTx(userId, mainAccount, 'expense', 450, 'housing', 'Najam stana', `${monthStr}-01`, ['režije']);
+    await insertTx(userId, mainAccount, 'expense', 85, 'utilities', 'Struja - HEP', `${monthStr}-05`, ['režije']);
+    await insertTx(userId, mainAccount, 'expense', 35, 'utilities', 'Voda', `${monthStr}-05`, ['režije']);
+    await insertTx(userId, mainAccount, 'expense', 30, 'utilities', 'Internet - A1', `${monthStr}-03`, ['režije']);
 
     // Hrana (mješovito)
     const foodDays = [3, 7, 10, 14, 17, 21, 25, 28];
@@ -85,42 +85,41 @@ const createTestTransactions = async (
     const foodAmounts = [65, 42, 55, 95, 38, 52, 73, 45];
     for (let i = 0; i < foodDays.length; i++) {
       const day = Math.min(foodDays[i], 28);
-      const scope = i % 2 === 0 ? 'shared' : 'personal';
-      await insertTx(userId, mainAccount, 'expense', scope as any, foodAmounts[i] + Math.random() * 20 - 10, 'food', foodDescriptions[i], `${monthStr}-${String(day).padStart(2, '0')}`, ['hrana']);
+      await insertTx(userId, mainAccount, 'expense', foodAmounts[i] + Math.random() * 20 - 10, 'food', foodDescriptions[i], `${monthStr}-${String(day).padStart(2, '0')}`, ['hrana']);
     }
 
     // Transport
-    await insertTx(userId, mainAccount, 'expense', 'personal', 45, 'transport', 'Gorivo - INA', `${monthStr}-08`, []);
-    await insertTx(userId, mainAccount, 'expense', 'personal', 30, 'transport', 'ZET mjesečna', `${monthStr}-02`, []);
+    await insertTx(userId, mainAccount, 'expense', 45, 'transport', 'Gorivo - INA', `${monthStr}-08`, []);
+    await insertTx(userId, mainAccount, 'expense', 30, 'transport', 'ZET mjesečna', `${monthStr}-02`, []);
 
     // Zabava
-    await insertTx(userId, cashAccount, 'expense', 'shared', 35, 'entertainment', 'Cinestar - kino', `${monthStr}-12`, ['zabava']);
-    await insertTx(userId, mainAccount, 'expense', 'personal', 25, 'entertainment', 'Netflix', `${monthStr}-15`, ['pretplata']);
-    await insertTx(userId, mainAccount, 'expense', 'personal', 12, 'entertainment', 'Spotify', `${monthStr}-15`, ['pretplata']);
+    await insertTx(userId, cashAccount, 'expense', 35, 'entertainment', 'Cinestar - kino', `${monthStr}-12`, ['zabava']);
+    await insertTx(userId, mainAccount, 'expense', 25, 'entertainment', 'Netflix', `${monthStr}-15`, ['pretplata']);
+    await insertTx(userId, mainAccount, 'expense', 12, 'entertainment', 'Spotify', `${monthStr}-15`, ['pretplata']);
 
     // Restorani
-    await insertTx(userId, mainAccount, 'expense', 'shared', 42, 'dining', 'Wolt - dostava', `${monthStr}-09`, []);
-    await insertTx(userId, mainAccount, 'expense', 'shared', 65, 'dining', 'Restoran Vinodol', `${monthStr}-20`, []);
+    await insertTx(userId, mainAccount, 'expense', 42, 'dining', 'Wolt - dostava', `${monthStr}-09`, []);
+    await insertTx(userId, mainAccount, 'expense', 65, 'dining', 'Restoran Vinodol', `${monthStr}-20`, []);
     if (monthOffset < 2) {
-      await insertTx(userId, cashAccount, 'expense', 'personal', 18, 'dining', 'Kava i kolač', `${monthStr}-16`, []);
+      await insertTx(userId, cashAccount, 'expense', 18, 'dining', 'Kava i kolač', `${monthStr}-16`, []);
     }
 
     // Zdravlje
-    await insertTx(userId, mainAccount, 'expense', 'personal', 25, 'health', 'Ljekarna', `${monthStr}-11`, []);
+    await insertTx(userId, mainAccount, 'expense', 25, 'health', 'Ljekarna', `${monthStr}-11`, []);
 
     // Shopping
     if (monthOffset === 1) {
-      await insertTx(userId, mainAccount, 'expense', 'personal', 89, 'shopping', 'Zara - odjeća', `${monthStr}-22`, ['shopping']);
+      await insertTx(userId, mainAccount, 'expense', 89, 'shopping', 'Zara - odjeća', `${monthStr}-22`, ['shopping']);
     }
     if (monthOffset === 0) {
-      await insertTx(userId, mainAccount, 'expense', 'shared', 45, 'home', 'IKEA - dekor', `${monthStr}-13`, ['dom']);
+      await insertTx(userId, mainAccount, 'expense', 45, 'home', 'IKEA - dekor', `${monthStr}-13`, ['dom']);
     }
 
     // Edukacija
-    await insertTx(userId, mainAccount, 'expense', 'personal', 15, 'education', 'Udemy kurs', `${monthStr}-06`, ['razvoj']);
+    await insertTx(userId, mainAccount, 'expense', 15, 'education', 'Udemy kurs', `${monthStr}-06`, ['razvoj']);
 
     // Mobitel
-    await insertTx(userId, mainAccount, 'expense', 'personal', 20, 'phone', 'A1 - mobitel', `${monthStr}-04`, ['režije']);
+    await insertTx(userId, mainAccount, 'expense', 20, 'phone', 'A1 - mobitel', `${monthStr}-04`, ['režije']);
   }
 };
 
@@ -148,7 +147,6 @@ const createTestBudget = async (userId: string, now: Date): Promise<void> => {
       category_id: item.categoryId,
       month,
       allocated: item.allocated,
-      scope: 'personal',
       created_at: nowStr,
       updated_at: nowStr,
     });
@@ -260,7 +258,6 @@ const createTestRecurring = async (userId: string, accountId: string): Promise<v
       description: r.desc,
       amount: r.amount,
       type: 'expense',
-      scope: 'personal',
       category_id: r.catId,
       account_id: accountId,
       frequency: r.freq,
@@ -279,7 +276,6 @@ const insertTx = async (
   userId: string,
   accountId: string,
   type: string,
-  scope: string,
   amount: number,
   categoryId: string,
   description: string,
@@ -292,7 +288,6 @@ const insertTx = async (
     user_id: userId,
     account_id: accountId,
     type,
-    scope,
     amount: Math.round(amount * 100) / 100,
     currency: 'EUR',
     category_id: categoryId,

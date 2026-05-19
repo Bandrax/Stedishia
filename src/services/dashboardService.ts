@@ -38,37 +38,6 @@ export const getMonthlyStats = async (
   };
 };
 
-// Dohvati statistiku za kućanstvo (svi korisnici, samo 'shared' transakcije)
-export const getHouseholdMonthlyStats = async (
-  householdId: string,
-  month?: string
-): Promise<{ income: number; expenses: number }> => {
-  const m = month || getCurrentMonth();
-  const startDate = `${m}-01`;
-  const endDate = `${m}-31`;
-
-  const incomeResult = await dbQuery<{ total: number }>(
-    `SELECT COALESCE(SUM(t.amount), 0) as total FROM transactions t
-     JOIN users u ON t.user_id = u.id
-     WHERE u.household_id = ? AND t.type = 'income' AND t.scope = 'shared'
-     AND t.date >= ? AND t.date <= ?`,
-    [householdId, startDate, endDate]
-  );
-
-  const expenseResult = await dbQuery<{ total: number }>(
-    `SELECT COALESCE(SUM(t.amount), 0) as total FROM transactions t
-     JOIN users u ON t.user_id = u.id
-     WHERE u.household_id = ? AND t.type = 'expense' AND t.scope = 'shared'
-     AND t.date >= ? AND t.date <= ?`,
-    [householdId, startDate, endDate]
-  );
-
-  return {
-    income: incomeResult[0]?.total ?? 0,
-    expenses: expenseResult[0]?.total ?? 0,
-  };
-};
-
 // Top 3 troška ovog mjeseca po kategoriji
 export const getTopExpenses = async (
   userId: string,

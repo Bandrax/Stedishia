@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Modal,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -25,6 +26,7 @@ import {
   getCashFlowForecast,
   getYearlyOverview,
 } from '../services/reportService';
+import { exportTransactionsCSV, exportMonthlyReportCSV, shareCSVFile } from '../services/exportService';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CHART_WIDTH = SCREEN_WIDTH - Spacing.base * 2;
@@ -684,6 +686,34 @@ export const ReportsScreen: React.FC = () => {
     );
   };
 
+  const handleExportCSV = async () => {
+    try {
+      const now = new Date();
+      let csv: string;
+      let filename: string;
+
+      if (activeTab === 'monthly') {
+        const fromDate = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+        const dateFrom = `${fromDate.getFullYear()}-${String(fromDate.getMonth() + 1).padStart(2, '0')}-01`;
+        const dateTo = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-31`;
+        csv = await exportTransactionsCSV(userId, dateFrom, dateTo);
+        filename = `transactions_6months_${now.toISOString().split('T')[0]}.csv`;
+      } else if (activeTab === 'yearly') {
+        const dateFrom = `${selectedYear}-01-01`;
+        const dateTo = `${selectedYear}-12-31`;
+        csv = await exportTransactionsCSV(userId, dateFrom, dateTo);
+        filename = `transactions_${selectedYear}.csv`;
+      } else {
+        csv = await exportTransactionsCSV(userId);
+        filename = `transactions_all_${now.toISOString().split('T')[0]}.csv`;
+      }
+
+      await shareCSVFile(csv, filename);
+    } catch (error) {
+      Alert.alert(t('reports.exportCSV'), t('reports.exportError'));
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <ScrollView
@@ -697,7 +727,9 @@ export const ReportsScreen: React.FC = () => {
             <Ionicons name="arrow-back" size={24} color={colors.primary} />
           </TouchableOpacity>
           <Text style={[styles.title, { color: colors.text }]}>{t('reports.title')}</Text>
-          <View style={{ width: 24 }} />
+          <TouchableOpacity onPress={handleExportCSV}>
+            <Ionicons name="download-outline" size={24} color={colors.primary} />
+          </TouchableOpacity>
         </View>
 
         {/* Tabovi */}

@@ -15,7 +15,6 @@ export const createTransaction = async (
     user_id: tx.userId,
     account_id: tx.accountId,
     type: tx.type,
-    scope: tx.scope,
     amount: tx.amount,
     currency: tx.currency,
     category_id: tx.categoryId,
@@ -70,7 +69,6 @@ export const updateTransaction = async (
   const dbUpdates: Record<string, unknown> = { updated_at: now };
   if (updates.amount !== undefined) dbUpdates.amount = updates.amount;
   if (updates.type !== undefined) dbUpdates.type = updates.type;
-  if (updates.scope !== undefined) dbUpdates.scope = updates.scope;
   if (updates.categoryId !== undefined) dbUpdates.category_id = updates.categoryId;
   if (updates.subcategoryId !== undefined) dbUpdates.subcategory_id = updates.subcategoryId;
   if (updates.description !== undefined) dbUpdates.description = updates.description;
@@ -105,7 +103,6 @@ export interface TransactionFilter {
   categoryId?: string;
   accountId?: string;
   type?: string;
-  scope?: string;
   tags?: string[];
   searchQuery?: string;
   limit?: number;
@@ -138,10 +135,6 @@ export const getTransactions = async (
     conditions.push('t.type = ?');
     params.push(filter.type);
   }
-  if (filter.scope) {
-    conditions.push('t.scope = ?');
-    params.push(filter.scope);
-  }
   if (filter.searchQuery) {
     conditions.push('t.description LIKE ?');
     params.push(`%${filter.searchQuery}%`);
@@ -167,7 +160,6 @@ const mapRowToTransaction = (row: any): Transaction => ({
   userId: row.user_id,
   accountId: row.account_id,
   type: row.type,
-  scope: row.scope,
   amount: row.amount,
   currency: row.currency,
   categoryId: row.category_id,

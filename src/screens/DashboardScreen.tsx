@@ -10,7 +10,6 @@ import { formatAmount } from '../utils';
 import {
   getTotalBalance,
   getMonthlyStats,
-  getHouseholdMonthlyStats,
   getTopExpenses,
   getUpcomingPayments,
   getBudgetProgress,
@@ -29,11 +28,8 @@ import {
   TopExpenseItem,
   MiniCashFlowChart,
   DailyTipCard,
-  ScopeToggle,
 } from '../components/molecules';
 import type { BudgetStatus } from '../components/molecules';
-
-type Scope = 'personal' | 'household';
 
 interface DashboardData {
   totalBalance: number;
@@ -60,8 +56,7 @@ interface DashboardData {
 export const DashboardScreen: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
-  const { currentUser, household } = useAuthStore();
-  const [scope, setScope] = useState<Scope>('personal');
+  const { currentUser } = useAuthStore();
   const [data, setData] = useState<DashboardData | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [tipDismissed, setTipDismissed] = useState(false);
@@ -80,9 +75,7 @@ export const DashboardScreen: React.FC = () => {
         cashFlow,
       ] = await Promise.all([
         getTotalBalance(currentUser.id),
-        scope === 'household' && household
-          ? getHouseholdMonthlyStats(household.id)
-          : getMonthlyStats(currentUser.id),
+        getMonthlyStats(currentUser.id),
         getMonthlyChangePercent(currentUser.id),
         getTopExpenses(currentUser.id),
         getUpcomingPayments(currentUser.id),
@@ -140,7 +133,7 @@ export const DashboardScreen: React.FC = () => {
     } catch (err) {
       console.error('Dashboard load error:', err);
     }
-  }, [currentUser, household, scope]);
+  }, [currentUser]);
 
   useFocusEffect(
     useCallback(() => {
@@ -178,11 +171,6 @@ export const DashboardScreen: React.FC = () => {
           <Text style={[styles.headerTitle, { color: colors.text }]}>
             {t('dashboard.title')}
           </Text>
-        </View>
-
-        {/* Scope toggle */}
-        <View style={styles.toggleRow}>
-          <ScopeToggle scope={scope} onScopeChange={setScope} />
         </View>
 
         {/* Balance Card */}
@@ -346,9 +334,6 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...Typography.heading1,
-  },
-  toggleRow: {
-    marginBottom: Spacing.base,
   },
   section: {
     marginTop: Spacing.base,

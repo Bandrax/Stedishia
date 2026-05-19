@@ -126,7 +126,6 @@ export const mergeImportedData = async (
         user_id: tx.userId,
         account_id: tx.accountId,
         type: tx.type,
-        scope: tx.scope,
         amount: tx.amount,
         currency: tx.currency,
         category_id: tx.categoryId,
@@ -237,13 +236,11 @@ export const getHouseholdStats = async (
 ): Promise<{
   totalIncome: number;
   totalExpenses: number;
-  sharedExpenses: number;
   memberStats: Array<{
     userId: string;
     name: string;
     income: number;
     expenses: number;
-    sharedExpenses: number;
   }>;
 }> => {
   const startDate = `${month}-01`;
@@ -257,9 +254,8 @@ export const getHouseholdStats = async (
 
   let totalIncome = 0;
   let totalExpenses = 0;
-  let sharedExpenses = 0;
   const memberStats: Array<{
-    userId: string; name: string; income: number; expenses: number; sharedExpenses: number;
+    userId: string; name: string; income: number; expenses: number;
   }> = [];
 
   for (const member of members) {
@@ -275,30 +271,21 @@ export const getHouseholdStats = async (
       [member.id, startDate, endDate]
     );
 
-    const sharedResult = await dbQuery<{ total: number }>(
-      `SELECT COALESCE(SUM(amount), 0) as total FROM transactions
-       WHERE user_id = ? AND type = 'expense' AND scope = 'shared' AND date >= ? AND date <= ?`,
-      [member.id, startDate, endDate]
-    );
-
     const income = incomeResult[0]?.total ?? 0;
     const expenses = expenseResult[0]?.total ?? 0;
-    const shared = sharedResult[0]?.total ?? 0;
 
     totalIncome += income;
     totalExpenses += expenses;
-    sharedExpenses += shared;
 
     memberStats.push({
       userId: member.id,
       name: member.name,
       income,
       expenses,
-      sharedExpenses: shared,
     });
   }
 
-  return { totalIncome, totalExpenses, sharedExpenses, memberStats };
+  return { totalIncome, totalExpenses, memberStats };
 };
 
 // Mapper functions
@@ -307,7 +294,6 @@ const mapTransactionRow = (row: any) => ({
   userId: row.user_id,
   accountId: row.account_id,
   type: row.type,
-  scope: row.scope,
   amount: row.amount,
   currency: row.currency,
   categoryId: row.category_id,
@@ -344,7 +330,6 @@ const mapBudgetRow = (row: any) => ({
   categoryId: row.category_id,
   allocated: row.allocated,
   spent: row.spent || 0,
-  scope: row.scope || 'personal',
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });
@@ -385,7 +370,6 @@ const mapRecurringRow = (row: any) => ({
   userId: row.user_id,
   accountId: row.account_id,
   type: row.type,
-  scope: row.scope || 'personal',
   amount: row.amount,
   categoryId: row.category_id,
   subcategoryId: row.subcategory_id,

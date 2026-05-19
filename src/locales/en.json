@@ -353,7 +353,13 @@
     "deleteTitle": "Delete",
     "deleteConfirm": "Delete \"{{name}}\"?",
     "invalidInput": "Enter a description and valid amount.",
-    "saveError": "Save failed: {{error}}"
+    "saveError": "Save failed: {{error}}",
+    "subscriptionSummary": "Subscription Summary",
+    "monthlyTotal": "Monthly total",
+    "yearlyTotal": "Yearly total",
+    "perYear": "/yr",
+    "perMonth": "/mo",
+    "noSubscriptions": "No active subscriptions"
   },
 
   "settings": {
@@ -442,7 +448,10 @@
     "months": {
       "short": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
       "letter": ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
-    }
+    },
+    "exportCSV": "Export CSV",
+    "exportSuccess": "CSV exported successfully!",
+    "exportError": "Export error."
   },
 
   "advisor": {
@@ -470,22 +479,35 @@
 
   "household": {
     "title": "Household",
-    "ourHousehold": "Our Household",
-    "sharedExpenses": "Shared Expenses",
-    "totalShared": "total shared expenses",
-    "splitInfo": "Split between {{count}}: {{amount}} each",
-    "members": "Household Members",
+    "noHousehold": "You're not part of a household",
+    "noHouseholdDesc": "Create a new household or join an existing one using an invite code.",
+    "createHousehold": "Create Household",
+    "joinHousehold": "Join",
+    "enterName": "Household name",
+    "enterNamePlaceholder": "e.g. Our Household",
+    "enterInviteCode": "Invite code",
+    "enterInviteCodePlaceholder": "e.g. KUC-A3F9",
+    "createSuccess": "Household created!",
+    "joinSuccess": "Successfully joined the household!",
+    "joinError": "Invite code not found. Check the code and try again.",
+    "inviteCode": "Invite Code",
+    "inviteCodeHint": "Share this code with your partner so they can join your household.",
+    "copyCode": "Copy code",
+    "codeCopied": "Code copied!",
+    "leaveHousehold": "Leave Household",
+    "leaveConfirmTitle": "Leave household?",
+    "leaveConfirmMessage": "Your data stays, but you won't see other members' balances anymore.",
+    "leaveSuccess": "You left the household.",
+    "members": "Members",
     "you": "(you)",
-    "memberStats": "Income: {{income}} • Expenses: {{expenses}}",
-    "memberShared": "Shared: {{amount}}",
-    "owedToThem": "You owe them {{amount}}",
-    "theyOwe": "They owe {{amount}}",
-    "balanced": "Balanced",
+    "totalBalance": "Total Balance",
+    "monthlyExpenses": "Expenses this month",
+    "householdTotal": "Total Household Balance",
     "householdOverview": "Household Overview",
     "totalIncome": "Total Income",
     "totalExpenses": "Total Expenses",
     "difference": "Difference",
-    "shared": "Shared",
+    "memberStats": "Balance: {{balance}} • Expenses: {{expenses}}",
     "sync": "Sync",
     "syncDescription": "Export your data as a JSON file and share it with your partner via Google Drive, AirDrop, or other methods.",
     "exportData": "Export Data",
@@ -495,7 +517,6 @@
     "importConfirmTitle": "Import Data",
     "importConfirmMessage": "This will add your partner's data to your household. Your existing data won't be deleted.",
     "importSuccessTitle": "Import successful!",
-    "importSuccessMessage": "Your partner's data has been loaded. You can now view shared expenses and household overview.",
     "importError": "Invalid file format or import error.",
     "syncHint": "Tip: Create a shared folder on Google Drive and save exported files there. That way you both have access to the latest data.",
     "importResult": "Imported:\n• {{transactions}} transactions\n• {{accounts}} accounts\n• {{goals}} goals\n• {{debts}} debts",
