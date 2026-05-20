@@ -431,5 +431,5 @@ cp android/app/build/outputs/apk/release/app-release.apk "$USERPROFILE/Desktop/M
 - Ponavljajuća plaćanja su podsjetnici, ne automatski rashodi — transakcija se kreira tek na "Plaćeno"
 
 ## Što još treba
-- Testiranje na iOS-u (djevojkin iPhone)
 - Kontinuirano testiranje na Android-u
+- iOS testiranje odgođeno (nema jednostavnog načina za instalaciju bez Apple Developer računa)
