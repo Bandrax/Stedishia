@@ -16,12 +16,13 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useGoalStore, useAccountStore } from '../store';
-import { getCurrentCurrency } from '../store/useSettingsStore';
-import { Typography, Spacing, BorderRadius } from '../constants';
+import { getCurrentCurrency, useSettingsStore } from '../store/useSettingsStore';
+import { Typography, Spacing, BorderRadius, getGoalIonicon } from '../constants';
 import { formatAmount } from '../utils';
 import {
   getGoals,
   createGoal,
+  updateGoal,
   addToGoal,
   deleteGoalById,
   getNetWorth,
@@ -43,6 +44,7 @@ const GOAL_COLORS = ['#0F4C3A', '#D4AF37', '#2196F3', '#FF5722', '#9C27B0', '#4C
 export const GoalsScreen: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
+  const iconStyle = useSettingsStore((s) => s.iconStyle);
   const { currentUser } = useAuthStore();
   const { goals, setGoals } = useGoalStore();
   const { accounts, setAccounts } = useAccountStore();
@@ -57,13 +59,15 @@ export const GoalsScreen: React.FC = () => {
   const [monthlyExpenses, setMonthlyExpenses] = useState(0);
   const [savingsTotal, setSavingsTotal] = useState(0);
 
-  // Forma za novi cilj
+  // Forma za novi/edit cilj
   const [goalName, setGoalName] = useState('');
   const [goalAmount, setGoalAmount] = useState('');
   const [goalDate, setGoalDate] = useState('');
   const [goalEmoji, setGoalEmoji] = useState('🎯');
   const [goalColor, setGoalColor] = useState('#0F4C3A');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
+  const [showCompletedGoals, setShowCompletedGoals] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!currentUser) return;
@@ -122,30 +126,109 @@ export const GoalsScreen: React.FC = () => {
       targetDate = d.toISOString().split('T')[0];
     }
 
-    const monthlyNeeded = calculateMonthlyNeeded(targetAmount, 0, targetDate);
-
     setIsSubmitting(true);
     try {
-      await createGoal({
-        userId: currentUser.id,
-        name: goalName,
-        emoji: goalEmoji,
-        targetAmount,
-        currentAmount: 0,
-        targetDate,
-        monthlyContribution: monthlyNeeded,
-        status: 'active',
-        color: goalColor,
-      });
+      if (editingGoalId) {
+        // Edit mode
+        const existingGoal = goals.find((g) => g.id === editingGoalId);
+        const currentAmount = existingGoal?.currentAmount ?? 0;
+
+        // Upozorenje ako je ciljani iznos manji od trenutnog
+        if (targetAmount < currentAmount) {
+          Alert.alert(
+            t('goals.warning'),
+            t('goals.targetBelowCurrent', { current: formatAmount(currentAmount), target: formatAmount(targetAmount) }),
+            [
+              { text: t('common.cancel'), style: 'cancel', onPress: () => setIsSubmitting(false) },
+              {
+                text: t('common.confirm'),
+                onPress: async () => {
+                  await updateGoal(editingGoalId, {
+                    name: goalName,
+                    emoji: goalEmoji,
+                    targetAmount,
+                    targetDate,
+                    monthlyContribution: calculateMonthlyNeeded(targetAmount, currentAmount, targetDate),
+                    color: goalColor,
+                    status: 'completed',
+                  });
+                  setShowAddGoal(false);
+                  resetGoalForm();
+                  await loadData();
+                  setIsSubmitting(false);
+                },
+              },
+            ]
+          );
+          return;
+        }
+
+        // Upozorenje ako je datum u prošlosti
+        if (new Date(targetDate) < new Date()) {
+          Alert.alert(t('goals.warning'), t('goals.dateInPast'));
+        }
+
+        const monthlyNeeded = calculateMonthlyNeeded(targetAmount, currentAmount, targetDate);
+        await updateGoal(editingGoalId, {
+          name: goalName,
+          emoji: goalEmoji,
+          targetAmount,
+          targetDate,
+          monthlyContribution: monthlyNeeded,
+          color: goalColor,
+        });
+      } else {
+        // Create mode
+        const monthlyNeeded = calculateMonthlyNeeded(targetAmount, 0, targetDate);
+        await createGoal({
+          userId: currentUser.id,
+          name: goalName,
+          emoji: goalEmoji,
+          targetAmount,
+          currentAmount: 0,
+          targetDate,
+          monthlyContribution: monthlyNeeded,
+          status: 'active',
+          color: goalColor,
+        });
+      }
 
       setShowAddGoal(false);
       resetGoalForm();
       await loadData();
     } catch (err) {
-      Alert.alert(t('common.error'), t('goals.createError'));
+      Alert.alert(t('common.error'), editingGoalId ? t('goals.editError') : t('goals.createError'));
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleEditGoal = (goal: SavingsGoal) => {
+    setEditingGoalId(goal.id);
+    setGoalName(goal.name);
+    setGoalAmount(String(goal.targetAmount));
+    setGoalDate(goal.targetDate);
+    setGoalEmoji(goal.emoji);
+    setGoalColor(goal.color);
+    setShowAddGoal(true);
+  };
+
+  const handleMarkCompleted = (goal: SavingsGoal) => {
+    Alert.alert(
+      t('goals.markCompletedTitle'),
+      t('goals.markCompletedConfirm', { name: goal.name }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.confirm'),
+          onPress: async () => {
+            await updateGoal(goal.id, { status: 'completed' });
+            Alert.alert(t('goals.congratulations'), t('goals.goalCompleted', { name: goal.name }));
+            await loadData();
+          },
+        },
+      ]
+    );
   };
 
   const handleAddMoney = async () => {
@@ -237,6 +320,7 @@ export const GoalsScreen: React.FC = () => {
     setGoalDate('');
     setGoalEmoji('🎯');
     setGoalColor('#0F4C3A');
+    setEditingGoalId(null);
   };
 
   // Emergency fund goal - find or auto-create
@@ -336,6 +420,8 @@ export const GoalsScreen: React.FC = () => {
                 goal={goal}
                 onPress={() => handleDeleteGoal(goal)}
                 onAddMoney={() => setShowAddMoney(goal.id)}
+                onEdit={() => handleEditGoal(goal)}
+                onMarkCompleted={() => handleMarkCompleted(goal)}
               />
             ))}
           </View>
@@ -344,12 +430,27 @@ export const GoalsScreen: React.FC = () => {
         {/* Ostvareni ciljevi */}
         {completedGoals.length > 0 && (
           <View style={{ marginTop: Spacing.lg }}>
-            <View style={styles.sectionTitleRow}>
+            <TouchableOpacity
+              style={styles.sectionTitleRow}
+              onPress={() => setShowCompletedGoals(!showCompletedGoals)}
+              activeOpacity={0.7}
+            >
               <Ionicons name="trophy-outline" size={18} color={colors.primary} style={{ marginRight: 8 }} />
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('goals.completedGoals')}</Text>
-            </View>
-            {completedGoals.map((goal) => (
-              <GoalCard key={goal.id} goal={goal} />
+              <Text style={[styles.sectionTitle, { color: colors.text, flex: 1 }]}>
+                {t('goals.completedGoals')} ({completedGoals.length})
+              </Text>
+              <Ionicons
+                name={showCompletedGoals ? 'chevron-up' : 'chevron-down'}
+                size={18}
+                color={colors.textTertiary}
+              />
+            </TouchableOpacity>
+            {showCompletedGoals && completedGoals.map((goal) => (
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                onPress={() => handleDeleteGoal(goal)}
+              />
             ))}
           </View>
         )}
@@ -383,7 +484,7 @@ export const GoalsScreen: React.FC = () => {
             <TouchableOpacity onPress={() => { setShowAddGoal(false); resetGoalForm(); }}>
               <Text style={[styles.modalClose, { color: colors.textSecondary }]}>{t('common.cancel')}</Text>
             </TouchableOpacity>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>{t('goals.newGoalTitle')}</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>{editingGoalId ? t('goals.editGoalTitle') : t('goals.newGoalTitle')}</Text>
             <View style={{ width: 60 }} />
           </View>
 
@@ -401,7 +502,11 @@ export const GoalsScreen: React.FC = () => {
                   ]}
                   onPress={() => setGoalEmoji(e)}
                 >
-                  <Text style={styles.emojiText}>{e}</Text>
+                  {iconStyle === 'modern' ? (
+                    <Ionicons name={getGoalIonicon(e)} size={24} color={goalEmoji === e ? colors.primary : colors.text} />
+                  ) : (
+                    <Text style={styles.emojiText}>{e}</Text>
+                  )}
                 </TouchableOpacity>
               ))}
             </View>
@@ -445,12 +550,17 @@ export const GoalsScreen: React.FC = () => {
                     amount: formatAmount(
                       calculateMonthlyNeeded(
                         parseFloat(goalAmount.replace(',', '.')) || 0,
-                        0,
+                        editingGoalId ? (goals.find((g) => g.id === editingGoalId)?.currentAmount ?? 0) : 0,
                         goalDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
                       )
                     ),
                   })}
                 </Text>
+                {editingGoalId && (
+                  <Text style={[{ fontSize: 12, marginTop: 4 }, { color: colors.textSecondary }]}>
+                    {t('goals.currentlySaved', { amount: formatAmount(goals.find((g) => g.id === editingGoalId)?.currentAmount ?? 0) })}
+                  </Text>
+                )}
               </Card>
             )}
 
@@ -472,7 +582,7 @@ export const GoalsScreen: React.FC = () => {
 
             <View style={{ marginTop: Spacing.xl }}>
               <Button
-                title={t('goals.createGoal')}
+                title={editingGoalId ? t('goals.saveChanges') : t('goals.createGoal')}
                 variant="primary"
                 size="lg"
                 fullWidth
@@ -506,9 +616,17 @@ export const GoalsScreen: React.FC = () => {
                   ]}
                   onPress={() => setAddMoneyAccountId(acc.id)}
                 >
-                  <Text style={[styles.accountChipText, { color: addMoneyAccountId === acc.id ? colors.primary : colors.text }]}>
-                    {acc.icon} {acc.name}
-                  </Text>
+                  <View style={styles.accountChipContent}>
+                    <Ionicons
+                      name={(acc.icon || 'wallet-outline') as any}
+                      size={14}
+                      color={addMoneyAccountId === acc.id ? colors.primary : colors.textSecondary}
+                      style={{ marginRight: 4 }}
+                    />
+                    <Text style={[styles.accountChipText, { color: addMoneyAccountId === acc.id ? colors.primary : colors.text }]}>
+                      {acc.name}
+                    </Text>
+                  </View>
                   <Text style={[styles.accountChipBalance, { color: colors.textTertiary }]}>
                     {formatAmount(acc.balance)}
                   </Text>
@@ -679,6 +797,10 @@ const styles = StyleSheet.create({
     marginRight: Spacing.sm,
     alignItems: 'center',
     minWidth: 100,
+  },
+  accountChipContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   accountChipText: {
     fontSize: 13,

@@ -4,12 +4,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
+import { CategoryIcon } from '../atoms';
 
 export type BudgetStatus = 'good' | 'warning' | 'over';
 
 interface BudgetDetail {
   categoryName: string;
-  emoji: string;
+  categoryId: string;
   spent: number;
   allocated: number;
 }
@@ -124,7 +125,7 @@ export const StatusSemaphore: React.FC<StatusSemaphoreProps> = ({
                     const overBy = item.spent - item.allocated;
                     return (
                       <View key={i} style={[styles.detailRow, { borderColor: colors.border }]}>
-                        <Text style={styles.detailEmoji}>{item.emoji}</Text>
+                        <View style={styles.detailEmoji}><CategoryIcon categoryId={item.categoryId} size={18} color="#666" /></View>
                         <View style={styles.detailInfo}>
                           <Text style={[styles.detailName, { color: colors.text }]}>{item.categoryName}</Text>
                           <Text style={[styles.detailSub, { color: colors.textSecondary }]}>
@@ -153,7 +154,7 @@ export const StatusSemaphore: React.FC<StatusSemaphoreProps> = ({
                     const pct = Math.round((item.spent / item.allocated) * 100);
                     return (
                       <View key={i} style={[styles.detailRow, { borderColor: colors.border }]}>
-                        <Text style={styles.detailEmoji}>{item.emoji}</Text>
+                        <View style={styles.detailEmoji}><CategoryIcon categoryId={item.categoryId} size={18} color="#666" /></View>
                         <View style={styles.detailInfo}>
                           <Text style={[styles.detailName, { color: colors.text }]}>{item.categoryName}</Text>
                           <Text style={[styles.detailSub, { color: colors.textSecondary }]}>
@@ -275,7 +276,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  detailEmoji: { fontSize: 20, marginRight: Spacing.sm, width: 28, textAlign: 'center' },
+  detailEmoji: { marginRight: Spacing.sm, width: 28, alignItems: 'center' as const, justifyContent: 'center' as const },
   detailInfo: { flex: 1 },
   detailName: { fontSize: 14, fontWeight: '600' },
   detailSub: { fontSize: 12, marginTop: 2 },

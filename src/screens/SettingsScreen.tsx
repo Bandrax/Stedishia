@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useSettingsStore, CURRENCIES } from '../store';
+import type { IconStyle } from '../store';
 import { useThemeStore } from '../store/useThemeStore';
 import { Ionicons } from '@expo/vector-icons';
 import { Typography, Spacing, BorderRadius } from '../constants';
@@ -27,7 +28,7 @@ export const SettingsScreen: React.FC = () => {
   const currentUser = useAuthStore((s) => s.currentUser);
   const { logout } = useAuthStore();
   const { mode, setMode } = useThemeStore();
-  const { currency, setCurrency } = useSettingsStore();
+  const { currency, setCurrency, iconStyle, setIconStyle } = useSettingsStore();
   const [language, setLanguage] = useState<'hr' | 'en'>(i18n.language as 'hr' | 'en' || 'hr');
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const activeCurrency = CURRENCIES.find((c) => c.code === currency) || CURRENCIES[0];
@@ -163,6 +164,45 @@ export const SettingsScreen: React.FC = () => {
                 </TouchableOpacity>
               ))}
             </View>
+          </View>
+        </View>
+
+        {/* Stil ikona */}
+        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
+            <Ionicons name="shapes-outline" size={18} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>{t('settings.iconStyle')}</Text>
+          </View>
+          <View style={styles.themeRow}>
+            {([
+              { key: 'classic' as IconStyle, label: t('settings.iconStyleClassic'), preview: '🏠 🍽️ 🚗' },
+              { key: 'modern' as IconStyle, label: t('settings.iconStyleModern'), preview: '' },
+            ]).map((option) => (
+              <TouchableOpacity
+                key={option.key}
+                style={[
+                  styles.themeOption,
+                  {
+                    backgroundColor: iconStyle === option.key ? colors.primary + '20' : colors.surfaceVariant,
+                    borderColor: iconStyle === option.key ? colors.primary : colors.border,
+                  },
+                ]}
+                onPress={() => setIconStyle(option.key)}
+              >
+                {option.key === 'classic' ? (
+                  <Text style={{ fontSize: 18, marginBottom: 4 }}>{option.preview}</Text>
+                ) : (
+                  <View style={{ flexDirection: 'row', gap: 6, marginBottom: 4 }}>
+                    <Ionicons name="home-outline" size={18} color={iconStyle === option.key ? colors.primary : colors.textSecondary} />
+                    <Ionicons name="restaurant-outline" size={18} color={iconStyle === option.key ? colors.primary : colors.textSecondary} />
+                    <Ionicons name="car-outline" size={18} color={iconStyle === option.key ? colors.primary : colors.textSecondary} />
+                  </View>
+                )}
+                <Text style={[styles.themeLabel, { color: iconStyle === option.key ? colors.primary : colors.text }]}>
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 

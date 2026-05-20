@@ -89,6 +89,20 @@ describe('autoDetectCategory', () => {
     const result = autoDetectCategory('Konzum');
     expect(result?.confidence).toBe(0.8);
   });
+
+  it('should detect used item purchases', () => {
+    expect(autoDetectCategory('Polovni auto')?.categoryId).toBe('used_purchase');
+    expect(autoDetectCategory('Rabljeni monitor')?.subcategoryId).toBe('used_electronics');
+    expect(autoDetectCategory('Second hand odjeća')?.categoryId).toBe('used_purchase');
+    expect(autoDetectCategory('Kupljeno polovno')?.categoryId).toBe('used_purchase');
+  });
+
+  it('should detect used item sales', () => {
+    expect(autoDetectCategory('Prodao laptop')?.categoryId).toBe('used_sale');
+    expect(autoDetectCategory('Prodaja auta')?.subcategoryId).toBe('sell_vehicle');
+    expect(autoDetectCategory('Prodala slušalice')?.categoryId).toBe('used_sale');
+    expect(autoDetectCategory('Sold monitor')?.categoryId).toBe('used_sale');
+  });
 });
 
 // ========== CSV Export Format ==========

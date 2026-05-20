@@ -76,24 +76,21 @@ export interface TransactionLocation {
 }
 
 // ===== Ponavljajuće transakcije =====
-export type RecurrenceFrequency = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'yearly';
+export type RecurrenceFrequency = 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'yearly';
 
 export interface RecurringTransaction {
   id: string;
   userId: string;
-  accountId: string;
-  type: TransactionType;
+  accountId?: string;
+  type: 'expense' | 'income';
   amount: number;
   categoryId: string;
   subcategoryId?: string;
   description: string;
   frequency: RecurrenceFrequency;
-  startDate: string;
-  endDate?: string;
   nextDueDate: string;
+  lastPaidDate?: string;
   isActive: boolean;
-  autoAdd: boolean;
-  reminderDaysBefore: number;
   createdAt: string;
 }
 

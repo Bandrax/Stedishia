@@ -33,7 +33,7 @@ import {
 import type { BudgetPreset } from '../services/budgetService';
 import { getTotalBalance, getMonthlyStats } from '../services/dashboardService';
 import type { BudgetSummary } from '../services/budgetService';
-import { Card, Button } from '../components/atoms';
+import { Card, Button, CategoryIcon } from '../components/atoms';
 import { BudgetSummaryHeader } from '../components/molecules/BudgetSummaryHeader';
 import { BudgetEnvelopeCard } from '../components/molecules/BudgetEnvelopeCard';
 import { BudgetModeToggle } from '../components/molecules/BudgetModeToggle';
@@ -229,7 +229,7 @@ export const BudgetScreen: React.FC = () => {
 
   // 50/30/20 vizualizacija
   const needsCategories = ['housing', 'food', 'transport', 'utilities', 'health', 'appliances'];
-  const wantsCategories = ['entertainment', 'clothing', 'personal', 'gifts', 'education'];
+  const wantsCategories = ['entertainment', 'clothing', 'personal', 'gifts', 'education', 'used_purchase'];
   const savingsCategories = ['debt', 'other_expense'];
 
   const groupSpent = (catIds: string[]) =>
@@ -418,7 +418,7 @@ export const BudgetScreen: React.FC = () => {
                     <BudgetEnvelopeCard
                       key={item.id}
                       categoryName={catInfo?.name ?? item.categoryId}
-                      emoji={catInfo?.emoji ?? '📌'}
+                      categoryId={item.categoryId}
                       color={catInfo?.color ?? '#607D8B'}
                       allocated={item.allocated}
                       spent={item.spent}
@@ -444,7 +444,9 @@ export const BudgetScreen: React.FC = () => {
                   const catInfo = getCategoryInfo(ub.categoryId);
                   return (
                     <View key={ub.categoryId} style={styles.unbudgetedItem}>
-                      <Text style={styles.unbudgetedEmoji}>{catInfo?.emoji ?? '📌'}</Text>
+                      <View style={styles.unbudgetedEmoji}>
+                        <CategoryIcon categoryId={ub.categoryId} size={18} color={catInfo?.color ?? '#607D8B'} />
+                      </View>
                       <Text style={[styles.unbudgetedName, { color: colors.text }]}>
                         {catInfo?.name ?? ub.categoryId}
                       </Text>
@@ -602,7 +604,7 @@ export const BudgetScreen: React.FC = () => {
                 <BudgetAllocationSlider
                   key={cat.id}
                   categoryName={cat.name}
-                  emoji={cat.emoji}
+                  categoryId={cat.id}
                   color={cat.color}
                   currentAllocation={existing?.allocated ?? 0}
                   spent={existing?.spent ?? 0}
@@ -740,7 +742,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   unbudgetedEmoji: {
-    fontSize: 18,
     marginRight: Spacing.sm,
   },
   unbudgetedName: {

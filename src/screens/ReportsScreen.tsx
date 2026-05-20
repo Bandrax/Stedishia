@@ -20,6 +20,7 @@ import { useAuthStore, useSettingsStore, CURRENCIES } from '../store';
 import { Typography, Spacing, BorderRadius } from '../constants';
 import { formatAmount, formatAmountShort, formatMonth, formatPercentage, getCurrentMonth } from '../utils';
 import { getCategoryInfo } from '../services/dashboardService';
+import { CategoryIcon } from '../components/atoms';
 import {
   getMonthlyOverview,
   getCategoryTrends,
@@ -321,7 +322,9 @@ export const ReportsScreen: React.FC = () => {
               const catInfo = getCategoryInfo(item.categoryId);
               return (
                 <View key={item.categoryId} style={styles.incomeSourceRow}>
-                  <Text style={{ fontSize: 16, marginRight: 8 }}>{catInfo?.emoji ?? '💵'}</Text>
+                  <View style={{ marginRight: 8 }}>
+                    <CategoryIcon categoryId={item.categoryId} size={16} color={catInfo?.color ?? '#607D8B'} />
+                  </View>
                   <Text style={[styles.incomeSourceName, { color: colors.text }]} numberOfLines={1}>
                     {catInfo?.name ?? item.categoryId}
                   </Text>

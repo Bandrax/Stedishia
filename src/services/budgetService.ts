@@ -111,8 +111,9 @@ const RECOMMENDED_PERCENTAGES: Record<string, number> = {
   entertainment: 0.10,  // 10% — kino, izlasci, hobi
   clothing:      0.05,  // 5%  — odjeća, obuća
   personal:      0.05,  // 5%  — njega, kozmetika
-  education:     0.05,  // 5%  — tečajevi, knjige
+  education:     0.03,  // 3%  — tečajevi, knjige
   gifts:         0.05,  // 5%  — pokloni, donacije
+  used_purchase: 0.02,  // 2%  — kupovina polovnih stvari
   // Ušteđevina i dugovi (20%) — štednja ide kroz transfere, ne kroz budžet
   debt:          0.10,  // 10% — otplata dugova
   other_expense: 0.10,  // 10% — ostali troškovi, nepredviđeni

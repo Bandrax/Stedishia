@@ -3,10 +3,11 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 import { formatAmount } from '../../utils';
+import { CategoryIcon } from '../atoms';
 
 interface BudgetProgressBarProps {
   categoryName: string;
-  emoji: string;
+  categoryId: string;
   spent: number;
   allocated: number;
   color: string;
@@ -14,7 +15,7 @@ interface BudgetProgressBarProps {
 
 export const BudgetProgressBar: React.FC<BudgetProgressBarProps> = ({
   categoryName,
-  emoji,
+  categoryId,
   spent,
   allocated,
   color,
@@ -29,7 +30,7 @@ export const BudgetProgressBar: React.FC<BudgetProgressBarProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.emoji}>{emoji}</Text>
+        <CategoryIcon categoryId={categoryId} size={16} color={color} />
         <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
           {categoryName}
         </Text>

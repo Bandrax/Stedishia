@@ -37,7 +37,7 @@ export const formatAmountShort = (amount: number): string => {
 // Formatiranje datuma
 export const formatDate = (
   dateStr: string,
-  formatStr: string = 'd. MMM yyyy.',
+  formatStr: string = 'dd-MM-yyyy',
   locale?: string
 ): string => {
   const lang = locale || i18n.language;
@@ -52,7 +52,7 @@ export const formatRelativeDate = (dateStr: string): string => {
   const date = parseISO(dateStr);
   if (isToday(date)) return i18n.t('common.today');
   if (isYesterday(date)) return i18n.t('common.yesterday');
-  return formatDate(dateStr, 'd. MMM');
+  return formatDate(dateStr, 'dd-MM-yyyy');
 };
 
 // Formatiranje postotka

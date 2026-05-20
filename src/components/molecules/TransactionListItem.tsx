@@ -5,6 +5,7 @@ import { useAppTheme } from '../../hooks';
 import { Typography, Spacing } from '../../constants';
 import { formatAmount } from '../../utils';
 import { getCategoryInfo } from '../../services/dashboardService';
+import { CategoryIcon } from '../atoms';
 import type { Transaction } from '../../types';
 
 interface TransactionListItemProps {
@@ -31,7 +32,7 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
         {isTransfer ? (
           <Ionicons name="swap-horizontal" size={22} color="#2196F3" />
         ) : (
-          <Text style={styles.emoji}>{catInfo?.emoji || '📌'}</Text>
+          <CategoryIcon categoryId={transaction.categoryId} size={22} color={catInfo?.color || '#607D8B'} />
         )}
       </View>
       <View style={styles.info}>

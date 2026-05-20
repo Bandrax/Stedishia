@@ -3,3 +3,4 @@ export { Card } from './Card';
 export { ProgressDots } from './ProgressDots';
 export { NumericInput } from './NumericInput';
 export { SelectableChip } from './SelectableChip';
+export { CategoryIcon } from './CategoryIcon';

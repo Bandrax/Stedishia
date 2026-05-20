@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing } from '../../constants';
-import { formatAmount, formatRelativeDate } from '../../utils';
+import { formatAmount } from '../../utils';
+import { CategoryIcon } from '../atoms';
 
 interface UpcomingPaymentItemProps {
-  emoji: string;
+  categoryId: string;
   description: string;
   amount: number;
   dueDate: string;
@@ -13,28 +15,31 @@ interface UpcomingPaymentItemProps {
 }
 
 export const UpcomingPaymentItem: React.FC<UpcomingPaymentItemProps> = ({
-  emoji,
+  categoryId,
   description,
   amount,
   dueDate,
   daysUntil,
 }) => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
   const isUrgent = daysUntil <= 2;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.emoji}>{emoji}</Text>
+      <View style={styles.emoji}>
+        <CategoryIcon categoryId={categoryId} size={24} color="#607D8B" />
+      </View>
       <View style={styles.info}>
         <Text style={[styles.description, { color: colors.text }]} numberOfLines={1}>
           {description}
         </Text>
         <Text style={[styles.date, { color: isUrgent ? colors.warning : colors.textTertiary }]}>
           {daysUntil === 0
-            ? 'Danas'
+            ? t('common.today')
             : daysUntil === 1
-              ? 'Sutra'
-              : `Za ${daysUntil} dana`}
+              ? t('common.tomorrow')
+              : t('common.inDays', { days: daysUntil })}
         </Text>
       </View>
       <Text style={[styles.amount, { color: colors.error }]}>
@@ -51,7 +56,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
   },
   emoji: {
-    fontSize: 24,
     marginRight: Spacing.md,
   },
   info: {

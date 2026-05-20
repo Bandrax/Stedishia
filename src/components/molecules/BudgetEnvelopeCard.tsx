@@ -4,10 +4,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 import { formatAmount } from '../../utils';
+import { CategoryIcon } from '../atoms';
 
 interface BudgetEnvelopeCardProps {
   categoryName: string;
-  emoji: string;
+  categoryId: string;
   color: string;
   allocated: number;
   spent: number;
@@ -16,7 +17,7 @@ interface BudgetEnvelopeCardProps {
 
 export const BudgetEnvelopeCard: React.FC<BudgetEnvelopeCardProps> = ({
   categoryName,
-  emoji,
+  categoryId,
   color,
   allocated,
   spent,
@@ -54,7 +55,9 @@ export const BudgetEnvelopeCard: React.FC<BudgetEnvelopeCardProps> = ({
               },
             ]}
           />
-          <Text style={styles.jarEmoji}>{emoji}</Text>
+          <View style={styles.jarEmoji}>
+            <CategoryIcon categoryId={categoryId} size={20} color={color} />
+          </View>
         </View>
       </View>
 
@@ -130,7 +133,6 @@ const styles = StyleSheet.create({
     right: 0,
   },
   jarEmoji: {
-    fontSize: 20,
     zIndex: 1,
   },
   info: {

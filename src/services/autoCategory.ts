@@ -56,6 +56,20 @@ const rules: CategoryRule[] = [
   // Pokloni
   { keywords: ['poklon', 'gift', 'dar', 'rođendan'], categoryId: 'gifts' },
 
+  // Kupovina polovnog
+  { keywords: ['polovni auto', 'rabljeni auto', 'used car', 'polovno vozilo', 'rabljeno vozilo'], categoryId: 'used_purchase', subcategoryId: 'used_vehicle' },
+  { keywords: ['polovni monitor', 'rabljeni monitor', 'polovni laptop', 'rabljeni laptop', 'polovni mobitel', 'rabljeni mobitel', 'polovne slušalice', 'rabljene slušalice', 'used monitor', 'used laptop', 'used phone', 'used headphones'], categoryId: 'used_purchase', subcategoryId: 'used_electronics' },
+  { keywords: ['polovna odjeća', 'rabljena odjeća', 'second hand', 'secondhand', 'used clothing', 'vintage odjeća'], categoryId: 'used_purchase', subcategoryId: 'used_clothing' },
+  { keywords: ['polovni namještaj', 'rabljeni namještaj', 'used furniture'], categoryId: 'used_purchase', subcategoryId: 'used_furniture' },
+  { keywords: ['polovno', 'polovni', 'polovna', 'rabljeno', 'rabljeni', 'rabljena', 'used item', 'kupljeno polovno'], categoryId: 'used_purchase' },
+
+  // Prodaja polovnog (prihodi)
+  { keywords: ['prodao auto', 'prodala auto', 'prodaja auta', 'sold car', 'prodano vozilo'], categoryId: 'used_sale', subcategoryId: 'sell_vehicle' },
+  { keywords: ['prodao monitor', 'prodala monitor', 'prodao laptop', 'prodala laptop', 'prodao mobitel', 'prodala mobitel', 'prodao slušalice', 'prodala slušalice', 'sold monitor', 'sold laptop', 'sold phone'], categoryId: 'used_sale', subcategoryId: 'sell_electronics' },
+  { keywords: ['prodao odjeću', 'prodala odjeću', 'sold clothing', 'prodaja odjeće'], categoryId: 'used_sale', subcategoryId: 'sell_clothing' },
+  { keywords: ['prodao namještaj', 'prodala namještaj', 'sold furniture', 'prodaja namještaja'], categoryId: 'used_sale', subcategoryId: 'sell_furniture' },
+  { keywords: ['prodao', 'prodala', 'prodano', 'prodaja', 'sold', 'prodano polovno'], categoryId: 'used_sale' },
+
   // Prihodi
   { keywords: ['plaća', 'salary', 'plata'], categoryId: 'salary' },
   { keywords: ['honorar', 'freelance', 'ugovor'], categoryId: 'freelance' },

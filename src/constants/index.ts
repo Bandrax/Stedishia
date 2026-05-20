@@ -8,3 +8,4 @@ export {
   ALL_DEFAULT_CATEGORIES,
 } from './categories';
 export type { Category, SubCategory } from './categories';
+export { CATEGORY_IONICONS, SUBCATEGORY_IONICONS, GOAL_EMOJI_IONICONS, getCategoryIonicon, getSubcategoryIonicon, getGoalIonicon } from './categoryIcons';

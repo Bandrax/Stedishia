@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
-import { getRecurringTransactions, type RecurringTransaction } from './recurringService';
+import { getRecurringTransactions } from './recurringService';
+import type { RecurringTransaction } from '../types';
 import { dbQuery } from './database';
 import i18n from '../locales/i18n';
 

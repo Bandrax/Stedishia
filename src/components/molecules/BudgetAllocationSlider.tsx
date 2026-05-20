@@ -4,10 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 import { formatAmount } from '../../utils';
+import { CategoryIcon } from '../atoms';
 
 interface BudgetAllocationSliderProps {
   categoryName: string;
-  emoji: string;
+  categoryId: string;
   color: string;
   currentAllocation: number;
   spent: number;
@@ -16,7 +17,7 @@ interface BudgetAllocationSliderProps {
 
 export const BudgetAllocationSlider: React.FC<BudgetAllocationSliderProps> = ({
   categoryName,
-  emoji,
+  categoryId,
   color,
   currentAllocation,
   spent,
@@ -43,7 +44,7 @@ export const BudgetAllocationSlider: React.FC<BudgetAllocationSliderProps> = ({
     <View style={[styles.container, { borderColor: colors.border }]}>
       <View style={styles.header}>
         <View style={[styles.icon, { backgroundColor: color + '20' }]}>
-          <Text style={styles.emoji}>{emoji}</Text>
+          <CategoryIcon categoryId={categoryId} size={16} color={color} />
         </View>
         <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
           {categoryName}

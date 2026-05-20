@@ -4,4 +4,5 @@ export { useTransactionStore } from './useTransactionStore';
 export { useBudgetStore } from './useBudgetStore';
 export { useGoalStore } from './useGoalStore';
 export { useAccountStore } from './useAccountStore';
-export { useSettingsStore, getCurrentCurrency, CURRENCIES } from './useSettingsStore';
+export { useSettingsStore, getCurrentCurrency, getCurrentIconStyle, CURRENCIES } from './useSettingsStore';
+export type { IconStyle } from './useSettingsStore';

@@ -19,6 +19,7 @@ import {
   DEFAULT_INCOME_CATEGORIES,
 } from '../../constants';
 import type { Category, SubCategory } from '../../constants';
+import { CategoryIcon } from '../atoms';
 
 interface CategoryPickerProps {
   selectedCategoryId: string;
@@ -55,10 +56,6 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
     setSearch('');
   };
 
-  const selectedLabel = selected
-    ? `${selected.emoji} ${selected.name}`
-    : t('categories.selectCategory');
-
   return (
     <>
       <TouchableOpacity
@@ -72,9 +69,20 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
         onPress={() => setVisible(true)}
         activeOpacity={0.7}
       >
-        <Text style={[styles.triggerText, { color: selectedCategoryId ? colors.text : colors.textTertiary }]}>
-          {selectedLabel}
-        </Text>
+        <View style={styles.triggerContent}>
+          {selected ? (
+            <>
+              <CategoryIcon categoryId={selected.id} size={18} color={colors.text} />
+              <Text style={[styles.triggerText, { color: colors.text, marginLeft: 8 }]}>
+                {selected.name}
+              </Text>
+            </>
+          ) : (
+            <Text style={[styles.triggerText, { color: colors.textTertiary }]}>
+              {t('categories.selectCategory')}
+            </Text>
+          )}
+        </View>
         <Text style={{ color: colors.textTertiary }}>▼</Text>
       </TouchableOpacity>
 
@@ -116,7 +124,7 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
                   activeOpacity={0.7}
                 >
                   <View style={[styles.catIcon, { backgroundColor: item.color + '20' }]}>
-                    <Text style={styles.catEmoji}>{item.emoji}</Text>
+                    <CategoryIcon categoryId={item.id} size={22} color={item.color} />
                   </View>
                   <Text style={[styles.catName, { color: colors.text }]}>
                     {item.name}
@@ -139,7 +147,9 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
                     onPress={() => handleSelect(item, sub)}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.subEmoji}>{sub.emoji}</Text>
+                    <View style={styles.subEmoji}>
+                      <CategoryIcon categoryId={item.id} subcategoryId={sub.id} size={16} color={colors.textSecondary} />
+                    </View>
                     <Text style={[styles.subName, { color: colors.textSecondary }]}>
                       {sub.name}
                     </Text>
@@ -166,6 +176,11 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.base,
+  },
+  triggerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   triggerText: {
     ...Typography.body,
@@ -210,9 +225,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: Spacing.md,
   },
-  catEmoji: {
-    fontSize: 22,
-  },
   catName: {
     ...Typography.subtitle,
     flex: 1,
@@ -225,7 +237,6 @@ const styles = StyleSheet.create({
     paddingRight: Spacing.base,
   },
   subEmoji: {
-    fontSize: 16,
     marginRight: Spacing.sm,
   },
   subName: {

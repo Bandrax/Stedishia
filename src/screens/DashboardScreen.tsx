@@ -1,11 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useAccountStore } from '../store';
-import { Typography, Spacing, ALL_DEFAULT_CATEGORIES } from '../constants';
+import { Typography, Spacing, BorderRadius, ALL_DEFAULT_CATEGORIES } from '../constants';
 import { formatAmount } from '../utils';
 import {
   getTotalBalance,
@@ -18,6 +18,7 @@ import {
   getCategoryInfo,
   getSavingsStats,
 } from '../services/dashboardService';
+import { getRecurringPaymentStatus } from '../services/recurringService';
 import { getDailyTip } from '../services/tips';
 import { Ionicons } from '@expo/vector-icons';
 import { Card } from '../components/atoms';
@@ -48,17 +49,21 @@ interface DashboardData {
     category_id: string;
   }>;
   cashFlowData: number[];
-  overBudgetDetails: Array<{ categoryName: string; emoji: string; spent: number; allocated: number }>;
-  nearLimitDetails: Array<{ categoryName: string; emoji: string; spent: number; allocated: number }>;
+  overBudgetDetails: Array<{ categoryName: string; categoryId: string; spent: number; allocated: number }>;
+  nearLimitDetails: Array<{ categoryName: string; categoryId: string; spent: number; allocated: number }>;
   totalAllocated: number;
   totalSpent: number;
   savingsBalance: number;
   monthlySavingsTransfers: number;
+  unpaidRecurringCount: number;
+  overdueRecurringCount: number;
+  totalDueThisMonth: number;
 }
 
 export const DashboardScreen: React.FC = () => {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
+  const navigation = useNavigation<any>();
   const { currentUser } = useAuthStore();
   const [data, setData] = useState<DashboardData | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -77,6 +82,7 @@ export const DashboardScreen: React.FC = () => {
         budgetProgress,
         cashFlow,
         savingsStats,
+        recurringStatus,
       ] = await Promise.all([
         getTotalBalance(currentUser.id),
         getMonthlyStats(currentUser.id),
@@ -86,6 +92,7 @@ export const DashboardScreen: React.FC = () => {
         getBudgetProgress(currentUser.id),
         getDailyCashFlow(currentUser.id),
         getSavingsStats(currentUser.id),
+        getRecurringPaymentStatus(currentUser.id),
       ]);
 
       // Odredi budget status na temelju potrošnje (isključi savings — ide kroz transfere)
@@ -115,7 +122,7 @@ export const DashboardScreen: React.FC = () => {
         const catInfo = getCategoryInfo(b.category_id);
         return {
           categoryName: catInfo?.name ?? b.category_id,
-          emoji: catInfo?.emoji ?? '📌',
+          categoryId: b.category_id,
           spent: b.spent,
           allocated: b.allocated,
         };
@@ -137,6 +144,9 @@ export const DashboardScreen: React.FC = () => {
         totalSpent,
         savingsBalance: savingsStats.savingsBalance,
         monthlySavingsTransfers: savingsStats.monthlyTransfers,
+        unpaidRecurringCount: recurringStatus.unpaidCount,
+        overdueRecurringCount: recurringStatus.overdueCount,
+        totalDueThisMonth: recurringStatus.totalDueThisMonth,
       });
     } catch (err) {
       console.error('Dashboard load error:', err);
@@ -247,7 +257,7 @@ export const DashboardScreen: React.FC = () => {
                 <BudgetProgressBar
                   key={item.category_id}
                   categoryName={catInfo?.name ?? item.category_id}
-                  emoji={catInfo?.emoji ?? '📌'}
+                  categoryId={item.category_id}
                   spent={item.spent}
                   allocated={item.allocated}
                   color={catInfo?.color ?? '#607D8B'}
@@ -273,7 +283,7 @@ export const DashboardScreen: React.FC = () => {
                 <TopExpenseItem
                   key={expense.category_id}
                   rank={index + 1}
-                  emoji={catInfo?.emoji ?? '📌'}
+                  categoryId={expense.category_id}
                   categoryName={catInfo?.name ?? expense.category_id}
                   amount={expense.total}
                   percentage={(expense.total / totalExpenses) * 100}
@@ -282,6 +292,39 @@ export const DashboardScreen: React.FC = () => {
               );
             })}
           </Card>
+        )}
+
+        {/* Upozorenje za neplaćena ponavljajuća plaćanja */}
+        {data && (data.overdueRecurringCount > 0 || data.unpaidRecurringCount > 0) && (
+          <TouchableOpacity
+            style={[
+              styles.recurringWarning,
+              {
+                backgroundColor: data.overdueRecurringCount > 0 ? colors.error + '15' : colors.warning + '15',
+                borderColor: data.overdueRecurringCount > 0 ? colors.error + '40' : colors.warning + '40',
+              },
+            ]}
+            onPress={() => navigation.navigate('RecurringPayments')}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={data.overdueRecurringCount > 0 ? 'alert-circle' : 'warning-outline'}
+              size={22}
+              color={data.overdueRecurringCount > 0 ? colors.error : colors.warning}
+              style={{ marginRight: Spacing.sm }}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.recurringWarningText, { color: data.overdueRecurringCount > 0 ? colors.error : colors.warning }]}>
+                {data.overdueRecurringCount > 0
+                  ? t('dashboard.overduePayments', { count: data.overdueRecurringCount })
+                  : t('dashboard.unpaidPayments', { count: data.unpaidRecurringCount })}
+              </Text>
+              <Text style={[styles.recurringWarningSubtext, { color: colors.textSecondary }]}>
+                {t('dashboard.totalDueThisMonth', { amount: formatAmount(data.totalDueThisMonth) })}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+          </TouchableOpacity>
         )}
 
         {/* Predstojeća plaćanja */}
@@ -304,7 +347,7 @@ export const DashboardScreen: React.FC = () => {
               return (
                 <UpcomingPaymentItem
                   key={payment.id}
-                  emoji={catInfo?.emoji ?? '📌'}
+                  categoryId={payment.category_id}
                   description={payment.description}
                   amount={payment.amount}
                   dueDate={payment.next_due_date}
@@ -415,5 +458,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: Spacing.xl,
     lineHeight: 22,
+  },
+  recurringWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    marginBottom: Spacing.md,
+  },
+  recurringWarningText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  recurringWarningSubtext: {
+    fontSize: 12,
+    marginTop: 2,
   },
 });

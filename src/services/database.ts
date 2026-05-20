@@ -273,6 +273,17 @@ export const initializeDatabase = async (): Promise<void> => {
     `);
   } catch (_) { /* tablica možda već postoji */ }
 
+  // Migracija: dodaj last_paid_date u recurring_transactions
+  try {
+    const rtInfo = await database.getAllAsync(
+      "PRAGMA table_info(recurring_transactions)"
+    ) as any[];
+    const hasLastPaidDate = rtInfo.some((col: any) => col.name === 'last_paid_date');
+    if (!hasLastPaidDate) {
+      await database.execAsync('ALTER TABLE recurring_transactions ADD COLUMN last_paid_date TEXT');
+    }
+  } catch (_) {}
+
   // Migracija: dodaj to_account_id u transactions za transfer podršku
   try {
     const txInfo = await database.getAllAsync(
