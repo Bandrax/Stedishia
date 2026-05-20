@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing } from '../../constants';
 
@@ -16,42 +17,42 @@ export const ReadyStep: React.FC<ReadyStepProps> = ({
   goalCount,
 }) => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
       <Ionicons name="checkmark-circle" size={72} color={colors.success} style={{ marginBottom: Spacing.lg }} />
       <Text style={[styles.title, { color: colors.text }]}>
-        Sve je spremno!
+        {t('onboarding.step5Title')}
       </Text>
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        Počnite pratiti svoje financije i preuzmite kontrolu nad budžetom
+        {t('onboarding.step5Subtitle')}
       </Text>
 
       <View style={styles.summary}>
         <View style={[styles.summaryItem, { backgroundColor: colors.surfaceVariant }]}>
           <Ionicons name="person" size={24} color={colors.primary} style={{ marginRight: Spacing.md }} />
           <Text style={[styles.summaryText, { color: colors.text }]}>
-            {userName || 'Vaš profil'}
+            {userName || t('onboarding.yourProfile')}
           </Text>
         </View>
         <View style={[styles.summaryItem, { backgroundColor: colors.surfaceVariant }]}>
           <Ionicons name="business" size={24} color={colors.primary} style={{ marginRight: Spacing.md }} />
           <Text style={[styles.summaryText, { color: colors.text }]}>
-            {accountCount} {accountCount === 1 ? 'račun' : accountCount < 5 ? 'računa' : 'računa'}
+            {t('onboarding.accountCountSummary', { count: accountCount })}
           </Text>
         </View>
         <View style={[styles.summaryItem, { backgroundColor: colors.surfaceVariant }]}>
           <Ionicons name="flag" size={24} color={colors.primary} style={{ marginRight: Spacing.md }} />
           <Text style={[styles.summaryText, { color: colors.text }]}>
-            {goalCount} {goalCount === 1 ? 'cilj' : goalCount < 5 ? 'cilja' : 'ciljeva'}
+            {t('onboarding.goalCountSummary', { count: goalCount })}
           </Text>
         </View>
       </View>
 
       <View style={[styles.tip, { backgroundColor: colors.primary + '10' }]}>
         <Text style={[styles.tipText, { color: colors.primary }]}>
-          Savjet: Počnite s unosom transakcija odmah! Što prije
-          krenete, točniji će biti vaši izvještaji i savjeti.
+          {t('onboarding.readyTip')}
         </Text>
       </View>
     </View>

@@ -16,6 +16,7 @@ import {
   getDailyCashFlow,
   getMonthlyChangePercent,
   getCategoryInfo,
+  getSavingsStats,
 } from '../services/dashboardService';
 import { getDailyTip } from '../services/tips';
 import { Ionicons } from '@expo/vector-icons';
@@ -51,6 +52,8 @@ interface DashboardData {
   nearLimitDetails: Array<{ categoryName: string; emoji: string; spent: number; allocated: number }>;
   totalAllocated: number;
   totalSpent: number;
+  savingsBalance: number;
+  monthlySavingsTransfers: number;
 }
 
 export const DashboardScreen: React.FC = () => {
@@ -73,6 +76,7 @@ export const DashboardScreen: React.FC = () => {
         upcoming,
         budgetProgress,
         cashFlow,
+        savingsStats,
       ] = await Promise.all([
         getTotalBalance(currentUser.id),
         getMonthlyStats(currentUser.id),
@@ -81,14 +85,16 @@ export const DashboardScreen: React.FC = () => {
         getUpcomingPayments(currentUser.id),
         getBudgetProgress(currentUser.id),
         getDailyCashFlow(currentUser.id),
+        getSavingsStats(currentUser.id),
       ]);
 
-      // Odredi budget status na temelju potrošnje
+      // Odredi budget status na temelju potrošnje (isključi savings — ide kroz transfere)
+      const activeBudgetItems = budgetProgress.filter((b) => b.category_id !== 'savings');
       let budgetStatus: BudgetStatus = 'good';
-      const overBudgetItems = budgetProgress.filter(
+      const overBudgetItems = activeBudgetItems.filter(
         (b) => b.allocated > 0 && b.spent > b.allocated
       );
-      const nearLimitItems = budgetProgress.filter(
+      const nearLimitItems = activeBudgetItems.filter(
         (b) => b.allocated > 0 && b.spent / b.allocated > 0.8 && b.spent <= b.allocated
       );
 
@@ -102,8 +108,8 @@ export const DashboardScreen: React.FC = () => {
         else if (ratio > 0.8) budgetStatus = 'warning';
       }
 
-      const totalAllocated = budgetProgress.reduce((s, b) => s + b.allocated, 0);
-      const totalSpent = budgetProgress.reduce((s, b) => s + b.spent, 0);
+      const totalAllocated = activeBudgetItems.reduce((s, b) => s + b.allocated, 0);
+      const totalSpent = activeBudgetItems.reduce((s, b) => s + b.spent, 0);
 
       const mapToDetail = (b: { category_id: string; allocated: number; spent: number }) => {
         const catInfo = getCategoryInfo(b.category_id);
@@ -129,6 +135,8 @@ export const DashboardScreen: React.FC = () => {
         nearLimitDetails: nearLimitItems.map(mapToDetail),
         totalAllocated,
         totalSpent,
+        savingsBalance: savingsStats.savingsBalance,
+        monthlySavingsTransfers: savingsStats.monthlyTransfers,
       });
     } catch (err) {
       console.error('Dashboard load error:', err);
@@ -181,6 +189,38 @@ export const DashboardScreen: React.FC = () => {
           changePercent={data?.changePercent ?? 0}
         />
 
+        {/* Štednja kartica */}
+        {data && data.savingsBalance > 0 && (
+          <Card style={styles.section} variant="default">
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="cash-outline" size={18} color="#D4AF37" />
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                {t('dashboard.savings')}
+              </Text>
+            </View>
+            <View style={styles.savingsRow}>
+              <View style={styles.savingsStat}>
+                <Text style={[styles.savingsLabel, { color: colors.textSecondary }]}>
+                  {t('dashboard.savingsTotal')}
+                </Text>
+                <Text style={[styles.savingsValue, { color: '#D4AF37' }]}>
+                  {formatAmount(data.savingsBalance)}
+                </Text>
+              </View>
+              {data.monthlySavingsTransfers > 0 && (
+                <View style={styles.savingsStat}>
+                  <Text style={[styles.savingsLabel, { color: colors.textSecondary }]}>
+                    {t('dashboard.savingsThisMonth')}
+                  </Text>
+                  <Text style={[styles.savingsValue, { color: colors.success }]}>
+                    +{formatAmount(data.monthlySavingsTransfers)}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </Card>
+        )}
+
         {/* Semafor */}
         <View style={styles.section}>
           <StatusSemaphore
@@ -201,7 +241,7 @@ export const DashboardScreen: React.FC = () => {
                 {t('dashboard.budgetThisMonth')}
               </Text>
             </View>
-            {data.budgetItems.slice(0, 5).map((item) => {
+            {data.budgetItems.filter((b) => b.category_id !== 'savings').slice(0, 5).map((item) => {
               const catInfo = getCategoryInfo(item.category_id);
               return (
                 <BudgetProgressBar
@@ -346,6 +386,21 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     ...Typography.subtitle,
+  },
+  savingsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  savingsStat: {
+    alignItems: 'center',
+  },
+  savingsLabel: {
+    ...Typography.bodySmall,
+    marginBottom: 4,
+  },
+  savingsValue: {
+    fontSize: 20,
+    fontWeight: '700',
   },
   emptyState: {
     alignItems: 'center',

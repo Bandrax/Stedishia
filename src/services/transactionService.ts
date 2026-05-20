@@ -14,6 +14,7 @@ export const createTransaction = async (
     id,
     user_id: tx.userId,
     account_id: tx.accountId,
+    to_account_id: tx.toAccountId || null,
     type: tx.type,
     amount: tx.amount,
     currency: tx.currency,
@@ -31,13 +32,26 @@ export const createTransaction = async (
     updated_at: now,
   });
 
-  // Ažuriraj stanje računa
-  const balanceChange = tx.type === 'income' ? tx.amount : -tx.amount;
   const db = await getDatabase();
-  await db.runAsync(
-    'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
-    [balanceChange, now, tx.accountId]
-  );
+
+  if (tx.type === 'transfer' && tx.toAccountId) {
+    // Transfer: smanji izvorni račun, povećaj odredišni
+    await db.runAsync(
+      'UPDATE accounts SET balance = balance - ?, updated_at = ? WHERE id = ?',
+      [tx.amount, now, tx.accountId]
+    );
+    await db.runAsync(
+      'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
+      [tx.amount, now, tx.toAccountId]
+    );
+  } else {
+    // Income/expense: standardna logika
+    const balanceChange = tx.type === 'income' ? tx.amount : -tx.amount;
+    await db.runAsync(
+      'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
+      [balanceChange, now, tx.accountId]
+    );
+  }
 
   return id;
 };
@@ -53,17 +67,27 @@ export const updateTransaction = async (
 
   // Ako se promijenio iznos ili tip, ažuriraj stanje računa
   if (updates.amount !== undefined || updates.type !== undefined) {
-    const oldChange = oldTx.type === 'income' ? oldTx.amount : -oldTx.amount;
+    if (oldTx.type === 'transfer' && oldTx.toAccountId) {
+      // Vrati stare transfer promjene
+      await db.runAsync('UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?', [oldTx.amount, now, oldTx.accountId]);
+      await db.runAsync('UPDATE accounts SET balance = balance - ?, updated_at = ? WHERE id = ?', [oldTx.amount, now, oldTx.toAccountId]);
+    } else {
+      const oldChange = oldTx.type === 'income' ? oldTx.amount : -oldTx.amount;
+      await db.runAsync('UPDATE accounts SET balance = balance - ?, updated_at = ? WHERE id = ?', [oldChange, now, oldTx.accountId]);
+    }
+
     const newType = updates.type || oldTx.type;
     const newAmount = updates.amount ?? oldTx.amount;
-    const newChange = newType === 'income' ? newAmount : -newAmount;
-    const diff = newChange - oldChange;
+    const newAccountId = updates.accountId || oldTx.accountId;
+    const newToAccountId = updates.toAccountId ?? oldTx.toAccountId;
 
-    const accountId = updates.accountId || oldTx.accountId;
-    await db.runAsync(
-      'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
-      [diff, now, accountId]
-    );
+    if (newType === 'transfer' && newToAccountId) {
+      await db.runAsync('UPDATE accounts SET balance = balance - ?, updated_at = ? WHERE id = ?', [newAmount, now, newAccountId]);
+      await db.runAsync('UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?', [newAmount, now, newToAccountId]);
+    } else {
+      const newChange = newType === 'income' ? newAmount : -newAmount;
+      await db.runAsync('UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?', [newChange, now, newAccountId]);
+    }
   }
 
   const dbUpdates: Record<string, unknown> = { updated_at: now };
@@ -76,6 +100,7 @@ export const updateTransaction = async (
   if (updates.date !== undefined) dbUpdates.date = updates.date;
   if (updates.tags !== undefined) dbUpdates.tags = JSON.stringify(updates.tags);
   if (updates.accountId !== undefined) dbUpdates.account_id = updates.accountId;
+  if (updates.toAccountId !== undefined) dbUpdates.to_account_id = updates.toAccountId;
 
   await dbUpdate('transactions', id, dbUpdates);
 };
@@ -85,12 +110,23 @@ export const deleteTransaction = async (tx: Transaction): Promise<void> => {
   const now = new Date().toISOString();
   const db = await getDatabase();
 
-  // Vrati stanje računa
-  const balanceRevert = tx.type === 'income' ? -tx.amount : tx.amount;
-  await db.runAsync(
-    'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
-    [balanceRevert, now, tx.accountId]
-  );
+  if (tx.type === 'transfer' && tx.toAccountId) {
+    // Transfer: vrati novac na izvorni, oduzmi s odredišnog
+    await db.runAsync(
+      'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
+      [tx.amount, now, tx.accountId]
+    );
+    await db.runAsync(
+      'UPDATE accounts SET balance = balance - ?, updated_at = ? WHERE id = ?',
+      [tx.amount, now, tx.toAccountId]
+    );
+  } else {
+    const balanceRevert = tx.type === 'income' ? -tx.amount : tx.amount;
+    await db.runAsync(
+      'UPDATE accounts SET balance = balance + ?, updated_at = ? WHERE id = ?',
+      [balanceRevert, now, tx.accountId]
+    );
+  }
 
   await dbDelete('transactions', tx.id);
 };
@@ -159,6 +195,7 @@ const mapRowToTransaction = (row: any): Transaction => ({
   id: row.id,
   userId: row.user_id,
   accountId: row.account_id,
+  toAccountId: row.to_account_id || undefined,
   type: row.type,
   amount: row.amount,
   currency: row.currency,

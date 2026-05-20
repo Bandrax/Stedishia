@@ -49,6 +49,10 @@ const rules: CategoryRule[] = [
   // Edukacija
   { keywords: ['knjiga', 'udemy', 'coursera', 'škola', 'fakultet', 'tečaj', 'seminar'], categoryId: 'education' },
 
+  // Bijela tehnika / kućanski aparati
+  { keywords: ['perilica', 'sušilica', 'hladnjak', 'zamrzivač', 'pećnica', 'mikrovalna', 'usisavač', 'bojler', 'klima', 'frižider', 'aparati', 'bijela tehnika', 'washing machine', 'dishwasher', 'fridge', 'freezer', 'oven', 'microwave', 'vacuum', 'air conditioner', 'appliance', 'gorenje', 'bosch', 'electrolux', 'samsung appliance', 'whirlpool', 'končar', 'miele'], categoryId: 'appliances', subcategoryId: 'large_appliances' },
+  { keywords: ['blender', 'toster', 'glačalo', 'mikser', 'aparat za kavu', 'friteza', 'air fryer', 'toaster', 'iron', 'mixer', 'coffee machine', 'kettle', 'kuhalo'], categoryId: 'appliances', subcategoryId: 'small_appliances' },
+
   // Pokloni
   { keywords: ['poklon', 'gift', 'dar', 'rođendan'], categoryId: 'gifts' },
 

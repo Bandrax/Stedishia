@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
 import { useAppTheme } from '../hooks';
 import { useTranslation } from 'react-i18next';
-import { useAuthStore } from '../store';
+import { useAuthStore, useSettingsStore, CURRENCIES } from '../store';
 import { Typography, Spacing, BorderRadius } from '../constants';
 import { formatAmount, formatAmountShort, formatMonth, formatPercentage, getCurrentMonth } from '../utils';
 import { getCategoryInfo } from '../services/dashboardService';
@@ -25,6 +25,7 @@ import {
   getCategoryTrends,
   getCashFlowForecast,
   getYearlyOverview,
+  getIncomeBreakdown,
 } from '../services/reportService';
 import { exportTransactionsCSV, exportMonthlyReportCSV, shareCSVFile } from '../services/exportService';
 
@@ -39,14 +40,17 @@ export const ReportsScreen: React.FC = () => {
   const currentUser = useAuthStore((s) => s.currentUser);
   const userId = currentUser?.id || '';
   const { t } = useTranslation();
+  const currency = useSettingsStore((s) => s.currency);
+  const currencySymbol = CURRENCIES.find((c) => c.code === currency)?.symbol || '€';
 
   const [activeTab, setActiveTab] = useState<ReportTab>('monthly');
   const [refreshing, setRefreshing] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [monthlyPeriod, setMonthlyPeriod] = useState<number>(6);
 
   // Podaci
   const [monthlyData, setMonthlyData] = useState<Array<{
-    month: string; income: number; expenses: number; savings: number;
+    month: string; income: number; expenses: number; savings: number; actualSavings: number;
   }>>([]);
   const [yearlyData, setYearlyData] = useState<{
     totalIncome: number; totalExpenses: number; totalSavings: number;
@@ -64,6 +68,7 @@ export const ReportsScreen: React.FC = () => {
     dailyData: Array<{ date: string; balance: number; isProjection: boolean }>;
     avgDailyIncome: number; avgDailyExpense: number;
   } | null>(null);
+  const [incomeBreakdown, setIncomeBreakdown] = useState<Array<{ categoryId: string; total: number; percentage: number }>>([]);
   const [expandedTrend, setExpandedTrend] = useState<{
     categoryId: string;
     name: string;
@@ -77,13 +82,17 @@ export const ReportsScreen: React.FC = () => {
     if (!userId) return;
     try {
       if (activeTab === 'monthly') {
-        const data = await getMonthlyOverview(userId, 6);
+        const [data, incBreakdown] = await Promise.all([
+          getMonthlyOverview(userId, monthlyPeriod),
+          getIncomeBreakdown(userId, monthlyPeriod),
+        ]);
         setMonthlyData(data);
+        setIncomeBreakdown(incBreakdown);
       } else if (activeTab === 'yearly') {
         const data = await getYearlyOverview(userId, selectedYear);
         setYearlyData(data);
       } else if (activeTab === 'trends') {
-        const data = await getCategoryTrends(userId, 6);
+        const data = await getCategoryTrends(userId, monthlyPeriod);
         setCategoryTrends(data);
       } else if (activeTab === 'forecast') {
         const data = await getCashFlowForecast(userId, 90);
@@ -92,7 +101,7 @@ export const ReportsScreen: React.FC = () => {
     } catch (error) {
       console.error('Report load error:', error);
     }
-  }, [userId, activeTab, selectedYear]);
+  }, [userId, activeTab, selectedYear, monthlyPeriod]);
 
   useEffect(() => {
     loadData();
@@ -152,14 +161,43 @@ export const ReportsScreen: React.FC = () => {
     const totalIncome = monthlyData.reduce((s, d) => s + d.income, 0);
     const totalExpenses = monthlyData.reduce((s, d) => s + d.expenses, 0);
     const totalSavings = totalIncome - totalExpenses;
+    const totalActualSavings = monthlyData.reduce((s, d) => s + d.actualSavings, 0);
     const avgSavingsRate = totalIncome > 0 ? (totalSavings / totalIncome) * 100 : 0;
+
+    const periodOptions = [
+      { label: '1M', value: 1 },
+      { label: '3M', value: 3 },
+      { label: '6M', value: 6 },
+      { label: '1Y', value: 12 },
+    ];
 
     return (
       <View>
+        {/* Period filter */}
+        <View style={styles.periodFilter}>
+          {periodOptions.map((opt) => (
+            <TouchableOpacity
+              key={opt.value}
+              style={[
+                styles.periodPill,
+                { backgroundColor: monthlyPeriod === opt.value ? colors.primary : colors.surfaceVariant },
+              ]}
+              onPress={() => setMonthlyPeriod(opt.value)}
+            >
+              <Text style={[
+                styles.periodPillText,
+                { color: monthlyPeriod === opt.value ? '#FFFFFF' : colors.text },
+              ]}>
+                {opt.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
         {/* Sažetak */}
         <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.summaryTitle, { color: colors.text }]}>
-            {t('reports.last6Months')}
+            {t('reports.lastNMonths', { count: monthlyPeriod })}
           </Text>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
@@ -177,7 +215,7 @@ export const ReportsScreen: React.FC = () => {
           </View>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.saved')}</Text>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.netResult')}</Text>
               <Text style={[styles.summaryValue, { color: totalSavings >= 0 ? colors.success : colors.error }]}>
                 {formatAmount(totalSavings)}
               </Text>
@@ -189,6 +227,16 @@ export const ReportsScreen: React.FC = () => {
               </Text>
             </View>
           </View>
+          {totalActualSavings > 0 && (
+            <View style={[styles.summaryRow, { marginTop: Spacing.sm }]}>
+              <View style={styles.summaryItem}>
+                <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>{t('reports.actualSavings')}</Text>
+                <Text style={[styles.summaryValue, { color: '#D4AF37' }]}>
+                  {formatAmount(totalActualSavings)}
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
 
         {/* Graf prihoda vs rashoda */}
@@ -217,7 +265,7 @@ export const ReportsScreen: React.FC = () => {
             bezier
             withDots
             yAxisLabel=""
-            yAxisSuffix=" €"
+            yAxisSuffix={` ${currencySymbol}`}
           />
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
@@ -256,9 +304,38 @@ export const ReportsScreen: React.FC = () => {
             style={styles.chart}
             bezier
             yAxisLabel=""
-            yAxisSuffix=" €"
+            yAxisSuffix={` ${currencySymbol}`}
           />
         </View>
+
+        {/* Raščlamba prihoda po izvoru */}
+        {incomeBreakdown.length > 0 && (
+          <View style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="arrow-down-circle" size={18} color={colors.success} />
+              <Text style={[styles.chartTitle, { color: colors.text }]}>
+                {t('reports.incomeBySource')}
+              </Text>
+            </View>
+            {incomeBreakdown.map((item) => {
+              const catInfo = getCategoryInfo(item.categoryId);
+              return (
+                <View key={item.categoryId} style={styles.incomeSourceRow}>
+                  <Text style={{ fontSize: 16, marginRight: 8 }}>{catInfo?.emoji ?? '💵'}</Text>
+                  <Text style={[styles.incomeSourceName, { color: colors.text }]} numberOfLines={1}>
+                    {catInfo?.name ?? item.categoryId}
+                  </Text>
+                  <Text style={[styles.incomeSourcePercent, { color: colors.textSecondary }]}>
+                    {formatPercentage(item.percentage, 0)}
+                  </Text>
+                  <Text style={[styles.incomeSourceAmount, { color: colors.success }]}>
+                    {formatAmount(item.total)}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
 
         {/* Mjesečni detalji */}
         {monthlyData.slice().reverse().map((d) => (
@@ -284,6 +361,11 @@ export const ReportsScreen: React.FC = () => {
               >
                 = {formatAmountShort(d.savings)}
               </Text>
+              {d.actualSavings > 0 && (
+                <Text style={[styles.monthSavings, { color: '#D4AF37' }]}>
+                  🐷 {formatAmountShort(d.actualSavings)}
+                </Text>
+              )}
             </View>
           </View>
         ))}
@@ -375,7 +457,7 @@ export const ReportsScreen: React.FC = () => {
                 { data: yearlyData.monthlyData.map((d) => d.expenses || 0.01), color: (opacity = 1) => `rgba(239, 68, 68, ${opacity})`, strokeWidth: 2 },
               ],
             }}
-            width={Math.max(CHART_WIDTH - Spacing.base * 2, 350)}
+            width={CHART_WIDTH - Spacing.base * 2}
             height={220}
             chartConfig={{
               ...chartConfig,
@@ -385,7 +467,7 @@ export const ReportsScreen: React.FC = () => {
             bezier
             withDots
             yAxisLabel=""
-            yAxisSuffix=" €"
+            yAxisSuffix={` ${currencySymbol}`}
           />
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
@@ -603,7 +685,7 @@ export const ReportsScreen: React.FC = () => {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <Ionicons name={isPositive ? 'trending-up-outline' : 'trending-down-outline'} size={18} color={isPositive ? colors.success : colors.error} />
               <Text style={[styles.forecastChangeText, { color: isPositive ? colors.success : colors.error }]}>
-                {t('reports.expectedChange', { amount: formatAmount(balanceChange, 'EUR', true) })}
+                {t('reports.expectedChange', { amount: formatAmount(balanceChange, undefined, true) })}
               </Text>
             </View>
           </View>
@@ -636,7 +718,7 @@ export const ReportsScreen: React.FC = () => {
             bezier
             withDots={false}
             yAxisLabel=""
-            yAxisSuffix=" €"
+            yAxisSuffix={` ${currencySymbol}`}
           />
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
@@ -814,7 +896,7 @@ export const ReportsScreen: React.FC = () => {
                 bezier
                 withDots
                 yAxisLabel=""
-                yAxisSuffix=" €"
+                yAxisSuffix={` ${currencySymbol}`}
               />
               <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: Spacing.lg }}>
                 <View style={{ alignItems: 'center' }}>
@@ -841,6 +923,43 @@ export const ReportsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  periodFilter: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.base,
+  },
+  periodPill: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 6,
+    borderRadius: BorderRadius.full,
+  },
+  periodPillText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  incomeSourceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+  },
+  incomeSourceName: {
+    ...Typography.body,
+    flex: 1,
+  },
+  incomeSourcePercent: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginRight: Spacing.sm,
+    minWidth: 35,
+    textAlign: 'right',
+  },
+  incomeSourceAmount: {
+    ...Typography.body,
+    fontWeight: '600',
+    minWidth: 80,
+    textAlign: 'right',
   },
   sectionTitleRow: {
     flexDirection: 'row',

@@ -16,6 +16,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useGoalStore, useAccountStore } from '../store';
+import { getCurrentCurrency } from '../store/useSettingsStore';
 import { Typography, Spacing, BorderRadius } from '../constants';
 import { formatAmount } from '../utils';
 import {
@@ -164,19 +165,39 @@ export const GoalsScreen: React.FC = () => {
       const goal = goals.find((g) => g.id === showAddMoney);
       const goalName = goal?.name || 'Cilj';
 
-      // Create a real transaction that debits the account
-      await createTransaction({
-        userId: currentUser.id,
-        accountId: addMoneyAccountId,
-        type: 'expense',
-        amount,
-        currency: 'EUR',
-        categoryId: 'savings',
-        description: `Štednja: ${goalName}`,
-        date: new Date().toISOString().split('T')[0],
-        tags: ['štednja', 'cilj'],
-        isRecurring: false,
-      });
+      // Pronađi štednji račun kao odredište transfera
+      const savingsAccount = accounts.find((a) => a.type === 'savings' && a.id !== addMoneyAccountId);
+
+      if (savingsAccount) {
+        // Transfer: prebaci s izvornog na štednji račun (nije rashod!)
+        await createTransaction({
+          userId: currentUser.id,
+          accountId: addMoneyAccountId,
+          toAccountId: savingsAccount.id,
+          type: 'transfer',
+          amount,
+          currency: getCurrentCurrency(),
+          categoryId: 'transfer',
+          description: `${t('goals.savingsTransfer')}: ${goalName}`,
+          date: new Date().toISOString().split('T')[0],
+          tags: ['štednja', 'cilj'],
+          isRecurring: false,
+        });
+      } else {
+        // Ako nema štednji račun, kreiraj internu transakciju štednje (ne utječe na rashode)
+        await createTransaction({
+          userId: currentUser.id,
+          accountId: addMoneyAccountId,
+          type: 'transfer',
+          amount,
+          currency: getCurrentCurrency(),
+          categoryId: 'transfer',
+          description: `${t('goals.savingsTransfer')}: ${goalName}`,
+          date: new Date().toISOString().split('T')[0],
+          tags: ['štednja', 'cilj'],
+          isRecurring: false,
+        });
+      }
 
       // Update the goal progress
       const updated = await addToGoal(showAddMoney, amount);

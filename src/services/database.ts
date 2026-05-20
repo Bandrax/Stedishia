@@ -59,6 +59,7 @@ export const initializeDatabase = async (): Promise<void> => {
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
       account_id TEXT NOT NULL,
+      to_account_id TEXT,
       type TEXT NOT NULL,
       scope TEXT DEFAULT 'personal',
       amount REAL NOT NULL,
@@ -246,6 +247,40 @@ export const initializeDatabase = async (): Promise<void> => {
     const hasInviteCode = householdInfo.some((col: any) => col.name === 'invite_code');
     if (!hasInviteCode) {
       await database.execAsync('ALTER TABLE households ADD COLUMN invite_code TEXT UNIQUE');
+    }
+  } catch (_) { /* tablica možda ne postoji još */ }
+
+  // Migracija: app_settings tablica
+  try {
+    await database.execAsync(`
+      CREATE TABLE IF NOT EXISTS app_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      )
+    `);
+  } catch (_) {}
+
+  // Migracija: budget_presets tablica
+  try {
+    await database.execAsync(`
+      CREATE TABLE IF NOT EXISTS budget_presets (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        allocations TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      )
+    `);
+  } catch (_) { /* tablica možda već postoji */ }
+
+  // Migracija: dodaj to_account_id u transactions za transfer podršku
+  try {
+    const txInfo = await database.getAllAsync(
+      "PRAGMA table_info(transactions)"
+    ) as any[];
+    const hasToAccountId = txInfo.some((col: any) => col.name === 'to_account_id');
+    if (!hasToAccountId) {
+      await database.execAsync('ALTER TABLE transactions ADD COLUMN to_account_id TEXT');
     }
   } catch (_) { /* tablica možda ne postoji još */ }
 };

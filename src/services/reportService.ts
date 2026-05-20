@@ -1,7 +1,7 @@
 import { dbQuery } from './database';
 import { getCurrentMonth } from '../utils';
 
-// Mjesečni pregled: prihodi, rashodi, štednja po mjesecima
+// Mjesečni pregled: prihodi, rashodi, neto, stvarna štednja po mjesecima
 export const getMonthlyOverview = async (
   userId: string,
   months: number = 12
@@ -10,9 +10,10 @@ export const getMonthlyOverview = async (
   income: number;
   expenses: number;
   savings: number;
+  actualSavings: number; // stvarni transferi na savings račune
 }>> => {
   const now = new Date();
-  const results: Array<{ month: string; income: number; expenses: number; savings: number }> = [];
+  const results: Array<{ month: string; income: number; expenses: number; savings: number; actualSavings: number }> = [];
 
   for (let i = months - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i);
@@ -32,18 +33,54 @@ export const getMonthlyOverview = async (
       [userId, startDate, endDate]
     );
 
+    // Stvarna štednja: transferi na savings račune ovaj mjesec
+    const savingsResult = await dbQuery<{ total: number }>(
+      `SELECT COALESCE(SUM(t.amount), 0) as total FROM transactions t
+       INNER JOIN accounts a ON t.to_account_id = a.id
+       WHERE t.user_id = ? AND t.type = 'transfer' AND a.type = 'savings'
+       AND t.date >= ? AND t.date <= ?`,
+      [userId, startDate, endDate]
+    );
+
     const income = incomeResult[0]?.total ?? 0;
     const expenses = expenseResult[0]?.total ?? 0;
+    const actualSavings = savingsResult[0]?.total ?? 0;
 
     results.push({
       month: m,
       income,
       expenses,
       savings: income - expenses,
+      actualSavings,
     });
   }
 
   return results;
+};
+
+// Raščlamba prihoda po kategoriji za zadnjih N mjeseci
+export const getIncomeBreakdown = async (
+  userId: string,
+  months: number = 6
+): Promise<Array<{ categoryId: string; total: number; percentage: number }>> => {
+  const now = new Date();
+  const startMonth = new Date(now.getFullYear(), now.getMonth() - months + 1);
+  const startDate = `${startMonth.getFullYear()}-${String(startMonth.getMonth() + 1).padStart(2, '0')}-01`;
+  const endDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-31`;
+
+  const rows = await dbQuery<{ category_id: string; total: number }>(
+    `SELECT category_id, COALESCE(SUM(amount), 0) as total FROM transactions
+     WHERE user_id = ? AND type = 'income' AND date >= ? AND date <= ?
+     GROUP BY category_id ORDER BY total DESC`,
+    [userId, startDate, endDate]
+  );
+
+  const grandTotal = rows.reduce((s, r) => s + r.total, 0);
+  return rows.map((r) => ({
+    categoryId: r.category_id,
+    total: r.total,
+    percentage: grandTotal > 0 ? (r.total / grandTotal) * 100 : 0,
+  }));
 };
 
 // Trendovi po kategorijama - zadnjih N mjeseci
@@ -166,10 +203,10 @@ export const getCashFlowForecast = async (
   const dailyData: Array<{ date: string; balance: number; isProjection: boolean }> = [];
   const today = new Date();
 
-  // Prošlih 30 dana stvarnih podataka
+  // Prošlih 30 dana stvarnih podataka (bez transfera — ne utječu na neto)
   const historicalTransactions = await dbQuery<{ date: string; type: string; amount: number }>(
     `SELECT date, type, amount FROM transactions
-     WHERE user_id = ? AND date >= ?
+     WHERE user_id = ? AND type IN ('income', 'expense') AND date >= ?
      ORDER BY date ASC`,
     [userId, new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30).toISOString().split('T')[0]]
   );

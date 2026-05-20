@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 import { formatAmount, formatDate } from '../../utils';
@@ -19,6 +20,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
   onAddMoney,
 }) => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
   const percentage = goal.targetAmount > 0
     ? Math.min((goal.currentAmount / goal.targetAmount) * 100, 100)
     : 0;
@@ -42,7 +44,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
         <View style={styles.headerInfo}>
           <Text style={[styles.name, { color: colors.text }]}>{goal.name}</Text>
           <Text style={[styles.deadline, { color: colors.textTertiary }]}>
-            {isCompleted ? 'Ostvareno!' : `Do ${formatDate(goal.targetDate, 'd. MMM yyyy.')}`}
+            {isCompleted ? t('goals.goalAchieved') : t('goals.dueDate', { date: formatDate(goal.targetDate, 'd. MMM yyyy.') })}
           </Text>
         </View>
         {isCompleted && <Ionicons name="checkmark-circle" size={24} color={colors.success} />}
@@ -73,17 +75,17 @@ export const GoalCard: React.FC<GoalCardProps> = ({
 
         <View style={styles.statsRow}>
           <Text style={[styles.percentage, { color: colors.textSecondary }]}>
-            {percentage.toFixed(0)}% ostvareno
+            {t('goals.percentAchieved', { percent: percentage.toFixed(0) })}
           </Text>
           {!isCompleted && monthlyNeeded > 0 && (
             <Text style={[styles.monthlyNeeded, { color: colors.primary }]}>
-              {formatAmount(monthlyNeeded)}/mj potrebno
+              {t('goals.monthlyNeededShort', { amount: formatAmount(monthlyNeeded) })}
             </Text>
           )}
         </View>
       </View>
 
-      {/* Dodaj novac gumb */}
+      {/* Add money button */}
       {!isCompleted && onAddMoney && (
         <TouchableOpacity
           style={[styles.addButton, { backgroundColor: (goal.color || colors.primary) + '15' }]}
@@ -91,7 +93,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
           activeOpacity={0.7}
         >
           <Text style={[styles.addButtonText, { color: goal.color || colors.primary }]}>
-            + Dodaj
+            {t('goals.addMoney')}
           </Text>
         </TouchableOpacity>
       )}

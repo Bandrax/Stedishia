@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { NumericInput } from '../../components/atoms';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
@@ -10,28 +11,28 @@ type IncomeType = 'fixed' | 'variable' | 'none';
 interface IncomeOption {
   id: IncomeType;
   icon: string;
-  label: string;
-  description: string;
+  labelKey: string;
+  descriptionKey: string;
 }
 
 const incomeOptions: IncomeOption[] = [
   {
     id: 'fixed',
     icon: 'briefcase-outline',
-    label: 'Fiksna plaća',
-    description: 'Primam redovitu plaću svaki mjesec',
+    labelKey: 'onboarding.incomeType.fixed',
+    descriptionKey: 'onboarding.incomeTypeDesc.fixed',
   },
   {
     id: 'variable',
     icon: 'bar-chart-outline',
-    label: 'Varijabilni prihodi',
-    description: 'Freelance, sezonski rad, provizije...',
+    labelKey: 'onboarding.incomeType.variable',
+    descriptionKey: 'onboarding.incomeTypeDesc.variable',
   },
   {
     id: 'none',
     icon: 'school-outline',
-    label: 'Nemam redovite prihode',
-    description: 'Student, između poslova, umirovljenik...',
+    labelKey: 'onboarding.incomeType.none',
+    descriptionKey: 'onboarding.incomeTypeDesc.none',
   },
 ];
 
@@ -49,6 +50,7 @@ export const IncomeStep: React.FC<IncomeStepProps> = ({
   onIncomeTypeChange,
 }) => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   return (
     <ScrollView
@@ -59,10 +61,10 @@ export const IncomeStep: React.FC<IncomeStepProps> = ({
     >
       <Ionicons name="cash-outline" size={48} color={colors.primary} style={{ marginBottom: Spacing.lg }} />
       <Text style={[styles.title, { color: colors.text }]}>
-        Kakvi su vaši prihodi?
+        {t('onboarding.incomeTitle')}
       </Text>
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        Odaberite opciju koja vam najbolje odgovara
+        {t('onboarding.incomeSubtitle')}
       </Text>
 
       <View style={styles.options}>
@@ -89,10 +91,10 @@ export const IncomeStep: React.FC<IncomeStepProps> = ({
                     { color: isSelected ? colors.primary : colors.text },
                   ]}
                 >
-                  {opt.label}
+                  {t(opt.labelKey)}
                 </Text>
                 <Text style={[styles.optionDesc, { color: colors.textSecondary }]}>
-                  {opt.description}
+                  {t(opt.descriptionKey)}
                 </Text>
               </View>
               {isSelected && (
@@ -108,7 +110,7 @@ export const IncomeStep: React.FC<IncomeStepProps> = ({
       {incomeType === 'fixed' && (
         <View style={styles.amountSection}>
           <Text style={[styles.amountLabel, { color: colors.text }]}>
-            Kolika je vaša mjesečna neto plaća?
+            {t('onboarding.monthlyNetSalary')}
           </Text>
           <NumericInput
             value={income}
@@ -124,7 +126,7 @@ export const IncomeStep: React.FC<IncomeStepProps> = ({
       {incomeType === 'variable' && (
         <View style={styles.amountSection}>
           <Text style={[styles.amountLabel, { color: colors.text }]}>
-            Koliko otprilike zaradite mjesečno?
+            {t('onboarding.monthlyApprox')}
           </Text>
           <NumericInput
             value={income}
@@ -135,17 +137,16 @@ export const IncomeStep: React.FC<IncomeStepProps> = ({
             style={styles.input}
           />
           <Text style={[styles.amountHint, { color: colors.textTertiary }]}>
-            Okvirni prosjek je sasvim dovoljan
+            {t('onboarding.approxEnough')}
           </Text>
         </View>
       )}
 
       <View style={[styles.hint, { backgroundColor: colors.surfaceVariant }]}>
         <Text style={[styles.hintText, { color: colors.textSecondary }]}>
-          Ovo služi samo za pametnije savjete — možete promijeniti kad god želite u postavkama.
           {incomeType === 'none'
-            ? ' Aplikacija radi odlično i bez informacije o prihodima!'
-            : ''}
+            ? t('onboarding.incomeHintNone')
+            : t('onboarding.incomeHint')}
         </Text>
       </View>
     </ScrollView>

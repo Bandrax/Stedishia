@@ -14,7 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
-import { useAuthStore, useAccountStore, useTransactionStore } from '../store';
+import { useAuthStore, useAccountStore, useTransactionStore, useSettingsStore, CURRENCIES } from '../store';
+import { getCurrentCurrency } from '../store/useSettingsStore';
 import { Typography, Spacing, BorderRadius } from '../constants';
 import { Button } from '../components/atoms';
 import { CategoryPicker } from '../components/molecules/CategoryPicker';
@@ -36,15 +37,19 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
   const { t } = useTranslation();
   const { colors } = useAppTheme();
   const { currentUser } = useAuthStore();
+  const currency = useSettingsStore((s) => s.currency);
+  const currencySymbol = CURRENCIES.find((c) => c.code === currency)?.symbol || '€';
   const { accounts, setAccounts } = useAccountStore();
   const { addTransaction } = useTransactionStore();
 
   const [type, setType] = useState<TransactionType>(initialType);
+  const [transferMode, setTransferMode] = useState<'regular' | 'savings'>('regular');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [subcategoryId, setSubcategoryId] = useState<string | undefined>();
   const [accountId, setAccountId] = useState('');
+  const [toAccountId, setToAccountId] = useState('');
 
   // Load accounts from DB if store is empty
   useEffect(() => {
@@ -87,8 +92,22 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!currentUser || !amount || !categoryId || !accountId) {
+    const isTransfer = type === 'transfer';
+
+    if (!currentUser || !amount || !accountId) {
       Alert.alert(t('common.error'), t('transactions.fillRequired'));
+      return;
+    }
+    if (!isTransfer && !categoryId) {
+      Alert.alert(t('common.error'), t('transactions.fillRequired'));
+      return;
+    }
+    if (isTransfer && !toAccountId) {
+      Alert.alert(t('common.error'), t('transactions.selectToAccount'));
+      return;
+    }
+    if (isTransfer && accountId === toAccountId) {
+      Alert.alert(t('common.error'), t('transactions.sameAccountError'));
       return;
     }
 
@@ -105,15 +124,19 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
         .map((t) => t.trim())
         .filter((t) => t.length > 0);
 
+      const txCategoryId = isTransfer ? 'transfer' : categoryId;
+      const txDescription = description || (isTransfer ? t('transactions.type.transfer') : categoryId);
+
       const id = await createTransaction({
         userId: currentUser.id,
         accountId,
+        toAccountId: isTransfer ? toAccountId : undefined,
         type,
         amount: parsedAmount,
-        currency: 'EUR',
-        categoryId,
-        subcategoryId,
-        description: description || categoryId,
+        currency: getCurrentCurrency(),
+        categoryId: txCategoryId,
+        subcategoryId: isTransfer ? undefined : subcategoryId,
+        description: txDescription,
         note: note || undefined,
         date,
         tags: tagList,
@@ -125,12 +148,13 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
         id,
         userId: currentUser.id,
         accountId,
+        toAccountId: isTransfer ? toAccountId : undefined,
         type,
         amount: parsedAmount,
-        currency: 'EUR',
-        categoryId,
-        subcategoryId,
-        description: description || categoryId,
+        currency: getCurrentCurrency(),
+        categoryId: txCategoryId,
+        subcategoryId: isTransfer ? undefined : subcategoryId,
+        description: txDescription,
         note: note || undefined,
         date,
         tags: tagList,
@@ -141,10 +165,17 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
 
       // Ažuriraj stanje računa u storeu
       const { updateAccount } = useAccountStore.getState();
-      const acc = accounts.find((a) => a.id === accountId);
-      if (acc) {
-        const change = type === 'income' ? parsedAmount : -parsedAmount;
-        updateAccount(accountId, { balance: acc.balance + change });
+      if (isTransfer) {
+        const fromAcc = accounts.find((a) => a.id === accountId);
+        const toAcc = accounts.find((a) => a.id === toAccountId);
+        if (fromAcc) updateAccount(accountId, { balance: fromAcc.balance - parsedAmount });
+        if (toAcc) updateAccount(toAccountId, { balance: toAcc.balance + parsedAmount });
+      } else {
+        const acc = accounts.find((a) => a.id === accountId);
+        if (acc) {
+          const change = type === 'income' ? parsedAmount : -parsedAmount;
+          updateAccount(accountId, { balance: acc.balance + change });
+        }
       }
 
       onClose();
@@ -194,7 +225,10 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
                     borderColor: type === opt.value ? colors.primary : colors.border,
                   },
                 ]}
-                onPress={() => setType(opt.value)}
+                onPress={() => {
+                  setType(opt.value);
+                  if (opt.value !== 'transfer') setTransferMode('regular');
+                }}
                 activeOpacity={0.7}
               >
                 <Ionicons name={opt.icon} size={20} color={type === opt.value ? colors.textOnPrimary : colors.text} style={{ marginRight: 6 }} />
@@ -210,6 +244,37 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
             ))}
           </View>
 
+          {/* Transfer pod-mod: obični ili štednja */}
+          {type === 'transfer' && (
+            <View style={styles.transferModeRow}>
+              {([
+                { value: 'regular' as const, icon: 'swap-horizontal-outline' as keyof typeof Ionicons.glyphMap, label: t('transactions.transferRegular') },
+                { value: 'savings' as const, icon: 'cash-outline' as keyof typeof Ionicons.glyphMap, label: t('transactions.transferSavings') },
+              ]).map((opt) => (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[
+                    styles.transferModeOption,
+                    {
+                      backgroundColor: transferMode === opt.value ? '#D4AF37' : colors.surfaceVariant,
+                      borderColor: transferMode === opt.value ? '#D4AF37' : colors.border,
+                    },
+                  ]}
+                  onPress={() => {
+                    setTransferMode(opt.value);
+                    setToAccountId('');
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name={opt.icon} size={18} color={transferMode === opt.value ? '#FFF' : colors.text} style={{ marginRight: 6 }} />
+                  <Text style={{ color: transferMode === opt.value ? '#FFF' : colors.text, fontSize: 13, fontWeight: '600' }}>
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
           {/* Iznos */}
           <View style={styles.amountContainer}>
             <TextInput
@@ -221,31 +286,50 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
               keyboardType="decimal-pad"
               autoFocus
             />
-            <Text style={[styles.amountCurrency, { color: colors.textSecondary }]}>€</Text>
+            <Text style={[styles.amountCurrency, { color: colors.textSecondary }]}>{currencySymbol}</Text>
           </View>
 
-          {/* Kategorija */}
-          <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('transactions.category')}</Text>
-            <CategoryPicker
-              selectedCategoryId={categoryId}
-              selectedSubcategoryId={subcategoryId}
-              type={type === 'income' ? 'income' : 'expense'}
-              onSelect={(catId, subId) => {
-                setCategoryId(catId);
-                setSubcategoryId(subId);
-              }}
-            />
-          </View>
+          {/* Kategorija (sakrij za transfere) */}
+          {type !== 'transfer' && (
+            <View style={styles.fieldGroup}>
+              <Text style={[styles.label, { color: colors.textSecondary }]}>{t('transactions.category')}</Text>
+              <CategoryPicker
+                selectedCategoryId={categoryId}
+                selectedSubcategoryId={subcategoryId}
+                type={type === 'income' ? 'income' : 'expense'}
+                onSelect={(catId, subId) => {
+                  setCategoryId(catId);
+                  setSubcategoryId(subId);
+                }}
+              />
+            </View>
+          )}
 
-          {/* Račun */}
+          {/* Račun (izvorni) */}
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('transactions.account')}</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              {type === 'transfer' ? t('transactions.fromAccount') : t('transactions.account')}
+            </Text>
             <AccountPicker
               selectedAccountId={accountId}
               onSelect={setAccountId}
             />
           </View>
+
+          {/* Odredišni račun (samo za transfere) */}
+          {type === 'transfer' && (
+            <View style={styles.fieldGroup}>
+              <Text style={[styles.label, { color: colors.textSecondary }]}>
+                {transferMode === 'savings' ? t('transactions.savingsAccount') : t('transactions.toAccount')}
+              </Text>
+              <AccountPicker
+                selectedAccountId={toAccountId}
+                onSelect={setToAccountId}
+                filterType={transferMode === 'savings' ? 'savings' : undefined}
+                excludeId={accountId}
+              />
+            </View>
+          )}
 
           {/* Opis */}
           <View style={styles.fieldGroup}>
@@ -337,13 +421,19 @@ export const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
         {/* Submit gumb */}
         <View style={[styles.footer, { borderTopColor: colors.border }]}>
           <Button
-            title={type === 'income' ? t('transactions.addIncome') : t('transactions.addExpense')}
+            title={
+              type === 'transfer'
+                ? t('transactions.addTransfer')
+                : type === 'income'
+                  ? t('transactions.addIncome')
+                  : t('transactions.addExpense')
+            }
             variant="primary"
             size="lg"
             fullWidth
             onPress={handleSubmit}
             loading={isSubmitting}
-            disabled={!amount || !categoryId || !accountId}
+            disabled={!amount || !accountId || (type === 'transfer' ? !toAccountId : !categoryId)}
           />
         </View>
       </KeyboardAvoidingView>
@@ -389,6 +479,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+  },
+  transferModeRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginBottom: Spacing.base,
+  },
+  transferModeOption: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.xs,
     borderRadius: BorderRadius.md,
     borderWidth: 1,
   },

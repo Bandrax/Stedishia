@@ -5,7 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { RootNavigator } from './src/navigation';
-import { useThemeStore, useAuthStore } from './src/store';
+import { useThemeStore, useAuthStore, useSettingsStore } from './src/store';
 import { initializeDatabase } from './src/services/database';
 import {
   requestNotificationPermissions,
@@ -22,11 +22,11 @@ export default function App() {
     const init = async () => {
       try {
         await initializeDatabase();
-        // Request notification permissions
+        await useSettingsStore.getState().loadSettings();
         await requestNotificationPermissions();
         setIsReady(true);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Greška pri pokretanju');
+        setError(err instanceof Error ? err.message : 'Startup error');
       }
     };
     init();

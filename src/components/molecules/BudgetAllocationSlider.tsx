@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 import { formatAmount } from '../../utils';
@@ -22,6 +23,7 @@ export const BudgetAllocationSlider: React.FC<BudgetAllocationSliderProps> = ({
   onAllocationChange,
 }) => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [inputValue, setInputValue] = useState(String(currentAllocation));
 
@@ -48,19 +50,26 @@ export const BudgetAllocationSlider: React.FC<BudgetAllocationSliderProps> = ({
         </Text>
         {spent > 0 && (
           <Text style={[styles.spent, { color: colors.textTertiary }]}>
-            Potrošeno: {formatAmount(spent)}
+            {t('budget.spent')}: {formatAmount(spent)}
           </Text>
         )}
       </View>
 
       <View style={styles.controlRow}>
-        {/* Minus gumb */}
+        {/* Minus gumbi */}
         <TouchableOpacity
           style={[styles.adjustButton, { backgroundColor: colors.surfaceVariant }]}
           onPress={() => quickAdjust(-50)}
           activeOpacity={0.6}
         >
           <Text style={[styles.adjustText, { color: colors.text }]}>-50</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.adjustButtonSmall, { backgroundColor: colors.surfaceVariant }]}
+          onPress={() => quickAdjust(-10)}
+          activeOpacity={0.6}
+        >
+          <Text style={[styles.adjustText, { color: colors.text }]}>-10</Text>
         </TouchableOpacity>
 
         {/* Iznos */}
@@ -89,7 +98,14 @@ export const BudgetAllocationSlider: React.FC<BudgetAllocationSliderProps> = ({
           </TouchableOpacity>
         )}
 
-        {/* Plus gumb */}
+        {/* Plus gumbi */}
+        <TouchableOpacity
+          style={[styles.adjustButtonSmall, { backgroundColor: colors.surfaceVariant }]}
+          onPress={() => quickAdjust(10)}
+          activeOpacity={0.6}
+        >
+          <Text style={[styles.adjustText, { color: colors.text }]}>+10</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={[styles.adjustButton, { backgroundColor: colors.surfaceVariant }]}
           onPress={() => quickAdjust(50)}
@@ -139,7 +155,12 @@ const styles = StyleSheet.create({
   },
   adjustButton: {
     paddingVertical: 6,
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: BorderRadius.md,
+  },
+  adjustButtonSmall: {
+    paddingVertical: 6,
+    paddingHorizontal: Spacing.xs,
     borderRadius: BorderRadius.md,
   },
   adjustText: {

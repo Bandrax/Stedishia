@@ -11,9 +11,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Crypto from 'expo-crypto';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/atoms';
 import { useAppTheme } from '../../hooks';
 import { useAuthStore, useAccountStore } from '../../store';
+import { getCurrentCurrency } from '../../store/useSettingsStore';
 import { dbInsert } from '../../services/database';
 import { Spacing, Typography, BorderRadius } from '../../constants';
 import { WelcomeStep } from './WelcomeStep';
@@ -36,6 +38,7 @@ const TOTAL_STEPS = 7; // 0-6: Welcome, Name, Household, Income, Goals, Accounts
 
 export const OnboardingScreen: React.FC = () => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
   const { setOnboarded, setCurrentUser, setHousehold } = useAuthStore();
   const { setAccounts } = useAccountStore();
 
@@ -46,12 +49,11 @@ export const OnboardingScreen: React.FC = () => {
   const [householdSize, setHouseholdSize] = useState('two');
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [accounts, setAccountsLocal] = useState<AccountSetup[]>([
-    { id: 'checking_default', name: 'Tekući račun', type: 'checking', balance: '', emoji: 'business-outline' },
-    { id: 'cash_default', name: 'Gotovina', type: 'cash', balance: '', emoji: 'cash-outline' },
+    { id: 'checking_default', name: t('accounts.types.checking'), type: 'checking', balance: '', emoji: 'business-outline' },
+    { id: 'cash_default', name: t('accounts.types.cash'), type: 'cash', balance: '', emoji: 'cash-outline' },
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Privremeno preskačemo auth - postavljamo kao authenticated
   const { setAuthenticated } = useAuthStore();
 
   const toggleGoal = (goalId: string) => {
@@ -80,19 +82,17 @@ export const OnboardingScreen: React.FC = () => {
       const userId = Crypto.randomUUID();
       const householdId = Crypto.randomUUID();
 
-      // Kreiraj kućanstvo
       await dbInsert('households', {
         id: householdId,
-        name: `${name} kućanstvo`,
+        name: t('onboarding.householdName', { name }),
         created_at: now,
       });
 
-      // Kreiraj korisnika
       const user = {
         id: userId,
         name: name.trim(),
         monthly_income: incomeType === 'none' ? 0 : (parseFloat(income) || 0),
-        currency: 'EUR',
+        currency: getCurrentCurrency(),
         household_id: householdId,
         budget_mode: 'envelope',
         biometric_enabled: 0,
@@ -101,7 +101,6 @@ export const OnboardingScreen: React.FC = () => {
       };
       await dbInsert('users', user);
 
-      // Kreiraj račune
       const createdAccounts = [];
       for (let i = 0; i < accounts.length; i++) {
         const acc = accounts[i];
@@ -111,7 +110,7 @@ export const OnboardingScreen: React.FC = () => {
           name: acc.name,
           type: acc.type,
           balance: parseFloat(acc.balance) || 0,
-          currency: 'EUR',
+          currency: getCurrentCurrency(),
           color: '#0F4C3A',
           icon: acc.emoji,
           is_default: i === 0 ? 1 : 0,
@@ -128,7 +127,6 @@ export const OnboardingScreen: React.FC = () => {
         });
       }
 
-      // Spremi financijske ciljeve i tip prihoda
       await dbInsert('app_settings', {
         key: 'financial_goals',
         value: JSON.stringify(selectedGoals),
@@ -142,12 +140,11 @@ export const OnboardingScreen: React.FC = () => {
         value: incomeType,
       });
 
-      // Ažuriraj store
       setCurrentUser({
         id: userId,
         name: name.trim(),
         monthlyIncome: incomeType === 'none' ? 0 : (parseFloat(income) || 0),
-        currency: 'EUR',
+        currency: getCurrentCurrency(),
         householdId,
         budgetMode: 'envelope',
         biometricEnabled: false,
@@ -156,7 +153,7 @@ export const OnboardingScreen: React.FC = () => {
       });
       setHousehold({
         id: householdId,
-        name: `${name} kućanstvo`,
+        name: t('onboarding.householdName', { name }),
         inviteCode: '',
         members: [userId],
         createdAt: now,
@@ -166,7 +163,7 @@ export const OnboardingScreen: React.FC = () => {
       setAuthenticated(true);
     } catch (error) {
       console.error('Onboarding error:', error);
-      Alert.alert('Greška', 'Došlo je do pogreške pri postavljanju. Pokušajte ponovo.');
+      Alert.alert(t('common.error'), t('onboarding.setupError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -181,10 +178,10 @@ export const OnboardingScreen: React.FC = () => {
           <View style={styles.nameContainer}>
             <Ionicons name="hand-left-outline" size={40} color={colors.primary} style={{ marginBottom: Spacing.sm }} />
             <Text style={[styles.nameTitle, { color: colors.text }]}>
-              Kako se zovete?
+              {t('onboarding.whatsYourName')}
             </Text>
             <Text style={[styles.nameSubtitle, { color: colors.textSecondary }]}>
-              Ovo ime ćemo koristiti u aplikaciji
+              {t('onboarding.nameUsage')}
             </Text>
             <TextInput
               style={[
@@ -197,7 +194,7 @@ export const OnboardingScreen: React.FC = () => {
               ]}
               value={name}
               onChangeText={setName}
-              placeholder="Vaše ime"
+              placeholder={t('onboarding.yourName')}
               placeholderTextColor={colors.textTertiary}
               autoFocus
             />
@@ -266,28 +263,26 @@ export const OnboardingScreen: React.FC = () => {
             />
           </View>
           <Text style={[styles.stepLabel, { color: colors.textTertiary }]}>
-            {step + 1} / {TOTAL_STEPS}
+            {t('onboarding.stepOf', { step: step + 1, total: TOTAL_STEPS })}
           </Text>
         </View>
 
-        {/* Sadržaj koraka */}
         <View style={styles.content}>
           {renderStep()}
         </View>
 
-        {/* Navigacijski gumbi */}
         <View style={styles.buttons}>
           {step > 0 ? (
             <View style={styles.buttonRow}>
               <Button
-                title="Natrag"
+                title={t('common.back')}
                 variant="ghost"
                 size="md"
                 onPress={() => setStep((s) => s - 1)}
                 style={styles.backButton}
               />
               <Button
-                title={step === TOTAL_STEPS - 1 ? 'Započni!' : 'Dalje'}
+                title={step === TOTAL_STEPS - 1 ? t('onboarding.getStarted') : t('common.next')}
                 variant="primary"
                 size="lg"
                 onPress={step === TOTAL_STEPS - 1 ? handleFinish : () => setStep((s) => s + 1)}
@@ -298,7 +293,7 @@ export const OnboardingScreen: React.FC = () => {
             </View>
           ) : (
             <Button
-              title="Započnimo"
+              title={t('common.letsStart')}
               variant="primary"
               size="lg"
               fullWidth

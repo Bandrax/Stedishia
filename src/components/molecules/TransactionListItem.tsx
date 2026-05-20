@@ -19,6 +19,7 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
   const { colors } = useAppTheme();
   const catInfo = getCategoryInfo(transaction.categoryId);
   const isIncome = transaction.type === 'income';
+  const isTransfer = transaction.type === 'transfer';
 
   return (
     <TouchableOpacity
@@ -26,8 +27,12 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
       onPress={() => onPress(transaction)}
       activeOpacity={0.6}
     >
-      <View style={[styles.icon, { backgroundColor: (catInfo?.color || '#607D8B') + '18' }]}>
-        <Text style={styles.emoji}>{catInfo?.emoji || '📌'}</Text>
+      <View style={[styles.icon, { backgroundColor: isTransfer ? '#2196F318' : (catInfo?.color || '#607D8B') + '18' }]}>
+        {isTransfer ? (
+          <Ionicons name="swap-horizontal" size={22} color="#2196F3" />
+        ) : (
+          <Text style={styles.emoji}>{catInfo?.emoji || '📌'}</Text>
+        )}
       </View>
       <View style={styles.info}>
         <Text style={[styles.description, { color: colors.text }]} numberOfLines={1}>
@@ -35,7 +40,7 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
         </Text>
         <View style={styles.metaRow}>
           <Text style={[styles.category, { color: colors.textTertiary }]}>
-            {catInfo?.name || transaction.categoryId}
+            {isTransfer ? 'Transfer' : (catInfo?.name || transaction.categoryId)}
           </Text>
           {transaction.tags.length > 0 && (
             <Text style={[styles.tags, { color: colors.textTertiary }]}>
@@ -47,10 +52,10 @@ export const TransactionListItem: React.FC<TransactionListItemProps> = ({
       <Text
         style={[
           styles.amount,
-          { color: isIncome ? colors.success : colors.text },
+          { color: isTransfer ? '#2196F3' : isIncome ? colors.success : colors.text },
         ]}
       >
-        {isIncome ? '+' : '-'}{formatAmount(transaction.amount)}
+        {isTransfer ? '' : isIncome ? '+' : '-'}{formatAmount(transaction.amount)}
       </Text>
     </TouchableOpacity>
   );

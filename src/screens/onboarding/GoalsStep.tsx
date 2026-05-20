@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { SelectableChip } from '../../components/atoms';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
@@ -7,18 +8,18 @@ import { Typography, Spacing, BorderRadius } from '../../constants';
 interface GoalOption {
   id: string;
   emoji: string;
-  label: string;
+  labelKey: string;
 }
 
 const goalOptions: GoalOption[] = [
-  { id: 'saving', emoji: '🐷', label: 'Općenita štednja' },
-  { id: 'debtFree', emoji: '🔓', label: 'Otplata dugova' },
-  { id: 'apartment', emoji: '🏠', label: 'Kupnja stana/kuće' },
-  { id: 'vacation', emoji: '✈️', label: 'Godišnji odmor' },
-  { id: 'emergencyFund', emoji: '🛡️', label: 'Sigurnosni fond' },
-  { id: 'car', emoji: '🚗', label: 'Kupnja auta' },
-  { id: 'education', emoji: '📚', label: 'Edukacija' },
-  { id: 'retirement', emoji: '🏖️', label: 'Mirovina' },
+  { id: 'saving', emoji: '🐷', labelKey: 'onboarding.goals.saving' },
+  { id: 'debtFree', emoji: '🔓', labelKey: 'onboarding.goals.debtFree' },
+  { id: 'apartment', emoji: '🏠', labelKey: 'onboarding.goals.apartment' },
+  { id: 'vacation', emoji: '✈️', labelKey: 'onboarding.goals.vacation' },
+  { id: 'emergencyFund', emoji: '🛡️', labelKey: 'onboarding.goals.emergencyFund' },
+  { id: 'car', emoji: '🚗', labelKey: 'onboarding.goals.car' },
+  { id: 'education', emoji: '📚', labelKey: 'onboarding.goals.education' },
+  { id: 'retirement', emoji: '🏖️', labelKey: 'onboarding.goals.retirement' },
 ];
 
 interface GoalsStepProps {
@@ -31,6 +32,7 @@ export const GoalsStep: React.FC<GoalsStepProps> = ({
   onToggleGoal,
 }) => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   return (
     <ScrollView
@@ -40,17 +42,17 @@ export const GoalsStep: React.FC<GoalsStepProps> = ({
     >
       <Text style={styles.emoji}>🎯</Text>
       <Text style={[styles.title, { color: colors.text }]}>
-        Koji su vam financijski ciljevi?
+        {t('onboarding.step3Title')}
       </Text>
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        Odaberite jedan ili više ciljeva koje želite postići
+        {t('onboarding.step3Subtitle')}
       </Text>
 
       <View style={styles.chips}>
         {goalOptions.map((goal) => (
           <SelectableChip
             key={goal.id}
-            label={goal.label}
+            label={t(goal.labelKey)}
             emoji={goal.emoji}
             selected={selectedGoals.includes(goal.id)}
             onPress={() => onToggleGoal(goal.id)}
@@ -60,8 +62,7 @@ export const GoalsStep: React.FC<GoalsStepProps> = ({
 
       <View style={[styles.hint, { backgroundColor: colors.surfaceVariant }]}>
         <Text style={[styles.hintText, { color: colors.textSecondary }]}>
-          Na temelju vaših ciljeva prilagođavamo savjete i preporuke.
-          Možete ih promijeniti kad god želite.
+          {t('onboarding.goalsHint')}
         </Text>
       </View>
     </ScrollView>

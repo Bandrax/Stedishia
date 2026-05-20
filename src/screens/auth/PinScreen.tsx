@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as Haptics from 'expo-haptics';
 import * as SecureStore from 'expo-secure-store';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import { useAuthStore } from '../../store';
 import { dbGetAll } from '../../services/database';
@@ -22,6 +23,7 @@ type PinMode = 'enter' | 'create' | 'confirm';
 
 export const PinScreen: React.FC = () => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
   const { setAuthenticated, setCurrentUser, setHousehold, currentUser } = useAuthStore();
 
   const [mode, setMode] = useState<PinMode>('enter');
@@ -36,7 +38,6 @@ export const PinScreen: React.FC = () => {
   }, []);
 
   const checkSetup = async () => {
-    // Provjeri postoji li spremljeni PIN
     const storedPin = await SecureStore.getItemAsync('user_pin');
     if (storedPin) {
       setHasStoredPin(true);
@@ -45,12 +46,10 @@ export const PinScreen: React.FC = () => {
       setMode('create');
     }
 
-    // Provjeri biometrijsku podršku
     const compatible = await LocalAuthentication.hasHardwareAsync();
     const enrolled = await LocalAuthentication.isEnrolledAsync();
     setHasBiometric(compatible && enrolled);
 
-    // Ako ima biometriju i ima PIN, pokušaj biometrijsku auth
     if (storedPin && compatible && enrolled) {
       tryBiometric();
     }
@@ -59,21 +58,20 @@ export const PinScreen: React.FC = () => {
   const tryBiometric = async () => {
     try {
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Prijavite se u MojNovčanik',
-        cancelLabel: 'Koristi PIN',
+        promptMessage: t('auth.loginTitle'),
+        cancelLabel: t('auth.usePin'),
         disableDeviceFallback: true,
       });
       if (result.success) {
         await loadUserAndAuthenticate();
       }
     } catch {
-      // Korisnik je otkazao, koristi PIN
+      // User cancelled, fall back to PIN
     }
   };
 
   const loadUserAndAuthenticate = async () => {
     try {
-      // Učitaj korisnika iz baze
       const users = await dbGetAll<any>('users');
       if (users.length > 0) {
         const user = users[0];
@@ -89,7 +87,6 @@ export const PinScreen: React.FC = () => {
           updatedAt: user.updated_at,
         });
 
-        // Učitaj kućanstvo
         const households = await dbGetAll<any>(
           'households',
           'id = ?',
@@ -127,20 +124,18 @@ export const PinScreen: React.FC = () => {
         setMode('confirm');
       } else if (mode === 'confirm') {
         if (newPin === confirmPin) {
-          // Spremi PIN
           await SecureStore.setItemAsync('user_pin', newPin);
           await loadUserAndAuthenticate();
         } else {
           if (Platform.OS === 'ios') {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
           }
-          setError('PIN-ovi se ne podudaraju. Pokušajte ponovo.');
+          setError(t('auth.pinMismatch'));
           setPin('');
           setMode('create');
           setConfirmPin('');
         }
       } else {
-        // Provjeri PIN
         const storedPin = await SecureStore.getItemAsync('user_pin');
         if (newPin === storedPin) {
           await loadUserAndAuthenticate();
@@ -148,7 +143,7 @@ export const PinScreen: React.FC = () => {
           if (Platform.OS === 'ios') {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
           }
-          setError('Pogrešan PIN. Pokušajte ponovo.');
+          setError(t('auth.wrongPin'));
           setPin('');
         }
       }
@@ -166,24 +161,24 @@ export const PinScreen: React.FC = () => {
   const getTitle = () => {
     switch (mode) {
       case 'create':
-        return 'Kreirajte PIN';
+        return t('auth.createPin');
       case 'confirm':
-        return 'Potvrdite PIN';
+        return t('auth.confirmPin');
       case 'enter':
         return currentUser
-          ? `Bok, ${currentUser.name}!`
-          : 'Unesite PIN';
+          ? t('auth.welcome', { name: currentUser.name })
+          : t('auth.enterPin');
     }
   };
 
   const getSubtitle = () => {
     switch (mode) {
       case 'create':
-        return 'Odaberite 4-znamenkasti PIN za zaštitu vaših podataka';
+        return t('auth.createPinHint');
       case 'confirm':
-        return 'Unesite PIN ponovo za potvrdu';
+        return t('auth.confirmPinHint');
       case 'enter':
-        return 'Unesite svoj PIN za pristup';
+        return t('auth.enterPinHint');
     }
   };
 
@@ -201,7 +196,7 @@ export const PinScreen: React.FC = () => {
           </Text>
         </View>
 
-        {/* PIN točkice */}
+        {/* PIN dots */}
         <View style={styles.dots}>
           {Array.from({ length: PIN_LENGTH }, (_, i) => (
             <View
@@ -224,7 +219,7 @@ export const PinScreen: React.FC = () => {
           <View style={styles.errorPlaceholder} />
         )}
 
-        {/* Numerička tipkovnica */}
+        {/* Numeric keypad */}
         <View style={styles.keypad}>
           {[
             ['1', '2', '3'],

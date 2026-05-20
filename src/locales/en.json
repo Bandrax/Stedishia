@@ -1,4 +1,12 @@
 {
+  "nav": {
+    "home": "Home",
+    "transactions": "Transactions",
+    "budget": "Budget",
+    "goals": "Goals",
+    "more": "More"
+  },
+
   "common": {
     "save": "Save",
     "cancel": "Cancel",
@@ -84,7 +92,37 @@
       "one": "Just me",
       "two": "Two of us",
       "family": "Family (3+)"
-    }
+    },
+    "householdDesc": {
+      "one": "I'll track only my own finances",
+      "two": "My partner and I — personal and shared",
+      "family": "The whole family in one place"
+    },
+    "incomeTitle": "What's your income situation?",
+    "incomeSubtitle": "Choose the option that best describes you",
+    "incomeType": {
+      "fixed": "Fixed salary",
+      "variable": "Variable income",
+      "none": "No regular income"
+    },
+    "incomeTypeDesc": {
+      "fixed": "I receive a regular salary every month",
+      "variable": "Freelance, seasonal work, commissions...",
+      "none": "Student, between jobs, retired..."
+    },
+    "monthlyNetSalary": "What's your monthly net salary?",
+    "monthlyApprox": "How much do you earn approximately per month?",
+    "approxEnough": "A rough average is perfectly fine",
+    "incomeHint": "This is only used for smarter tips — you can change it anytime in settings.",
+    "incomeHintNone": "This is only used for smarter tips — you can change it anytime in settings. The app works great even without income information!",
+    "goalsHint": "We tailor tips and recommendations based on your goals. You can change them anytime.",
+    "balanceLabel": "Balance:",
+    "addAccount": "Add account:",
+    "accountsHint": "Add at least one account to track transactions. Don't worry — the balance doesn't need to be exact, a rough estimate is fine!",
+    "yourProfile": "Your profile",
+    "accountCountSummary": "{{count}} accounts",
+    "goalCountSummary": "{{count}} goals",
+    "readyTip": "Tip: Start entering transactions right away! The sooner you begin, the more accurate your reports and tips will be."
   },
 
   "auth": {
@@ -116,6 +154,9 @@
     "upcomingPayments": "Upcoming Payments",
     "topExpenses": "Top Expenses",
     "cashFlow": "Cash Flow (30 days)",
+    "savings": "Savings",
+    "savingsTotal": "Total savings",
+    "savingsThisMonth": "This month",
     "noTransactions": "No transactions yet",
     "noTransactionsHint": "Add your first transaction by tapping the \"Transactions\" tab and start tracking your finances!",
     "income": "Income",
@@ -161,6 +202,14 @@
     },
     "addExpense": "Add expense",
     "addIncome": "Add income",
+    "addTransfer": "Make transfer",
+    "fromAccount": "From account",
+    "toAccount": "To account",
+    "selectToAccount": "Please select a destination account.",
+    "sameAccountError": "Source and destination account cannot be the same.",
+    "transferRegular": "Between accounts",
+    "transferSavings": "To savings",
+    "savingsAccount": "Savings account",
     "noTransactions": "No transactions",
     "searchPlaceholder": "Search transactions...",
     "filterAll": "All",
@@ -176,6 +225,9 @@
   "budget": {
     "title": "Budget",
     "totalBalance": "Total Balance",
+    "monthlyIncome": "Income",
+    "monthlyExpenses": "Expenses",
+    "netResult": "Net Result",
     "allocated": "Alloc.",
     "spent": "Spent",
     "free": "Free",
@@ -199,6 +251,7 @@
     "needs": "Needs (50%)",
     "wants": "Wants (30%)",
     "savingsDebt": "Savings & Debt (20%)",
+    "debtOther": "Debt & Other (20%)",
     "envelopes": "Envelopes",
     "overBudgetCount": "Over budget in {{count}} category",
     "overBudgetCountPlural": "Over budget in {{count}} categories",
@@ -210,7 +263,17 @@
     "remainingToAllocate": "Remaining to allocate: {{amount}}",
     "createError": "Could not create budget.",
     "noPreviousBudget": "No budget from last month to copy.",
-    "copyError": "Could not copy budget."
+    "copyError": "Could not copy budget.",
+    "autoBalance": "Auto-balance",
+    "savePreset": "Save allocation",
+    "loadPreset": "Load allocation",
+    "presetName": "Allocation name",
+    "presetNamePlaceholder": "e.g. Optimal allocation",
+    "presetSaved": "Allocation saved!",
+    "presetLoaded": "Allocation loaded!",
+    "noPresets": "No saved allocations.",
+    "deletePreset": "Delete",
+    "deletePresetConfirm": "Delete allocation \"{{name}}\"?"
   },
 
   "goals": {
@@ -242,12 +305,35 @@
     "congratulations": "Congratulations!",
     "goalCompleted": "You've achieved your goal \"{{name}}\"!",
     "addError": "Could not add amount.",
+    "savingsTransfer": "Savings",
     "deleteGoal": "Delete goal",
     "deleteConfirm": "Are you sure you want to delete the goal \"{{name}}\"?",
     "netWorth": "Net Worth",
     "netWorthExplain": "Net worth = total balance of all accounts minus all debts. The goal is for this number to grow month by month. It's the most important indicator of your financial health.",
     "emergencyFund": "Emergency Fund",
-    "emergencyFundExplain": "It's recommended to have savings covering 3-6 months of your expenses. This is your financial cushion for unexpected situations like job loss, car breakdown, or medical costs."
+    "emergencyFundExplain": "It's recommended to have savings covering 3-6 months of your expenses. This is your financial cushion for unexpected situations like job loss, car breakdown, or medical costs.",
+    "goalAchieved": "Achieved!",
+    "dueDate": "By {{date}}",
+    "percentAchieved": "{{percent}}% achieved",
+    "monthlyNeededShort": "{{amount}}/mo needed",
+    "addMoney": "+ Add",
+    "emergencyStatus": {
+      "excellent": "Excellent protection!",
+      "good": "Looking good!",
+      "building": "Building up...",
+      "start": "Time to start"
+    },
+    "coverageMonths": "Covers {{months}} months of expenses",
+    "saved": "Saved",
+    "monthlyExpenses": "Mo. expenses",
+    "progressToTarget": "Progress to target",
+    "addToSavings": "Add to savings",
+    "emergencyFundHint": "It's recommended to have 3-6 months of expenses as a financial cushion for unexpected situations."
+  },
+
+  "categories": {
+    "selectCategory": "Select category",
+    "searchPlaceholder": "Search categories..."
   },
 
   "accounts": {
@@ -319,7 +405,8 @@
     "months": "mo.",
     "interest": "Interest: {{amount}}",
     "perYear": "/yr",
-    "addDebt": "+ Add Debt/Loan"
+    "addDebt": "+ Add Debt/Loan",
+    "selectAccount": "Select account"
   },
 
   "recurring": {
@@ -411,10 +498,14 @@
     "tabTrends": "Trends",
     "tabForecast": "Forecast",
     "last6Months": "Last 6 months",
+    "lastNMonths": "Last {{count}} mo.",
     "income": "Income",
     "expenses": "Expenses",
     "saved": "Saved",
+    "netResult": "Net result",
+    "actualSavings": "Transferred to savings",
     "savingsRate": "Savings rate",
+    "incomeBySource": "Income by Source",
     "incomeVsExpenses": "Income vs Expenses",
     "monthlySavings": "Monthly Savings",
     "monthlyNetResult": "Monthly Net Result",
@@ -451,7 +542,9 @@
     },
     "exportCSV": "Export CSV",
     "exportSuccess": "CSV exported successfully!",
-    "exportError": "Export error."
+    "exportError": "Export error.",
+    "averageLabel": "Average",
+    "totalLabel": "Total"
   },
 
   "advisor": {
@@ -474,7 +567,115 @@
     "writeThought": "Write your thought...",
     "learnDescription": "Short articles for better understanding of finances",
     "readTime": "{{min}} min read",
-    "termsDescription": "Financial terms explained in simple language"
+    "termsDescription": "Financial terms explained in simple language",
+
+    "advice": {
+      "overspendingTitle": "Spending exceeds income",
+      "overspendingMsg": "This month you spent {{amount}}€ more than you earned. This is not sustainable long-term. Check which expense categories you can reduce.",
+      "overspendingAction": "View expenses",
+      "lowSavingsTitle": "Low savings rate",
+      "lowSavingsMsg": "Your savings rate is {{rate}}%. Financial experts recommend at least 20%. Try to find one category where you can cut 10-15%.",
+      "greatSavingsTitle": "Great savings rate!",
+      "greatSavingsMsg": "You're saving {{rate}}% of income — above the recommended minimum of 20%. Keep it up! Consider investing the surplus in long-term goals.",
+      "overBudgetTitle": "{{count}} categories over budget",
+      "overBudgetMsg": "You've exceeded your budget in {{count}} categories. It happens — the important thing is to analyse why and adjust next month. An unrealistic budget is worse than no budget.",
+      "overBudgetAction": "View budget",
+      "nearBudgetTitle": "Approaching limit in some categories",
+      "nearBudgetMsg": "You have {{count}} categories at 80%+ of budget. Watch your spending until month-end to stay on track.",
+      "highInterestTitle": "High-interest debts",
+      "highInterestMsg": "You have {{count}} debt(s) with an interest rate above 10%. Prioritize paying these off because interest \"eats\" your savings. Consider the avalanche repayment method.",
+      "highInterestAction": "View debts",
+      "debtBurdenTitle": "High monthly payments",
+      "debtBurdenMsg": "Loan payments make up {{ratio}}% of your income. Financial experts recommend below 36%. Consider consolidation or refinancing.",
+      "highSubsTitle": "High subscription costs",
+      "highSubsMsg": "Subscriptions cost you {{monthly}}€/mo ({{yearly}}€/yr). Review each subscription and ask yourself: \"How often do I actually use this?\"",
+      "highSubsAction": "View subscriptions",
+      "manySubsTitle": "{{count}} active subscriptions",
+      "manySubsMsg": "You have {{count}} subscriptions. Maybe some can be shared with your partner (family plans) or replaced with free alternatives?",
+      "noEmergencyTitle": "Urgent: emergency fund",
+      "noEmergencyMsg": "You don't have enough savings to cover even one month of expenses. This should be priority #1. Start small — even €50 per month is a beginning.",
+      "noEmergencyAction": "Set a goal",
+      "lowEmergencyTitle": "Emergency fund building",
+      "lowEmergencyMsg": "Your emergency fund covers {{months}} months of expenses. Good that you've started, but the goal is 3-6 months for real financial peace of mind.",
+      "strongEmergencyTitle": "Excellent emergency fund!",
+      "strongEmergencyMsg": "You have {{months}} months of expenses in your emergency fund. That's a great position! You can now focus on long-term goals.",
+      "negativeNetWorthTitle": "Negative net worth",
+      "negativeNetWorthMsg": "Your debts ({{liabilities}}€) exceed your assets ({{assets}}€). This is common while you have loans — focus on reducing debt and building assets.",
+      "allGoodTitle": "Finances are on the right track!",
+      "allGoodMsg": "Based on your data, things look good. Keep tracking expenses and sticking to your budget. Consistency is the key to financial health.",
+      "errorTitle": "Tips coming soon",
+      "errorMsg": "Enter more transactions so we can give you personalized advice."
+    },
+
+    "checkin": {
+      "w0q1": "Did you stay within budget this week?",
+      "w0q2": "On a scale of 1-5, how satisfied are you with your spending?",
+      "w0q3": "What was your wisest financial move this week?",
+      "w1q1": "Did you avoid unnecessary impulse spending?",
+      "w1q2": "How aware are you of your daily expenses (1-5)?",
+      "w1q3": "What would you change about last week's spending?",
+      "w2q1": "Did you put anything into savings?",
+      "w2q2": "How financially secure do you feel (1-5)?",
+      "w2q3": "What are you proud of financially?",
+      "w3q1": "Did you review all your expenses for this week?",
+      "w3q2": "How much control did you have over your spending (1-5)?",
+      "w3q3": "What goal do you want to achieve next week?"
+    },
+
+    "education": {
+      "budgetTitle": "What is a budget and why do you need one?",
+      "budgetSummary": "A budget is not a restriction — it's a plan that gives you freedom.",
+      "budgetContent": "A budget sounds scary, but it's actually simple: it's a plan for where your money goes.\n\nImagine your income is a pie. A budget is how you slice that pie — how much for rent, food, entertainment, savings.\n\nWITHOUT a budget money \"disappears\" and at the end of the month you wonder where it went. With a budget, YOU decide.\n\nThe popular 50/30/20 method:\n• 50% for needs (rent, bills, food)\n• 30% for wants (outings, hobbies, shopping)\n• 20% for savings and debt repayment\n\nYou don't have to be perfect. The goal is awareness — knowing where money goes. That alone changes behavior.",
+      "emergencyTitle": "Emergency Fund: Your Financial Cushion",
+      "emergencySummary": "Why you need 3-6 months of expenses set aside.",
+      "emergencyContent": "Imagine your car breaks down, you lose your job, or you need urgent medical care. Without an emergency fund, that becomes a crisis. With one — it's just an inconvenience.\n\nHow much do you need? 3-6 months of basic expenses (rent, food, bills, loan payments).\n\nIf your monthly expenses are €1,500, you need €4,500-9,000 set aside.\n\nHow to get there?\n1. Start small — even €50/month is €600/year\n2. Open a separate savings account (so you don't \"see\" it)\n3. Automate the transfer right when your paycheck arrives\n4. Every bonus, tax refund or gift — part goes into the fund\n\nDon't give up if the goal seems far. Every euro makes you more secure.",
+      "compoundTitle": "Compound Interest: The 8th Wonder of the World",
+      "compoundSummary": "How your money earns money, which earns money...",
+      "compoundContent": "Einstein allegedly said compound interest is \"the most powerful force in the universe\". What does that mean?\n\nSimple interest: €1,000 × 5% = €50/year. Every year, €50.\n\nCompound interest: €1,000 × 5% = €50 in year one. But in year two, 5% is calculated on €1,050, giving you €52.50. And so on — interest on interest.\n\nOver 30 years:\n• €1,000 with simple interest → €2,500\n• €1,000 with compound interest → €4,322\n\nBut beware — this works AGAINST you on debts too! Loan interest also \"compounds\".\n\nRule of 72: divide 72 by the interest rate to get the number of years to double your money.\n72 ÷ 7% = ~10 years to double.\n\nThe message: start early, be patient, and let compound interest work for you.",
+      "debtTitle": "How to Get Rid of Debt: Snowball vs Avalanche",
+      "debtSummary": "Two proven strategies for debt repayment.",
+      "debtContent": "If you have multiple debts, two strategies are most popular:\n\n⛄ SNOWBALL:\nYou pay off the SMALLEST debt first, while paying the minimum on others.\n+ Quick wins keep you motivated!\n- You pay more interest overall.\n\n🏔️ AVALANCHE:\nYou pay off the debt with the HIGHEST interest first.\n+ Mathematically optimal — you pay less interest.\n- Can be demotivating as larger debts shrink slowly.\n\nWhich is better? Depends on you:\n• If you need motivation → Snowball\n• If you want to minimize costs → Avalanche\n• Both work! The most important thing is to pay SOMETHING above the minimum.\n\nTip: take any \"extra\" money (bonus, tax return, reduced expense) and put it on a debt. Even €50 extra per month can shorten repayment by years.",
+      "lifestyleTitle": "Lifestyle Inflation: The Hidden Savings Killer",
+      "lifestyleSummary": "Why do you earn more but never have enough?",
+      "lifestyleContent": "Got a €300 raise? Great! But suddenly you have a better phone, a pricier restaurant, a new hobby... and still no surplus.\n\nThat's \"lifestyle inflation\" — as you earn more, you spend more. Result: you never save more.\n\nHow to fight it:\n1. \"Pay yourself first\" — when you get a raise, automatically increase savings by half the amount\n2. Wait 30 days before big purchases\n3. Track expenses — awareness is half the battle\n4. Ask yourself: \"Is this something I truly want, or does it just feel like I can afford it now?\"\n\nThe point isn't to live frugally. The point is to spend on what TRULY brings you happiness, not what \"comes with a higher income\".\n\nRemember: wealth isn't how much you earn — it's how much you KEEP."
+    },
+
+    "glossary": {
+      "budgetTerm": "Budget",
+      "budgetDef": "A plan that determines how much money goes where. Like a diet, but for money.",
+      "netWorthTerm": "Net Worth",
+      "netWorthDef": "Everything you own (assets) minus everything you owe. Your financial \"score\".",
+      "savingsRateTerm": "Savings Rate",
+      "savingsRateDef": "The percentage of income you save. Goal: at least 20%.",
+      "emergencyFundTerm": "Emergency Fund",
+      "emergencyFundDef": "Money set aside for a rainy day. Recommended: 3-6 months of expenses.",
+      "compoundInterestTerm": "Compound Interest",
+      "compoundInterestDef": "Interest on interest — your money earns money, which earns money...",
+      "liquidityTerm": "Liquidity",
+      "liquidityDef": "How quickly you can convert something to cash. Savings account = high liquidity, real estate = low.",
+      "inflationTerm": "Inflation",
+      "inflationDef": "Rising prices over time. €100 today buys less than €100 ten years ago.",
+      "amortizationTerm": "Amortization",
+      "amortizationDef": "The loan repayment schedule — how much goes to interest vs. principal.",
+      "diversificationTerm": "Diversification",
+      "diversificationDef": "\"Don't put all your eggs in one basket.\" Spread investments across multiple places.",
+      "passiveIncomeTerm": "Passive Income",
+      "passiveIncomeDef": "Money you earn without active work — rent, dividends, interest.",
+      "cashFlowTerm": "Cash Flow",
+      "cashFlowDef": "The difference between money coming in and going out. Positive = great, negative = problem.",
+      "roiTerm": "ROI",
+      "roiDef": "Return on Investment — how much you earned relative to what you invested. \"Was it worth it?\""
+    },
+
+    "personalizedTips": {
+      "overspending": "This month you're spending more than you earn. Let's look together for where we can cut.",
+      "lowSavingsRate": "Your savings rate is {{rate}}%. The goal is at least 20% — let's try to find room for improvement.",
+      "greatSavingsRate": "Well done! You're saving {{rate}}% of income. That's an excellent pace!",
+      "topCategory": "{{name}} makes up {{percent}}% of your expenses. Is that in line with your priorities?",
+      "lowEmergencyFund": "Your emergency fund covers {{months}} months of expenses. The recommendation is 3-6 months.",
+      "highSubscriptions": "Subscriptions cost you {{amount}}€/month ({{yearly}}€/year). Worth reviewing which ones you actually use.",
+      "overBudget": "You've exceeded the budget for: {{categories}}. Maybe it's time for more realistic limits?"
+    }
   },
 
   "household": {
@@ -551,5 +752,22 @@
       "A shared budget doesn't mean equal amounts — it means proportional to income. It's fair when everyone contributes according to their means.",
       "Investing in education (courses, books, conferences) has the highest return — in yourself."
     ]
+  },
+
+  "notifications": {
+    "payments": "Payments",
+    "tips": "Financial tips",
+    "paymentDueTitle": "Due tomorrow: {{description}}",
+    "paymentDueExpense": "Payment needed: {{amount}}. Due {{date}}.",
+    "paymentDueIncome": "Expected income: {{amount}}. Due {{date}}.",
+    "weeklyTitle": "Weekly financial review",
+    "weeklyBody": "Check how you're doing with your budget this week. A little control = big savings!",
+    "monthlyTitle": "Monthly summary is ready",
+    "monthlyBody": "New month, new budget! Review last month and set goals for this one.",
+    "testBody": "Notifications are enabled! You'll receive payment reminders and financial tips."
+  },
+
+  "sync": {
+    "exportDialogTitle": "Export MojNovčanik data"
   }
 }

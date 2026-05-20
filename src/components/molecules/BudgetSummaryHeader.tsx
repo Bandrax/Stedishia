@@ -7,18 +7,20 @@ import { Typography, Spacing, BorderRadius } from '../../constants';
 import { formatAmount } from '../../utils';
 
 interface BudgetSummaryHeaderProps {
-  totalBalance: number;
-  budgetBase: number;
+  monthlyIncome: number;
   monthlyExpenses: number;
+  netResult: number;
+  totalBalance: number;
   totalAllocated: number;
   totalSpent: number;
   mode: 'envelope' | '50-30-20';
 }
 
 export const BudgetSummaryHeader: React.FC<BudgetSummaryHeaderProps> = ({
-  totalBalance,
-  budgetBase,
+  monthlyIncome,
   monthlyExpenses,
+  netResult,
+  totalBalance,
   totalAllocated,
   totalSpent,
   mode,
@@ -28,109 +30,96 @@ export const BudgetSummaryHeader: React.FC<BudgetSummaryHeaderProps> = ({
 
   const is503020 = mode === '50-30-20';
 
-  // 50/30/20: postotak potrošnje od dostupnog budžeta
-  // Envelope: postotak raspoređenog od dostupnog budžeta
-  const percent = is503020
-    ? (budgetBase > 0 ? Math.round((monthlyExpenses / budgetBase) * 100) : 0)
-    : (budgetBase > 0 ? Math.round((totalAllocated / budgetBase) * 100) : 0);
+  // Progress: expenses vs income
+  const spentPercent = monthlyIncome > 0
+    ? Math.min((monthlyExpenses / monthlyIncome) * 100, 100)
+    : 0;
 
-  const badgeLabel = is503020 ? t('budget.spent') : t('budget.allocated');
-  const spentFull = is503020 && budgetBase > 0 && monthlyExpenses >= budgetBase;
-  const allocatedFull = !is503020 && totalAllocated >= budgetBase;
-  const badgeDone = is503020 ? spentFull : allocatedFull;
-
-  // Progress bar proporcije
-  const progressPercent = is503020
-    ? (budgetBase > 0 ? Math.min((monthlyExpenses / budgetBase) * 100, 100) : 0)
-    : (budgetBase > 0 ? Math.min((totalAllocated / budgetBase) * 100, 100) : 0);
-
-  const spentBarPercent = is503020
-    ? 0 // u 50/30/20 modu, glavni bar JE potrošnja
-    : (budgetBase > 0 ? Math.min((totalSpent / budgetBase) * 100, 100) : 0);
+  // Allocation progress (envelope mode)
+  const allocatedPercent = monthlyIncome > 0
+    ? Math.min((totalAllocated / monthlyIncome) * 100, 100)
+    : 0;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.primary }]}>
-      {/* Glavni prikaz */}
-      <View style={styles.mainRow}>
-        <View style={styles.mainInfo}>
-          <Text style={styles.mainLabel}>{t('budget.totalBalance')}</Text>
-          <Text style={styles.mainAmount}>
-            {formatAmount(totalBalance)}
+      {/* Top: 2x2 grid of key metrics */}
+      <View style={styles.metricsGrid}>
+        {/* Monthly Income */}
+        <View style={styles.metricBox}>
+          <View style={styles.metricHeader}>
+            <Ionicons name="arrow-down-circle" size={16} color="#4CAF50" />
+            <Text style={styles.metricLabel}>{t('budget.monthlyIncome')}</Text>
+          </View>
+          <Text style={styles.metricAmount}>{formatAmount(monthlyIncome)}</Text>
+        </View>
+
+        {/* Monthly Expenses */}
+        <View style={styles.metricBox}>
+          <View style={styles.metricHeader}>
+            <Ionicons name="arrow-up-circle" size={16} color="#FF6B6B" />
+            <Text style={styles.metricLabel}>{t('budget.monthlyExpenses')}</Text>
+          </View>
+          <Text style={styles.metricAmount}>{formatAmount(monthlyExpenses)}</Text>
+        </View>
+
+        {/* Net Result */}
+        <View style={styles.metricBox}>
+          <View style={styles.metricHeader}>
+            <Ionicons
+              name={netResult >= 0 ? 'trending-up' : 'trending-down'}
+              size={16}
+              color={netResult >= 0 ? '#4CAF50' : '#FF6B6B'}
+            />
+            <Text style={styles.metricLabel}>{t('budget.netResult')}</Text>
+          </View>
+          <Text style={[styles.metricAmount, {
+            color: netResult >= 0 ? '#4CAF50' : '#FF6B6B',
+          }]}>
+            {netResult >= 0 ? '+' : ''}{formatAmount(netResult)}
           </Text>
         </View>
-        <View style={[styles.percentBadge, {
-          backgroundColor: badgeDone ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.15)',
-        }]}>
-          {badgeDone ? (
-            <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-          ) : (
-            <Text style={styles.percentText}>
-              {`${percent}%`}
-            </Text>
-          )}
-          <Text style={styles.percentLabel}>
-            {badgeLabel}
+
+        {/* Total Balance */}
+        <View style={styles.metricBox}>
+          <View style={styles.metricHeader}>
+            <Ionicons name="wallet" size={16} color="#FFD700" />
+            <Text style={styles.metricLabel}>{t('budget.totalBalance')}</Text>
+          </View>
+          <Text style={[styles.metricAmount, { color: '#FFD700' }]}>
+            {formatAmount(totalBalance)}
           </Text>
         </View>
       </View>
 
       {/* Progress bar */}
-      <View style={styles.progressTrack}>
-        <View
-          style={[
-            styles.progressAllocated,
-            { width: `${progressPercent}%` },
-          ]}
-        />
-        {spentBarPercent > 0 && (
+      <View style={styles.progressSection}>
+        <View style={styles.progressHeader}>
+          <Text style={styles.progressLabel}>
+            {is503020 ? t('budget.spent') : t('budget.allocated')}
+          </Text>
+          <Text style={styles.progressValue}>
+            {is503020
+              ? `${formatAmount(monthlyExpenses)} / ${formatAmount(monthlyIncome)}`
+              : `${formatAmount(totalAllocated)} / ${formatAmount(monthlyIncome)}`
+            }
+          </Text>
+        </View>
+        <View style={styles.progressTrack}>
           <View
             style={[
-              styles.progressSpent,
-              { width: `${spentBarPercent}%` },
+              styles.progressBar,
+              { width: `${is503020 ? spentPercent : allocatedPercent}%` },
             ]}
           />
-        )}
-      </View>
-
-      {/* Detalji — ovise o modu */}
-      <View style={styles.detailRow}>
-        {is503020 ? (
-          <>
-            <View style={styles.detail}>
-              <View style={[styles.detailDot, { backgroundColor: 'rgba(255,255,255,0.5)' }]} />
-              <Text style={styles.detailLabel}>{t('budget.available')}</Text>
-              <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(budgetBase)}</Text>
-            </View>
-            <View style={styles.detail}>
-              <View style={[styles.detailDot, { backgroundColor: '#FFD700' }]} />
-              <Text style={styles.detailLabel}>{t('budget.spent')}</Text>
-              <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(monthlyExpenses)}</Text>
-            </View>
-            <View style={styles.detail}>
-              <View style={[styles.detailDot, { backgroundColor: totalBalance > 0 ? '#4CAF50' : '#FF9800' }]} />
-              <Text style={styles.detailLabel}>{t('budget.remaining')}</Text>
-              <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalBalance)}</Text>
-            </View>
-          </>
-        ) : (
-          <>
-            <View style={styles.detail}>
-              <View style={[styles.detailDot, { backgroundColor: 'rgba(255,255,255,0.5)' }]} />
-              <Text style={styles.detailLabel}>{t('budget.allocated')}</Text>
-              <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalAllocated)}</Text>
-            </View>
-            <View style={styles.detail}>
-              <View style={[styles.detailDot, { backgroundColor: '#FFD700' }]} />
-              <Text style={styles.detailLabel}>{t('budget.spent')}</Text>
-              <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(totalSpent)}</Text>
-            </View>
-            <View style={styles.detail}>
-              <View style={[styles.detailDot, { backgroundColor: (budgetBase - totalAllocated) > 0 ? '#FF9800' : 'rgba(255,255,255,0.3)' }]} />
-              <Text style={styles.detailLabel}>{t('budget.free')}</Text>
-              <Text style={styles.detailAmount} numberOfLines={1}>{formatAmount(Math.max(0, budgetBase - totalAllocated))}</Text>
-            </View>
-          </>
-        )}
+          {!is503020 && totalSpent > 0 && (
+            <View
+              style={[
+                styles.progressSpent,
+                { width: `${Math.min((totalSpent / monthlyIncome) * 100, 100)}%` },
+              ]}
+            />
+          )}
+        </View>
       </View>
     </View>
   );
@@ -141,49 +130,61 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.xl,
     padding: Spacing.lg,
   },
-  mainRow: {
+  metricsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  metricBox: {
+    width: '47%',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.sm,
+  },
+  metricHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 4,
+  },
+  metricLabel: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  metricAmount: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  progressSection: {
+    marginTop: Spacing.xs,
+  },
+  progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.base,
+    marginBottom: 6,
   },
-  mainInfo: {},
-  mainLabel: {
-    color: 'rgba(255,255,255,0.65)',
-    fontSize: 13,
+  progressLabel: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 11,
     fontWeight: '500',
-    marginBottom: 4,
   },
-  mainAmount: {
-    color: '#FFFFFF',
-    fontSize: 28,
-    fontWeight: '700',
-    letterSpacing: -0.5,
-  },
-  percentBadge: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
-  },
-  percentText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  percentLabel: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 10,
-    marginTop: 1,
+  progressValue: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 11,
+    fontWeight: '600',
   },
   progressTrack: {
     height: 6,
     backgroundColor: 'rgba(255,255,255,0.15)',
     borderRadius: 3,
-    marginBottom: Spacing.base,
     overflow: 'hidden',
   },
-  progressAllocated: {
+  progressBar: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -198,29 +199,5 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#FFD700',
     borderRadius: 3,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  detail: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  detailDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginBottom: 3,
-  },
-  detailLabel: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 10,
-    marginBottom: 2,
-  },
-  detailAmount: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
   },
 });

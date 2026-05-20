@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -24,7 +25,12 @@ import {
   generate503020Budget,
   copyBudgetFromPreviousMonth,
   getUnbudgetedSpending,
+  saveBudgetPreset,
+  getBudgetPresets,
+  loadBudgetPreset,
+  deleteBudgetPreset,
 } from '../services/budgetService';
+import type { BudgetPreset } from '../services/budgetService';
 import { getTotalBalance, getMonthlyStats } from '../services/dashboardService';
 import type { BudgetSummary } from '../services/budgetService';
 import { Card, Button } from '../components/atoms';
@@ -49,9 +55,12 @@ export const BudgetScreen: React.FC = () => {
   const [isSettingUp, setIsSettingUp] = useState(false);
 
   const [actualBalance, setActualBalance] = useState(0);
+  const [monthlyIncome, setMonthlyIncome] = useState(0);
   const [monthlyExpenses, setMonthlyExpenses] = useState(0);
-  // budgetBase = stanje + rashodi = koliko je bilo dostupno ovaj mjesec
-  const [budgetBase, setBudgetBase] = useState(0);
+  const [presets, setPresets] = useState<BudgetPreset[]>([]);
+  const [showPresets, setShowPresets] = useState(false);
+  const [presetNameInput, setPresetNameInput] = useState('');
+  const [showSavePreset, setShowSavePreset] = useState(false);
 
   const loadBudget = useCallback(async () => {
     if (!currentUser) return;
@@ -63,15 +72,27 @@ export const BudgetScreen: React.FC = () => {
       setActualBalance(totalBalance);
       setMonthlyExpenses(stats.expenses);
 
-      // Budžet baza = ukupno stanje + rashodi ovog mjeseca
-      // To je novac koji je bio dostupan ovaj mjesec
-      const base = totalBalance + stats.expenses;
-      setBudgetBase(base);
+      // Provjeri ima li budžet za ovaj mjesec — ako ne, auto-kopiraj iz prethodnog
+      let budgetSummary = await getBudgetSummary(currentUser.id, 0, currentMonth);
+      if (budgetSummary.items.length === 0) {
+        const copied = await copyBudgetFromPreviousMonth(currentUser.id, currentMonth);
+        if (copied > 0) {
+          budgetSummary = await getBudgetSummary(currentUser.id, 0, currentMonth);
+        }
+      }
 
-      const [budgetSummary, unbudgetedData] = await Promise.all([
-        getBudgetSummary(currentUser.id, base, currentMonth),
-        getUnbudgetedSpending(currentUser.id, currentMonth),
-      ]);
+      // Efektivna baza: prihodi ako postoje, inače stanje + rashodi, inače alocirano
+      const effectiveBase = stats.income > 0
+        ? stats.income
+        : (budgetSummary.totalAllocated > 0
+          ? budgetSummary.totalAllocated
+          : totalBalance + stats.expenses);
+      setMonthlyIncome(effectiveBase);
+
+      // Ponovo izračunaj s pravom bazom za availableToAllocate
+      budgetSummary = await getBudgetSummary(currentUser.id, effectiveBase, currentMonth);
+
+      const unbudgetedData = await getUnbudgetedSpending(currentUser.id, currentMonth);
       setSummary(budgetSummary);
       setUnbudgeted(unbudgetedData);
     } catch (err) {
@@ -107,10 +128,11 @@ export const BudgetScreen: React.FC = () => {
         getTotalBalance(currentUser.id),
         getMonthlyStats(currentUser.id, currentMonth),
       ]);
-      const base = totalBalance + stats.expenses;
+      // Ako ima prihoda, koristi prihode; inače koristi stanje + rashode kao procjenu
+      const base = stats.income > 0 ? stats.income : (totalBalance + stats.expenses);
       setActualBalance(totalBalance);
+      setMonthlyIncome(stats.income > 0 ? stats.income : base);
       setMonthlyExpenses(stats.expenses);
-      setBudgetBase(base);
       await generate503020Budget(currentUser.id, base, currentMonth);
       await loadBudget();
       setShowSetup(false);
@@ -139,6 +161,60 @@ export const BudgetScreen: React.FC = () => {
     }
   };
 
+  const handleAutoBalance = async () => {
+    if (!currentUser || !summary) return;
+    try {
+      for (const item of summary.items) {
+        if (item.spent > item.allocated) {
+          await upsertBudgetItem(currentUser.id, item.categoryId, currentMonth, Math.ceil(item.spent));
+        }
+      }
+      await loadBudget();
+    } catch (err) {
+      console.error('Error auto-balancing:', err);
+    }
+  };
+
+  const loadPresets = async () => {
+    if (!currentUser) return;
+    const data = await getBudgetPresets(currentUser.id);
+    setPresets(data);
+  };
+
+  const handleSavePreset = async () => {
+    if (!currentUser || !summary || !presetNameInput.trim()) return;
+    await saveBudgetPreset(currentUser.id, presetNameInput.trim(), summary.items);
+    setPresetNameInput('');
+    setShowSavePreset(false);
+    await loadPresets();
+    Alert.alert('', t('budget.presetSaved'));
+  };
+
+  const handleLoadPreset = async (preset: BudgetPreset) => {
+    if (!currentUser) return;
+    await loadBudgetPreset(currentUser.id, preset, currentMonth);
+    await loadBudget();
+    Alert.alert('', t('budget.presetLoaded'));
+  };
+
+  const handleDeletePreset = (preset: BudgetPreset) => {
+    Alert.alert(
+      t('budget.deletePreset'),
+      t('budget.deletePresetConfirm', { name: preset.name }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('budget.deletePreset'),
+          style: 'destructive',
+          onPress: async () => {
+            await deleteBudgetPreset(preset.id);
+            await loadPresets();
+          },
+        },
+      ]
+    );
+  };
+
   const handleAllocationChange = async (categoryId: string, amount: number) => {
     if (!currentUser) return;
     try {
@@ -152,9 +228,9 @@ export const BudgetScreen: React.FC = () => {
   const hasBudget = summary && summary.items.length > 0;
 
   // 50/30/20 vizualizacija
-  const needsCategories = ['housing', 'food', 'transport', 'utilities', 'health'];
+  const needsCategories = ['housing', 'food', 'transport', 'utilities', 'health', 'appliances'];
   const wantsCategories = ['entertainment', 'clothing', 'personal', 'gifts', 'education'];
-  const savingsCategories = ['savings', 'debt'];
+  const savingsCategories = ['debt', 'other_expense'];
 
   const groupSpent = (catIds: string[]) =>
     summary?.items
@@ -255,9 +331,10 @@ export const BudgetScreen: React.FC = () => {
             {/* Summary header */}
             <View style={{ marginTop: Spacing.base }}>
               <BudgetSummaryHeader
-                totalBalance={actualBalance}
-                budgetBase={budgetBase}
+                monthlyIncome={monthlyIncome}
                 monthlyExpenses={monthlyExpenses}
+                netResult={monthlyIncome - monthlyExpenses}
+                totalBalance={actualBalance}
                 totalAllocated={summary!.totalAllocated}
                 totalSpent={summary!.totalSpent}
                 mode={mode}
@@ -295,19 +372,20 @@ export const BudgetScreen: React.FC = () => {
             {mode === '50-30-20' ? (
               <View style={{ marginTop: Spacing.base }}>
                 {[
-                  { label: t('budget.needs'), icon: 'home-outline' as const, target: budgetBase * 0.5, categories: needsCategories, color: colors.primary },
-                  { label: t('budget.wants'), icon: 'heart-outline' as const, target: budgetBase * 0.3, categories: wantsCategories, color: colors.accent },
-                  { label: t('budget.savingsDebt'), icon: 'save-outline' as const, target: budgetBase * 0.2, categories: savingsCategories, color: colors.success },
+                  { label: t('budget.needs'), icon: 'home-outline' as const, categories: needsCategories, color: colors.primary },
+                  { label: t('budget.wants'), icon: 'heart-outline' as const, categories: wantsCategories, color: colors.accent },
+                  { label: t('budget.debtOther'), icon: 'card-outline' as const, categories: savingsCategories, color: colors.success },
                 ].map((group) => {
                   const spent = groupSpent(group.categories);
-                  const percent = group.target > 0 ? (spent / group.target) * 100 : 0;
+                  const target = groupAllocated(group.categories);
+                  const percent = target > 0 ? (spent / target) * 100 : 0;
                   return (
                     <Card key={group.label} style={{ marginBottom: Spacing.sm }} variant="default" padding="base">
                       <View style={styles.groupHeader}>
                         <Ionicons name={group.icon} size={20} color={group.color} style={{ marginRight: Spacing.sm }} />
                         <Text style={[styles.groupLabel, { color: colors.text }]}>{group.label}</Text>
-                        <Text style={[styles.groupAmount, { color: spent > group.target ? colors.error : colors.textSecondary }]}>
-                          {formatAmount(spent)} / {formatAmount(group.target)}
+                        <Text style={[styles.groupAmount, { color: spent > target ? colors.error : colors.textSecondary }]}>
+                          {formatAmount(spent)} / {formatAmount(target)}
                         </Text>
                       </View>
                       <View style={[styles.groupTrack, { backgroundColor: colors.surfaceVariant }]}>
@@ -316,7 +394,7 @@ export const BudgetScreen: React.FC = () => {
                             styles.groupBar,
                             {
                               width: `${Math.min(percent, 100)}%`,
-                              backgroundColor: spent > group.target ? colors.error : group.color,
+                              backgroundColor: spent > target ? colors.error : group.color,
                             },
                           ]}
                         />
@@ -334,7 +412,7 @@ export const BudgetScreen: React.FC = () => {
                     {t('budget.envelopes')}
                   </Text>
                 </View>
-                {summary!.items.map((item) => {
+                {summary!.items.filter((i) => i.categoryId !== 'savings').map((item) => {
                   const catInfo = getCategoryInfo(item.categoryId);
                   return (
                     <BudgetEnvelopeCard
@@ -418,19 +496,104 @@ export const BudgetScreen: React.FC = () => {
       <Modal visible={showSetup} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
           <View style={styles.setupModalHeader}>
-            <TouchableOpacity onPress={() => { setShowSetup(false); loadBudget(); }}>
+            <TouchableOpacity onPress={() => { setShowSetup(false); loadBudget(); }} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Ionicons name="arrow-back" size={20} color={colors.primary} />
               <Text style={[styles.setupModalClose, { color: colors.primary }]}>{t('common.done')}</Text>
             </TouchableOpacity>
             <Text style={[styles.setupModalTitle, { color: colors.text }]}>{t('budget.allocationTitle')}</Text>
-            <View style={{ width: 50 }} />
+            <View style={{ width: 70 }} />
           </View>
 
-          {/* Preostalo */}
+          {/* Preostalo + auto-balance */}
           <View style={[styles.remainingBar, { backgroundColor: colors.surfaceVariant }]}>
             <Text style={[styles.remainingText, { color: colors.text }]}>
-              {t('budget.remainingToAllocate', { amount: formatAmount(summary?.availableToAllocate ?? budgetBase) })}
+              {t('budget.remainingToAllocate', { amount: formatAmount(summary?.availableToAllocate ?? monthlyIncome) })}
             </Text>
           </View>
+
+          {/* Akcije */}
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: Spacing.base, gap: Spacing.sm, marginBottom: Spacing.sm }}>
+            {summary && summary.overBudgetCategories.length > 0 && (
+              <TouchableOpacity
+                style={[styles.actionChip, { backgroundColor: colors.primary }]}
+                onPress={handleAutoBalance}
+              >
+                <Ionicons name="checkmark-done" size={16} color="#FFFFFF" />
+                <Text style={styles.actionChipText}>{t('budget.autoBalance')}</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={[styles.actionChip, { backgroundColor: colors.accent }]}
+              onPress={() => { setShowSavePreset(true); }}
+            >
+              <Ionicons name="bookmark-outline" size={16} color="#FFFFFF" />
+              <Text style={styles.actionChipText}>{t('budget.savePreset')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.actionChip, { backgroundColor: colors.surfaceVariant }]}
+              onPress={() => { loadPresets(); setShowPresets(true); }}
+            >
+              <Ionicons name="folder-open-outline" size={16} color={colors.text} />
+              <Text style={[styles.actionChipText, { color: colors.text }]}>{t('budget.loadPreset')}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Save preset input */}
+          {showSavePreset && (
+            <View style={{ flexDirection: 'row', paddingHorizontal: Spacing.base, gap: Spacing.sm, marginBottom: Spacing.sm }}>
+              <TextInput
+                style={[styles.presetInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
+                placeholder={t('budget.presetNamePlaceholder')}
+                placeholderTextColor={colors.textTertiary}
+                value={presetNameInput}
+                onChangeText={setPresetNameInput}
+                autoFocus
+              />
+              <TouchableOpacity
+                style={[styles.actionChip, { backgroundColor: colors.primary }]}
+                onPress={handleSavePreset}
+              >
+                <Ionicons name="checkmark" size={18} color="#FFFFFF" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionChip, { backgroundColor: colors.surfaceVariant }]}
+                onPress={() => { setShowSavePreset(false); setPresetNameInput(''); }}
+              >
+                <Ionicons name="close" size={18} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Preset list */}
+          {showPresets && (
+            <View style={{ paddingHorizontal: Spacing.base, marginBottom: Spacing.sm }}>
+              {presets.length === 0 ? (
+                <Text style={[styles.presetEmpty, { color: colors.textSecondary }]}>
+                  {t('budget.noPresets')}
+                </Text>
+              ) : (
+                presets.map((preset) => (
+                  <View key={preset.id} style={[styles.presetRow, { borderColor: colors.border }]}>
+                    <TouchableOpacity
+                      style={{ flex: 1 }}
+                      onPress={() => { handleLoadPreset(preset); setShowPresets(false); }}
+                    >
+                      <Text style={[styles.presetName, { color: colors.text }]}>{preset.name}</Text>
+                      <Text style={[styles.presetInfo, { color: colors.textSecondary }]}>
+                        {Object.keys(preset.allocations).length} kat. | {formatAmount(Object.values(preset.allocations).reduce((s, v) => s + v, 0))}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleDeletePreset(preset)}>
+                      <Ionicons name="trash-outline" size={18} color={colors.error} />
+                    </TouchableOpacity>
+                  </View>
+                ))
+              )}
+              <TouchableOpacity onPress={() => setShowPresets(false)} style={{ alignItems: 'center', paddingVertical: Spacing.sm }}>
+                <Text style={{ color: colors.primary, fontWeight: '600' }}>{t('common.done')}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           <ScrollView contentContainerStyle={{ paddingHorizontal: Spacing.base }}>
             {DEFAULT_EXPENSE_CATEGORIES.map((cat) => {
@@ -587,6 +750,48 @@ const styles = StyleSheet.create({
   unbudgetedAmount: {
     ...Typography.body,
     fontWeight: '600',
+  },
+  // Action chips
+  actionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 8,
+    borderRadius: BorderRadius.full,
+  },
+  actionChipText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  presetInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 8,
+    fontSize: 14,
+  },
+  presetRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    borderBottomWidth: 1,
+    gap: Spacing.sm,
+  },
+  presetName: {
+    ...Typography.body,
+    fontWeight: '600',
+  },
+  presetInfo: {
+    fontSize: 11,
+    marginTop: 2,
+  },
+  presetEmpty: {
+    ...Typography.bodySmall,
+    textAlign: 'center',
+    paddingVertical: Spacing.md,
   },
   // Setup modal
   setupModalHeader: {

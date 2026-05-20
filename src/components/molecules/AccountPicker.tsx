@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import { useAccountStore } from '../../store';
 import { Typography, Spacing, BorderRadius } from '../../constants';
@@ -17,17 +18,29 @@ import { formatAmount } from '../../utils';
 interface AccountPickerProps {
   selectedAccountId: string;
   onSelect: (accountId: string) => void;
+  filterType?: string;
+  excludeId?: string;
 }
 
 export const AccountPicker: React.FC<AccountPickerProps> = ({
   selectedAccountId,
   onSelect,
+  filterType,
+  excludeId,
 }) => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
   const { accounts } = useAccountStore();
   const [visible, setVisible] = useState(false);
 
-  const selected = accounts.find((a) => a.id === selectedAccountId);
+  const filteredAccounts = accounts.filter((a) => {
+    if (filterType && a.type !== filterType) return false;
+    if (excludeId && a.id === excludeId) return false;
+    return true;
+  });
+
+  const selected = filteredAccounts.find((a) => a.id === selectedAccountId)
+    || accounts.find((a) => a.id === selectedAccountId);
 
   const handleSelect = (accountId: string) => {
     onSelect(accountId);
@@ -54,7 +67,7 @@ export const AccountPicker: React.FC<AccountPickerProps> = ({
               <Text style={[styles.triggerText, { color: colors.text }]}>{selected.name}</Text>
             </>
           ) : (
-            <Text style={[styles.triggerText, { color: colors.textTertiary }]}>Odaberi račun</Text>
+            <Text style={[styles.triggerText, { color: colors.textTertiary }]}>{t('accounts.selectAccount')}</Text>
           )}
         </View>
         <Ionicons name="chevron-down" size={16} color={colors.textTertiary} />
@@ -64,15 +77,15 @@ export const AccountPicker: React.FC<AccountPickerProps> = ({
         <SafeAreaView style={[styles.modal, { backgroundColor: colors.background }]}>
           <View style={styles.modalHeader}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>
-              Odaberi račun
+              {t('accounts.selectAccount')}
             </Text>
             <TouchableOpacity onPress={() => setVisible(false)}>
-              <Text style={[styles.closeButton, { color: colors.primary }]}>Zatvori</Text>
+              <Text style={[styles.closeButton, { color: colors.primary }]}>{t('common.close')}</Text>
             </TouchableOpacity>
           </View>
 
           <FlatList
-            data={accounts}
+            data={filteredAccounts}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <TouchableOpacity

@@ -1,34 +1,35 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 
 interface HouseholdOption {
   id: string;
   icon: string;
-  label: string;
-  description: string;
+  labelKey: string;
+  descriptionKey: string;
 }
 
 const options: HouseholdOption[] = [
   {
     id: 'one',
     icon: 'person-outline',
-    label: 'Samo ja',
-    description: 'Pratit ću samo svoje financije',
+    labelKey: 'onboarding.householdMembers.one',
+    descriptionKey: 'onboarding.householdDesc.one',
   },
   {
     id: 'two',
     icon: 'people-outline',
-    label: 'Dvoje nas',
-    description: 'Ja i partner/ica — osobno i zajedničko',
+    labelKey: 'onboarding.householdMembers.two',
+    descriptionKey: 'onboarding.householdDesc.two',
   },
   {
     id: 'family',
     icon: 'people-circle-outline',
-    label: 'Obitelj (3+)',
-    description: 'Cijela obitelj na jednom mjestu',
+    labelKey: 'onboarding.householdMembers.family',
+    descriptionKey: 'onboarding.householdDesc.family',
   },
 ];
 
@@ -42,6 +43,7 @@ export const HouseholdStep: React.FC<HouseholdStepProps> = ({
   onSelect,
 }) => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   return (
     <ScrollView
@@ -51,10 +53,10 @@ export const HouseholdStep: React.FC<HouseholdStepProps> = ({
     >
       <Ionicons name="home" size={48} color={colors.primary} style={{ marginBottom: Spacing.lg }} />
       <Text style={[styles.title, { color: colors.text }]}>
-        Koliko vas živi u kućanstvu?
+        {t('onboarding.step2Title')}
       </Text>
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        Ovo nam pomaže prilagoditi savjete za vaše kućanstvo
+        {t('onboarding.step2Subtitle')}
       </Text>
 
       <View style={styles.options}>
@@ -81,10 +83,10 @@ export const HouseholdStep: React.FC<HouseholdStepProps> = ({
                     { color: isSelected ? colors.primary : colors.text },
                   ]}
                 >
-                  {opt.label}
+                  {t(opt.labelKey)}
                 </Text>
                 <Text style={[styles.optionDesc, { color: colors.textSecondary }]}>
-                  {opt.description}
+                  {t(opt.descriptionKey)}
                 </Text>
               </View>
               {isSelected && (

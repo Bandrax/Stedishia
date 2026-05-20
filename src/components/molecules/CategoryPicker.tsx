@@ -9,6 +9,7 @@ import {
   TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import {
   Typography,
@@ -33,6 +34,7 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
   onSelect,
 }) => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -55,7 +57,7 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
 
   const selectedLabel = selected
     ? `${selected.emoji} ${selected.name}`
-    : 'Odaberi kategoriju';
+    : t('categories.selectCategory');
 
   return (
     <>
@@ -81,10 +83,10 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
           {/* Header */}
           <View style={styles.modalHeader}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>
-              Odaberi kategoriju
+              {t('categories.selectCategory')}
             </Text>
             <TouchableOpacity onPress={() => { setVisible(false); setSearch(''); }}>
-              <Text style={[styles.closeButton, { color: colors.primary }]}>Zatvori</Text>
+              <Text style={[styles.closeButton, { color: colors.primary }]}>{t('common.close')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -93,11 +95,11 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
             style={[styles.searchInput, { backgroundColor: colors.surfaceVariant, color: colors.text }]}
             value={search}
             onChangeText={setSearch}
-            placeholder="Pretraži kategorije..."
+            placeholder={t('categories.searchPlaceholder')}
             placeholderTextColor={colors.textTertiary}
           />
 
-          {/* Lista kategorija */}
+          {/* Category list */}
           <FlatList
             data={filtered}
             keyExtractor={(item) => item.id}
@@ -124,7 +126,7 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
                   )}
                 </TouchableOpacity>
 
-                {/* Podkategorije */}
+                {/* Subcategories */}
                 {item.subcategories?.map((sub) => (
                   <TouchableOpacity
                     key={sub.id}

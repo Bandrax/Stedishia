@@ -7,11 +7,12 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../hooks';
-import { useAuthStore } from '../store';
+import { useAuthStore, useSettingsStore, CURRENCIES } from '../store';
 import { useThemeStore } from '../store/useThemeStore';
 import { Ionicons } from '@expo/vector-icons';
 import { Typography, Spacing, BorderRadius } from '../constants';
@@ -26,7 +27,10 @@ export const SettingsScreen: React.FC = () => {
   const currentUser = useAuthStore((s) => s.currentUser);
   const { logout } = useAuthStore();
   const { mode, setMode } = useThemeStore();
+  const { currency, setCurrency } = useSettingsStore();
   const [language, setLanguage] = useState<'hr' | 'en'>(i18n.language as 'hr' | 'en' || 'hr');
+  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
+  const activeCurrency = CURRENCIES.find((c) => c.code === currency) || CURRENCIES[0];
 
   const handleLanguageChange = (lang: 'hr' | 'en') => {
     setLanguage(lang);
@@ -125,10 +129,15 @@ export const SettingsScreen: React.FC = () => {
             <Ionicons name="globe-outline" size={18} color={colors.primary} />
             <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>{t('settings.regional')}</Text>
           </View>
-          <View style={styles.settingRow}>
+          <TouchableOpacity style={styles.settingRow} onPress={() => setShowCurrencyPicker(true)}>
             <Text style={[styles.settingLabel, { color: colors.text }]}>{t('settings.currency')}</Text>
-            <Text style={[styles.settingValue, { color: colors.textSecondary }]}>EUR (€)</Text>
-          </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Text style={[styles.settingValue, { color: colors.primary }]}>
+                {activeCurrency.code} ({activeCurrency.symbol})
+              </Text>
+              <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
+            </View>
+          </TouchableOpacity>
           <View style={{ marginTop: Spacing.sm }}>
             <Text style={[styles.settingLabel, { color: colors.text, marginBottom: Spacing.sm }]}>{t('settings.language')}</Text>
             <View style={styles.themeRow}>
@@ -206,6 +215,44 @@ export const SettingsScreen: React.FC = () => {
           {t('settings.footer')}
         </Text>
       </ScrollView>
+
+      {/* Currency picker modal */}
+      <Modal visible={showCurrencyPicker} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.base, paddingVertical: Spacing.md }}>
+            <Text style={[{ ...Typography.heading2 }, { color: colors.text }]}>{t('settings.currency')}</Text>
+            <TouchableOpacity onPress={() => setShowCurrencyPicker(false)}>
+              <Ionicons name="close" size={24} color={colors.text} />
+            </TouchableOpacity>
+          </View>
+          <ScrollView contentContainerStyle={{ paddingHorizontal: Spacing.base }}>
+            {CURRENCIES.map((cur) => (
+              <TouchableOpacity
+                key={cur.code}
+                style={[
+                  styles.currencyRow,
+                  {
+                    backgroundColor: currency === cur.code ? colors.primary + '15' : 'transparent',
+                    borderColor: currency === cur.code ? colors.primary : colors.border,
+                  },
+                ]}
+                onPress={() => { setCurrency(cur.code); setShowCurrencyPicker(false); }}
+              >
+                <Text style={[styles.currencySymbol, { color: currency === cur.code ? colors.primary : colors.text }]}>
+                  {cur.symbol}
+                </Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.currencyCode, { color: colors.text }]}>{cur.code}</Text>
+                  <Text style={[styles.currencyName, { color: colors.textSecondary }]}>{cur.name}</Text>
+                </View>
+                {currency === cur.code && (
+                  <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -272,5 +319,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 20,
     paddingVertical: Spacing.lg,
+  },
+  currencyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    marginBottom: Spacing.sm,
+    gap: Spacing.md,
+  },
+  currencySymbol: {
+    fontSize: 20,
+    fontWeight: '700',
+    width: 40,
+    textAlign: 'center',
+  },
+  currencyCode: {
+    ...Typography.body,
+    fontWeight: '600',
+  },
+  currencyName: {
+    fontSize: 12,
   },
 });

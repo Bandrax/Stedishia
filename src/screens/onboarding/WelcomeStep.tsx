@@ -1,30 +1,28 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing } from '../../constants';
 
 export const WelcomeStep: React.FC = () => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
       <Ionicons name="wallet" size={72} color={colors.primary} style={{ marginBottom: Spacing.lg }} />
       <Text style={[styles.title, { color: colors.text }]}>
-        Dobrodošli u{'\n'}MojNovčanik!
+        {t('onboarding.welcome')}
       </Text>
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        Vaš osobni vodič kroz kućne financije
+        {t('onboarding.welcomeSubtitle')}
       </Text>
 
       <View style={[styles.philosophyCard, { backgroundColor: colors.surfaceVariant }]}>
         <Ionicons name="bulb-outline" size={24} color={colors.primary} style={{ marginBottom: Spacing.sm }} />
         <Text style={[styles.philosophyText, { color: colors.text }]}>
-          MojNovčanik vam pomaže da svaki euro ima svoju svrhu. Umjesto da
-          pratite gdje je novac otišao, planiramo unaprijed kamo će ići.
-        </Text>
-        <Text style={[styles.philosophyHighlight, { color: colors.primary }]}>
-          Jednostavno, bez kompliciranog ekonomskog žargona.
+          {t('onboarding.philosophy')}
         </Text>
       </View>
     </View>
@@ -64,7 +62,6 @@ const styles = StyleSheet.create({
   philosophyText: {
     ...Typography.body,
     lineHeight: 24,
-    marginBottom: Spacing.sm,
   },
   philosophyHighlight: {
     ...Typography.body,

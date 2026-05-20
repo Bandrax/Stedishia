@@ -128,15 +128,6 @@ export const DEFAULT_EXPENSE_CATEGORIES: Category[] = [
     isDefault: true,
   },
   {
-    id: 'savings',
-    name: 'Štednja',
-    nameEn: 'Savings',
-    emoji: '🐷',
-    color: '#D4AF37',
-    type: 'expense',
-    isDefault: true,
-  },
-  {
     id: 'debt',
     name: 'Otplata kredita',
     nameEn: 'Debt Payment',
@@ -162,6 +153,20 @@ export const DEFAULT_EXPENSE_CATEGORIES: Category[] = [
     color: '#F06292',
     type: 'expense',
     isDefault: true,
+  },
+  {
+    id: 'appliances',
+    name: 'Bijela tehnika',
+    nameEn: 'Home Appliances',
+    emoji: '🧊',
+    color: '#546E7A',
+    type: 'expense',
+    isDefault: true,
+    subcategories: [
+      { id: 'large_appliances', name: 'Veliki aparati', nameEn: 'Large Appliances', emoji: '🧺' },
+      { id: 'small_appliances', name: 'Mali aparati', nameEn: 'Small Appliances', emoji: '🍳' },
+      { id: 'appliance_repair', name: 'Popravci', nameEn: 'Repairs', emoji: '🔧' },
+    ],
   },
   {
     id: 'other_expense',
@@ -212,6 +217,33 @@ export const DEFAULT_INCOME_CATEGORIES: Category[] = [
     isDefault: true,
   },
   {
+    id: 'rental_income',
+    name: 'Najam',
+    nameEn: 'Rental Income',
+    emoji: '🏘️',
+    color: '#FF9800',
+    type: 'income',
+    isDefault: true,
+  },
+  {
+    id: 'business_income',
+    name: 'Obrt / Poslovanje',
+    nameEn: 'Business Income',
+    emoji: '🏢',
+    color: '#9C27B0',
+    type: 'income',
+    isDefault: true,
+  },
+  {
+    id: 'association_income',
+    name: 'Udruga',
+    nameEn: 'Association',
+    emoji: '🤝',
+    color: '#00BCD4',
+    type: 'income',
+    isDefault: true,
+  },
+  {
     id: 'other_income',
     name: 'Ostali prihodi',
     nameEn: 'Other Income',
@@ -222,7 +254,31 @@ export const DEFAULT_INCOME_CATEGORIES: Category[] = [
   },
 ];
 
+// Kategorija za transfer — nije rashod, koristi se samo za prikaz u listi transakcija
+export const TRANSFER_CATEGORY: Category = {
+  id: 'transfer',
+  name: 'Transfer',
+  nameEn: 'Transfer',
+  emoji: '🔄',
+  color: '#2196F3',
+  type: 'expense', // tip ne utječe jer se transferi filtriraju iz rashoda
+  isDefault: false,
+};
+
+// Stara savings kategorija — zadržana za prikaz postojećih transakcija
+const LEGACY_SAVINGS_CATEGORY: Category = {
+  id: 'savings',
+  name: 'Štednja',
+  nameEn: 'Savings',
+  emoji: '🐷',
+  color: '#D4AF37',
+  type: 'expense',
+  isDefault: false,
+};
+
 export const ALL_DEFAULT_CATEGORIES = [
   ...DEFAULT_EXPENSE_CATEGORIES,
   ...DEFAULT_INCOME_CATEGORIES,
+  TRANSFER_CATEGORY,
+  LEGACY_SAVINGS_CATEGORY,
 ];

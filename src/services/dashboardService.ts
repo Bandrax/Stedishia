@@ -1,6 +1,7 @@
 import { dbQuery } from './database';
 import { getCurrentMonth } from '../utils';
 import { ALL_DEFAULT_CATEGORIES } from '../constants';
+import i18n from '../locales/i18n';
 
 // Dohvati ukupno stanje svih računa za korisnika
 export const getTotalBalance = async (userId: string): Promise<number> => {
@@ -119,7 +120,7 @@ export const getDailyCashFlow = async (
 
   const transactions = await dbQuery<{ date: string; type: string; amount: number }>(
     `SELECT date, type, amount FROM transactions
-     WHERE user_id = ? AND date >= ? AND date <= ?
+     WHERE user_id = ? AND type IN ('income', 'expense') AND date >= ? AND date <= ?
      ORDER BY date ASC`,
     [
       userId,
@@ -128,7 +129,7 @@ export const getDailyCashFlow = async (
     ]
   );
 
-  // Izračunaj kumulativni saldo po danu
+  // Izračunaj kumulativni saldo po danu (transferi isključeni - ne utječu na neto)
   const dailyMap = new Map<string, number>();
   for (const tx of transactions) {
     const current = dailyMap.get(tx.date) || 0;
@@ -172,7 +173,48 @@ export const getMonthlyChangePercent = async (
   return ((currentNet - prevNet) / Math.abs(prevNet)) * 100;
 };
 
+// Dohvati podatke o štednji: ukupno stanje savings računa + koliko je prebačeno ovaj mjesec
+export const getSavingsStats = async (
+  userId: string,
+  month?: string
+): Promise<{ savingsBalance: number; monthlyTransfers: number }> => {
+  // Ukupno stanje svih savings računa
+  const balResult = await dbQuery<{ total: number }>(
+    `SELECT COALESCE(SUM(balance), 0) as total FROM accounts
+     WHERE user_id = ? AND type = 'savings'`,
+    [userId]
+  );
+
+  // Transferi na savings račune ovaj mjesec
+  const m = month || getCurrentMonth();
+  const startDate = `${m}-01`;
+  const endDate = `${m}-31`;
+
+  const txResult = await dbQuery<{ total: number }>(
+    `SELECT COALESCE(SUM(t.amount), 0) as total FROM transactions t
+     INNER JOIN accounts a ON t.to_account_id = a.id
+     WHERE t.user_id = ? AND t.type = 'transfer' AND a.type = 'savings'
+     AND t.date >= ? AND t.date <= ?`,
+    [userId, startDate, endDate]
+  );
+
+  return {
+    savingsBalance: balResult[0]?.total ?? 0,
+    monthlyTransfers: txResult[0]?.total ?? 0,
+  };
+};
+
 // Lookup kategorije po ID-u
 export const getCategoryInfo = (categoryId: string) => {
-  return ALL_DEFAULT_CATEGORIES.find((c) => c.id === categoryId);
+  const cat = ALL_DEFAULT_CATEGORIES.find((c) => c.id === categoryId);
+  if (!cat) return undefined;
+  const isEn = i18n.language === 'en';
+  return {
+    ...cat,
+    name: isEn ? cat.nameEn : cat.name,
+    subcategories: cat.subcategories?.map((s) => ({
+      ...s,
+      name: isEn ? s.nameEn : s.name,
+    })),
+  };
 };

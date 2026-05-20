@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { getRecurringTransactions, type RecurringTransaction } from './recurringService';
 import { dbQuery } from './database';
+import i18n from '../locales/i18n';
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -28,12 +29,12 @@ export const requestNotificationPermissions = async (): Promise<boolean> => {
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('payments', {
-      name: 'Plaćanja',
+      name: i18n.t('notifications.payments'),
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
     });
     await Notifications.setNotificationChannelAsync('tips', {
-      name: 'Financijski savjeti',
+      name: i18n.t('notifications.tips'),
       importance: Notifications.AndroidImportance.DEFAULT,
     });
   }
@@ -70,13 +71,12 @@ const schedulePaymentReminder = async (tx: RecurringTransaction) => {
   // Only schedule if the reminder is in the future
   if (reminderDate.getTime() <= Date.now()) return;
 
-  const amountStr = `${tx.amount.toFixed(2)} €`;
-  const typeLabel = tx.type === 'expense' ? 'plaćanje' : 'prihod';
+  const amountStr = `${tx.amount.toFixed(2)}`;
 
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: `Sutra dospijeva: ${tx.description}`,
-      body: `${typeLabel === 'plaćanje' ? 'Potrebno platiti' : 'Očekivani prihod'}: ${amountStr}. Dospijeva ${tx.nextDueDate}.`,
+      title: i18n.t('notifications.paymentDueTitle', { description: tx.description }),
+      body: i18n.t(tx.type === 'expense' ? 'notifications.paymentDueExpense' : 'notifications.paymentDueIncome', { amount: amountStr, date: tx.nextDueDate }),
       data: { type: 'payment_reminder', recurringId: tx.id },
       ...(Platform.OS === 'android' ? { channelId: 'payments' } : {}),
     },
@@ -91,8 +91,8 @@ const schedulePaymentReminder = async (tx: RecurringTransaction) => {
 const scheduleWeeklyBudgetReminder = async () => {
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Tjedni financijski pregled',
-      body: 'Pogledajte kako stojite s budžetom ovaj tjedan. Malo kontrole = puno uštede!',
+      title: i18n.t('notifications.weeklyTitle'),
+      body: i18n.t('notifications.weeklyBody'),
       data: { type: 'weekly_budget' },
       ...(Platform.OS === 'android' ? { channelId: 'tips' } : {}),
     },
@@ -113,8 +113,8 @@ const scheduleMonthlySummaryReminder = async () => {
 
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Mjesečni sažetak je spreman',
-      body: 'Novi mjesec, novi budžet! Pregledajte prošli mjesec i postavite ciljeve za ovaj.',
+      title: i18n.t('notifications.monthlyTitle'),
+      body: i18n.t('notifications.monthlyBody'),
       data: { type: 'monthly_summary' },
       ...(Platform.OS === 'android' ? { channelId: 'tips' } : {}),
     },
@@ -130,7 +130,7 @@ export const sendTestNotification = async () => {
   await Notifications.scheduleNotificationAsync({
     content: {
       title: 'Sthedisia',
-      body: 'Obavijesti su uspješno uključene! Primit ćete podsjetnike za plaćanja i financijske savjete.',
+      body: i18n.t('notifications.testBody'),
       ...(Platform.OS === 'android' ? { channelId: 'tips' } : {}),
     },
     trigger: null, // immediate

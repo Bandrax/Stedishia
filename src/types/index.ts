@@ -45,6 +45,7 @@ export interface Transaction {
   id: string;
   userId: string;
   accountId: string;
+  toAccountId?: string; // za transfere: odredišni račun
   type: TransactionType;
   amount: number;
   currency: string;

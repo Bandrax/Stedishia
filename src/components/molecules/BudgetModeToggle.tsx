@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 
@@ -14,19 +15,20 @@ export const BudgetModeToggle: React.FC<BudgetModeToggleProps> = ({
   onModeChange,
 }) => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   const modes = [
     {
       value: 'envelope' as const,
       icon: 'mail-outline' as const,
-      label: 'Kuverte',
-      description: 'Rasporedi svaki euro',
+      label: t('budget.envelopeTitle'),
+      description: t('budget.envelopeSubtitle'),
     },
     {
       value: '50-30-20' as const,
       icon: 'bar-chart-outline' as const,
       label: '50/30/20',
-      description: 'Potrebe / Želje / Štednja',
+      description: t('budget.rule503020Subtitle'),
     },
   ];
 

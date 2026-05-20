@@ -1,4 +1,12 @@
 {
+  "nav": {
+    "home": "Početna",
+    "transactions": "Transakcije",
+    "budget": "Budžet",
+    "goals": "Ciljevi",
+    "more": "Više"
+  },
+
   "common": {
     "save": "Spremi",
     "cancel": "Odustani",
@@ -84,7 +92,37 @@
       "one": "Samo ja",
       "two": "Dvoje nas",
       "family": "Obitelj (3+)"
-    }
+    },
+    "householdDesc": {
+      "one": "Pratit ću samo svoje financije",
+      "two": "Ja i partner/ica — osobno i zajedničko",
+      "family": "Cijela obitelj na jednom mjestu"
+    },
+    "incomeTitle": "Kakvi su vaši prihodi?",
+    "incomeSubtitle": "Odaberite opciju koja vam najbolje odgovara",
+    "incomeType": {
+      "fixed": "Fiksna plaća",
+      "variable": "Varijabilni prihodi",
+      "none": "Nemam redovite prihode"
+    },
+    "incomeTypeDesc": {
+      "fixed": "Primam redovitu plaću svaki mjesec",
+      "variable": "Freelance, sezonski rad, provizije...",
+      "none": "Student, između poslova, umirovljenik..."
+    },
+    "monthlyNetSalary": "Kolika je vaša mjesečna neto plaća?",
+    "monthlyApprox": "Koliko otprilike zaradite mjesečno?",
+    "approxEnough": "Okvirni prosjek je sasvim dovoljan",
+    "incomeHint": "Ovo služi samo za pametnije savjete — možete promijeniti kad god želite u postavkama.",
+    "incomeHintNone": "Ovo služi samo za pametnije savjete — možete promijeniti kad god želite u postavkama. Aplikacija radi odlično i bez informacije o prihodima!",
+    "goalsHint": "Na temelju vaših ciljeva prilagođavamo savjete i preporuke. Možete ih promijeniti kad god želite.",
+    "balanceLabel": "Stanje:",
+    "addAccount": "Dodaj račun:",
+    "accountsHint": "Dodajte barem jedan račun da biste mogli pratiti transakcije. Ne brinite — stanje ne mora biti točno do lipe, okvirno je dovoljno!",
+    "yourProfile": "Vaš profil",
+    "accountCountSummary": "{{count}} računa",
+    "goalCountSummary": "{{count}} ciljeva",
+    "readyTip": "Savjet: Počnite s unosom transakcija odmah! Što prije krenete, točniji će biti vaši izvještaji i savjeti."
   },
 
   "auth": {
@@ -116,6 +154,9 @@
     "upcomingPayments": "Predstojeća plaćanja",
     "topExpenses": "Najveći troškovi",
     "cashFlow": "Tok novca (30 dana)",
+    "savings": "Štednja",
+    "savingsTotal": "Ukupno u štednji",
+    "savingsThisMonth": "Ovaj mjesec",
     "noTransactions": "Još nemate transakcija",
     "noTransactionsHint": "Dodajte prvu transakciju pritiskom na tab \"Transakcije\" i krenite pratiti svoje financije!",
     "income": "Prihodi",
@@ -161,6 +202,14 @@
     },
     "addExpense": "Dodaj rashod",
     "addIncome": "Dodaj prihod",
+    "addTransfer": "Napravi transfer",
+    "fromAccount": "S računa",
+    "toAccount": "Na račun",
+    "selectToAccount": "Odaberite odredišni račun.",
+    "sameAccountError": "Izvorni i odredišni račun ne mogu biti isti.",
+    "transferRegular": "Između računa",
+    "transferSavings": "U štednju",
+    "savingsAccount": "Štednji račun",
     "noTransactions": "Nema transakcija",
     "searchPlaceholder": "Pretraži transakcije...",
     "filterAll": "Sve",
@@ -176,6 +225,9 @@
   "budget": {
     "title": "Budžet",
     "totalBalance": "Ukupno stanje",
+    "monthlyIncome": "Prihodi",
+    "monthlyExpenses": "Rashodi",
+    "netResult": "Neto rezultat",
     "allocated": "Raspod.",
     "spent": "Potrošeno",
     "free": "Slobodno",
@@ -199,6 +251,7 @@
     "needs": "Potrebe (50%)",
     "wants": "Želje (30%)",
     "savingsDebt": "Štednja & dugovi (20%)",
+    "debtOther": "Dugovi & ostalo (20%)",
     "envelopes": "Kuverte",
     "overBudgetCount": "Prekoračenje u {{count}} kategoriji",
     "overBudgetCountPlural": "Prekoračenje u {{count}} kategorija",
@@ -210,7 +263,17 @@
     "remainingToAllocate": "Preostaje za raspodjelu: {{amount}}",
     "createError": "Nije moguće kreirati budžet.",
     "noPreviousBudget": "Nema budžeta u prošlom mjesecu za kopiranje.",
-    "copyError": "Nije moguće kopirati budžet."
+    "copyError": "Nije moguće kopirati budžet.",
+    "autoBalance": "Izbalansiraj",
+    "savePreset": "Spremi raspodjelu",
+    "loadPreset": "Učitaj raspodjelu",
+    "presetName": "Naziv raspodjele",
+    "presetNamePlaceholder": "npr. Optimalna raspodjela",
+    "presetSaved": "Raspodjela spremljena!",
+    "presetLoaded": "Raspodjela učitana!",
+    "noPresets": "Nemate spremljenih raspodjela.",
+    "deletePreset": "Obriši",
+    "deletePresetConfirm": "Obrisati raspodjelu \"{{name}}\"?"
   },
 
   "goals": {
@@ -242,12 +305,35 @@
     "congratulations": "Čestitamo!",
     "goalCompleted": "Ostvarili ste cilj \"{{name}}\"!",
     "addError": "Nije moguće dodati iznos.",
+    "savingsTransfer": "Štednja",
     "deleteGoal": "Obriši cilj",
     "deleteConfirm": "Jeste li sigurni da želite obrisati cilj \"{{name}}\"?",
     "netWorth": "Neto vrijednost",
     "netWorthExplain": "Neto vrijednost = ukupno stanje svih računa minus svi dugovi. Cilj je da ovaj broj raste iz mjeseca u mjesec. To je najvažniji pokazatelj vašeg financijskog zdravlja.",
     "emergencyFund": "Sigurnosni fond",
-    "emergencyFundExplain": "Preporučuje se imati ušteđevinu koja pokriva 3-6 mjeseci vaših troškova. To je vaš financijski jastuk za neočekivane situacije poput gubitka posla, kvara auta ili zdravstvenih troškova."
+    "emergencyFundExplain": "Preporučuje se imati ušteđevinu koja pokriva 3-6 mjeseci vaših troškova. To je vaš financijski jastuk za neočekivane situacije poput gubitka posla, kvara auta ili zdravstvenih troškova.",
+    "goalAchieved": "Ostvareno!",
+    "dueDate": "Do {{date}}",
+    "percentAchieved": "{{percent}}% ostvareno",
+    "monthlyNeededShort": "{{amount}}/mj potrebno",
+    "addMoney": "+ Dodaj",
+    "emergencyStatus": {
+      "excellent": "Odlično zaštićeni!",
+      "good": "Dobro stojite!",
+      "building": "U izgradnji...",
+      "start": "Vrijeme za početak"
+    },
+    "coverageMonths": "Pokriva {{months}} mjeseci troškova",
+    "saved": "Ušteđeno",
+    "monthlyExpenses": "Mj. troškovi",
+    "progressToTarget": "Napredak prema cilju",
+    "addToSavings": "Dodaj u štednju",
+    "emergencyFundHint": "Preporučuje se 3-6 mjeseci troškova kao financijski jastuk za neočekivane situacije."
+  },
+
+  "categories": {
+    "selectCategory": "Odaberi kategoriju",
+    "searchPlaceholder": "Pretraži kategorije..."
   },
 
   "accounts": {
@@ -319,7 +405,8 @@
     "months": "mj.",
     "interest": "Kamata: {{amount}}",
     "perYear": "/god",
-    "addDebt": "+ Dodaj dug/kredit"
+    "addDebt": "+ Dodaj dug/kredit",
+    "selectAccount": "Odaberi račun"
   },
 
   "recurring": {
@@ -411,10 +498,14 @@
     "tabTrends": "Trendovi",
     "tabForecast": "Prognoza",
     "last6Months": "Zadnjih 6 mjeseci",
+    "lastNMonths": "Zadnjih {{count}} mj.",
     "income": "Prihodi",
     "expenses": "Rashodi",
     "saved": "Ušteđeno",
+    "netResult": "Neto rezultat",
+    "actualSavings": "Prebačeno u štednju",
     "savingsRate": "Stopa štednje",
+    "incomeBySource": "Prihodi po izvoru",
     "incomeVsExpenses": "Prihodi vs Rashodi",
     "monthlySavings": "Mjesečna štednja",
     "monthlyNetResult": "Mjesečni rezultat (neto)",
@@ -451,7 +542,9 @@
     },
     "exportCSV": "Izvoz CSV",
     "exportSuccess": "CSV izvezen uspješno!",
-    "exportError": "Greška pri izvozu."
+    "exportError": "Greška pri izvozu.",
+    "averageLabel": "Prosjek",
+    "totalLabel": "Ukupno"
   },
 
   "advisor": {
@@ -474,7 +567,115 @@
     "writeThought": "Zapišite svoju misao...",
     "learnDescription": "Kratki članci za bolje razumijevanje financija",
     "readTime": "{{min}} min čitanja",
-    "termsDescription": "Financijski pojmovi objašnjeni jednostavnim jezikom"
+    "termsDescription": "Financijski pojmovi objašnjeni jednostavnim jezikom",
+
+    "advice": {
+      "overspendingTitle": "Potrošnja premašuje prihode",
+      "overspendingMsg": "Ovaj mjesec ste potrošili {{amount}}€ više nego što ste zaradili. To nije održivo dugoročno. Pogledajte koje kategorije troškova možete smanjiti.",
+      "overspendingAction": "Pogledaj troškove",
+      "lowSavingsTitle": "Niska stopa štednje",
+      "lowSavingsMsg": "Vaša stopa štednje je {{rate}}%. Financijski stručnjaci preporučuju barem 20%. Pokušajte pronaći jednu kategoriju gdje možete rezati 10-15%.",
+      "greatSavingsTitle": "Odlična stopa štednje!",
+      "greatSavingsMsg": "Štedite {{rate}}% prihoda — to je iznad preporučenog minimuma od 20%. Nastavite tako! Razmislite o ulaganju viška u dugoročne ciljeve.",
+      "overBudgetTitle": "{{count}} kategorija preko budžeta",
+      "overBudgetMsg": "Prekoračili ste budžet u {{count}} kategorija. To se događa — važno je analizirati zašto i prilagoditi budžet sljedeći mjesec. Nerealan budžet je gori od nikakvog budžeta.",
+      "overBudgetAction": "Pogledaj budžet",
+      "nearBudgetTitle": "Bliži se limit u nekim kategorijama",
+      "nearBudgetMsg": "Imate {{count}} kategorija koje su na 80%+ budžeta. Pazite na potrošnju do kraja mjeseca da ostanete u planu.",
+      "highInterestTitle": "Dugovi s visokom kamatom",
+      "highInterestMsg": "Imate {{count}} dug(ova) s kamatnom stopom iznad 10%. Prioritizirajte otplatu ovih dugova jer kamata \"jede\" vašu uštedu. Razmotrite \"avalanche\" metodu otplate.",
+      "highInterestAction": "Pogledaj dugove",
+      "debtBurdenTitle": "Visoki mjesečni rata",
+      "debtBurdenMsg": "Rate kredita čine {{ratio}}% vaših prihoda. Financijski stručnjaci preporučuju ispod 36%. Razmotrite konsolidaciju ili refinanciranje.",
+      "highSubsTitle": "Visoki troškovi pretplata",
+      "highSubsMsg": "Pretplate vas koštaju {{monthly}}€/mj ({{yearly}}€/god). Pregledajte svaku pretplatu i zapitajte se: \"Koliko često ovo stvarno koristim?\"",
+      "highSubsAction": "Pogledaj pretplate",
+      "manySubsTitle": "{{count}} aktivnih pretplata",
+      "manySubsMsg": "Imate {{count}} pretplata. Možda neke možete podijeliti s partnerom/icom (obiteljski planovi) ili zamijeniti besplatnim alternativama?",
+      "noEmergencyTitle": "Hitno: sigurnosni fond",
+      "noEmergencyMsg": "Nemate dovoljno ušteđevine za pokriti niti jedan mjesec troškova. Ovo bi trebao biti prioritet br. 1. Započnite s malim — čak i 50€ mjesečno je početak.",
+      "noEmergencyAction": "Postavi cilj",
+      "lowEmergencyTitle": "Sigurnosni fond u izgradnji",
+      "lowEmergencyMsg": "Vaš sigurnosni fond pokriva {{months}} mjeseci troškova. Dobro je da ste počeli, ali cilj je 3-6 mjeseci za pravi financijski mir.",
+      "strongEmergencyTitle": "Sjajan sigurnosni fond!",
+      "strongEmergencyMsg": "Imate {{months}} mjeseci troškova u sigurnosnom fondu. To je odlična pozicija! Možete se sad fokusirati na dugoročne ciljeve.",
+      "negativeNetWorthTitle": "Negativna neto vrijednost",
+      "negativeNetWorthMsg": "Vaši dugovi ({{liabilities}}€) premašuju imovinu ({{assets}}€). To je uobičajeno dok imate kredit — fokusirajte se na smanjenje dugova i izgradnju imovine.",
+      "allGoodTitle": "Financije su na dobrom putu!",
+      "allGoodMsg": "Na temelju vaših podataka, stvari izgledaju dobro. Nastavite pratiti troškove i držati se budžeta. Konzistentnost je ključ financijskog zdravlja.",
+      "errorTitle": "Savjeti dolaze uskoro",
+      "errorMsg": "Unesite više transakcija kako bismo vam mogli dati personalizirane savjete."
+    },
+
+    "checkin": {
+      "w0q1": "Jeste li ovaj tjedan ostali u okviru budžeta?",
+      "w0q2": "Na ljestvici 1-5, koliko ste zadovoljni s potrošnjom?",
+      "w0q3": "Koji je bio vaš najmudriji financijski potez ovaj tjedan?",
+      "w1q1": "Jeste li izbjegli nepotreban impulsivan trošak?",
+      "w1q2": "Koliko ste svjesni svojih dnevnih troškova (1-5)?",
+      "w1q3": "Što biste promijenili u potrošnji prošlog tjedna?",
+      "w2q1": "Jeste li uplatili nešto u štednju?",
+      "w2q2": "Koliko se osjećate financijski sigurno (1-5)?",
+      "w2q3": "Na što ste ponosni u financijskom smislu?",
+      "w3q1": "Jeste li pregledali sve troškove za ovaj tjedan?",
+      "w3q2": "Koliko ste kontrole imali nad potrošnjom (1-5)?",
+      "w3q3": "Koji cilj želite ostvariti sljedeći tjedan?"
+    },
+
+    "education": {
+      "budgetTitle": "Što je budžet i zašto ga trebate?",
+      "budgetSummary": "Budžet nije ograničenje — to je plan koji vam daje slobodu.",
+      "budgetContent": "Budžet zvuči zastrašujuće, ali zapravo je jednostavno: to je plan kamo ide vaš novac.\n\nZamislite da je vaš prihod torta. Budžet je način na koji režete tu tortu — koliko za stan, hranu, zabavu, štednju.\n\nBEZ budžeta novac \"nestaje\" i na kraju mjeseca se pitate kamo je otišao. S budžetom VI odlučujete.\n\nPopularna metoda je 50/30/20:\n• 50% za potrebe (stan, režije, hrana)\n• 30% za želje (izlasci, hobiji, shopping)\n• 20% za štednju i otplatu dugova\n\nNe morate biti savršeni. Cilj je svjesnost — znati kamo novac ide. Već to mijenja ponašanje.",
+      "emergencyTitle": "Sigurnosni fond: Vaš financijski jastuk",
+      "emergencySummary": "Zašto trebate 3-6 mjeseci troškova sa strane.",
+      "emergencyContent": "Zamislite da vam se pokvari auto, da izgubite posao, ili da trebate hitnu medicinsku intervenciju. Bez sigurnosnog fonda, to postaje kriza. S njim — to je samo neugodnost.\n\nKoliko trebate? 3-6 mjeseci osnovnih troškova (stan, hrana, režije, rate).\n\nAko su vam mjesečni troškovi 1.500€, trebate 4.500-9.000€ sa strane.\n\nKako do toga?\n1. Započnite s malim — čak 50€ mjesečno je 600€ godišnje\n2. Otvorite zasebni štedni račun (da ga ne \"vidite\")\n3. Automatizirajte transfer čim sjedne plaća\n4. Svaki bonus, povrat poreza ili poklon — dio ide u fond\n\nNe odustajte ako je cilj daleko. Svaki euro vas čini sigurnijima.",
+      "compoundTitle": "Složena kamata: 8. svjetsko čudo",
+      "compoundSummary": "Kako vaš novac zarađuje novac, koji zarađuje novac...",
+      "compoundContent": "Einstein je navodno rekao da je složena kamata \"najmoćnija sila u svemiru\". Što to znači?\n\nJednostavna kamata: 1.000€ × 5% = 50€ godišnje. Svake godine 50€.\n\nSložena kamata: 1.000€ × 5% = 50€ prvu godinu. Ali drugu godinu, 5% se računa na 1.050€, pa dobijete 52,50€. I tako dalje — kamata na kamatu.\n\nZa 30 godina:\n• 1.000€ s jednostavnom kamatom → 2.500€\n• 1.000€ sa složenom kamatom → 4.322€\n\nAli pazite — ovo radi i PROTIV vas kod dugova! Kamata na kredit se isto \"slaže\".\n\nPravilo 72: podijelite 72 s kamatnom stopom i dobijete broj godina da se novac udvostruči.\n72 ÷ 7% = ~10 godina za udvostručenje.\n\nPoruka: počnite rano, budite strpljivi, i puštajte složenu kamatu da radi za vas.",
+      "debtTitle": "Kako se riješiti dugova: Snowball vs Avalanche",
+      "debtSummary": "Dvije dokazane strategije za otplatu dugova.",
+      "debtContent": "Ako imate više dugova, dvije strategije su najpopularnije:\n\n⛄ SNOWBALL (grudva snijega):\nOtplaćujete NAJMANJI dug prvo, dok na ostale plaćate minimum.\n+ Brze pobjede motiviraju!\n- Plaćate više kamata ukupno.\n\n🏔️ AVALANCHE (lavina):\nOtplaćujete dug s NAJVEĆOM kamatom prvo.\n+ Matematički optimalno — plaćate manje kamata.\n- Može biti demotivirajuće jer se veći dugovi polako smanjuju.\n\nŠto je bolje? Ovisi o vama:\n• Ako vam treba motivacija → Snowball\n• Ako želite minimizirati troškove → Avalanche\n• Oboje radi! Najvažnije je da PLATITE nešto iznad minimuma.\n\nSavjet: uzmite bilo koji \"višak\" novca (bonus, porez, smanjeni trošak) i stavite ga na dug. Čak i 50€ ekstra mjesečno može skratiti otplatu za godine.",
+      "lifestyleTitle": "Životna inflacija: Skriveni ubojica štednje",
+      "lifestyleSummary": "Zašto više zarađujete ali nikad nemate dovoljno?",
+      "lifestyleContent": "Dobili ste povišicu od 300€? Super! Ali odjednom imate bolji mobitel, skuplji restoran, novi hobi... i opet nema viška.\n\nTo je \"lifestyle inflation\" — kako zarađujete više, trošite više. Rezultat: nikad ne štedite više.\n\nKako se boriti:\n1. \"Platite se prvi\" — kad dobijete povišicu, automatski povećajte štednju za pola iznosa\n2. Čekajte 30 dana prije velikih kupovina\n3. Pratite troškove — svjesnost je pola bitke\n4. Pitajte se: \"Je li ovo nešto što stvarno želim, ili mi se čini da sad mogu?\"\n\nNije poanta živjeti škrto. Poanta je trošiti na ono što vam STVARNO donosi sreću, a ne na ono što \"ide uz viši prihod\".\n\nZapamtite: bogatstvo nije koliko zarađujete — nego koliko ZADRŽAVATE."
+    },
+
+    "glossary": {
+      "budgetTerm": "Budžet",
+      "budgetDef": "Plan koji određuje koliko novca ide na što. Kao dijeta, ali za novce.",
+      "netWorthTerm": "Neto vrijednost",
+      "netWorthDef": "Sve što imate (imovina) minus sve što dugujete. Vaš financijski \"rezultat\".",
+      "savingsRateTerm": "Stopa štednje",
+      "savingsRateDef": "Postotak prihoda koji ušteđujete. Cilj: barem 20%.",
+      "emergencyFundTerm": "Sigurnosni fond",
+      "emergencyFundDef": "Novac sa strane za \"crne dane\". Preporučeno 3-6 mjeseci troškova.",
+      "compoundInterestTerm": "Složena kamata",
+      "compoundInterestDef": "Kamata na kamatu — vaš novac zarađuje novac, koji zarađuje novac...",
+      "liquidityTerm": "Likvidnost",
+      "liquidityDef": "Koliko brzo možete pretvoriti nešto u gotovinu. Štedni račun = visoka likvidnost, nekretnina = niska.",
+      "inflationTerm": "Inflacija",
+      "inflationDef": "Rast cijena s vremenom. 100€ danas kupi manje nego 100€ prije 10 godina.",
+      "amortizationTerm": "Amortizacija",
+      "amortizationDef": "Raspored otplate kredita — koliko ide na kamatu, a koliko na glavnicu.",
+      "diversificationTerm": "Diverzifikacija",
+      "diversificationDef": "\"Ne stavljajte sva jaja u jednu košaru.\" Raspodijelite ulaganja na više mjesta.",
+      "passiveIncomeTerm": "Pasivni prihod",
+      "passiveIncomeDef": "Novac koji zarađujete bez aktivnog rada — najam, dividende, kamate.",
+      "cashFlowTerm": "Cash flow",
+      "cashFlowDef": "Razlika između novca koji ulazi i izlazi. Pozitivan = super, negativan = problem.",
+      "roiTerm": "ROI",
+      "roiDef": "Return on Investment — koliko ste zaradili u odnosu na uloženo. \"Je li se isplatilo?\""
+    },
+
+    "personalizedTips": {
+      "overspending": "Ovaj mjesec trošite više nego što zarađujete. Pogledajmo zajedno gdje možemo rezati.",
+      "lowSavingsRate": "Vaša stopa štednje je {{rate}}%. Cilj je barem 20% — pokušajmo pronaći prostor za poboljšanje.",
+      "greatSavingsRate": "Bravo! Štedite {{rate}}% prihoda. To je odličan tempo!",
+      "topCategory": "{{name}} čini {{percent}}% vaših troškova. Je li to u skladu s vašim prioritetima?",
+      "lowEmergencyFund": "Vaš sigurnosni fond pokriva {{months}} mjeseci troškova. Preporučeno je 3-6 mjeseci.",
+      "highSubscriptions": "Pretplate vam idu {{amount}}€ mjesečno ({{yearly}}€ godišnje). Vrijedi pregledati koje stvarno koristite.",
+      "overBudget": "Prekoračili ste budžet za: {{categories}}. Možda je vrijeme za realnije limite?"
+    }
   },
 
   "household": {
@@ -551,5 +752,22 @@
       "Zajednički budžet ne znači jednake iznose — znači proporcionalno prema prihodima. Fer je kad svatko doprinosi prema mogućnostima.",
       "Investicija u edukaciju (tečajevi, knjige, konferencije) ima najveći povrat — u vas same."
     ]
+  },
+
+  "notifications": {
+    "payments": "Plaćanja",
+    "tips": "Financijski savjeti",
+    "paymentDueTitle": "Sutra dospijeva: {{description}}",
+    "paymentDueExpense": "Potrebno platiti: {{amount}}. Dospijeva {{date}}.",
+    "paymentDueIncome": "Očekivani prihod: {{amount}}. Dospijeva {{date}}.",
+    "weeklyTitle": "Tjedni financijski pregled",
+    "weeklyBody": "Pogledajte kako stojite s budžetom ovaj tjedan. Malo kontrole = puno uštede!",
+    "monthlyTitle": "Mjesečni sažetak je spreman",
+    "monthlyBody": "Novi mjesec, novi budžet! Pregledajte prošli mjesec i postavite ciljeve za ovaj.",
+    "testBody": "Obavijesti su uspješno uključene! Primit ćete podsjetnike za plaćanja i financijske savjete."
+  },
+
+  "sync": {
+    "exportDialogTitle": "Eksportiraj podatke MojNovčanik"
   }
 }

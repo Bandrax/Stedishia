@@ -23,16 +23,150 @@ Mobilna aplikacija za vođenje kućnih financija za dvočlano kućanstvo.
 
 ## Arhitektura
 - **Korisnici**: Dvočlano kućanstvo (korisnik Android + djevojka iPhone)
-- **Scope**: Transakcije imaju scope: 'personal' | 'shared'
+- **Scope**: Sve transakcije su osobne (scope sustav uklonjen)
 - **Sync**: JSON export/import putem dijeljenja (Google Drive, AirDrop)
 - **AI savjeti**: Potpuno lokalno (pravila + heuristike)
 - **Dizajn**: #0F4C3A primarna, #D4AF37 akcent, dark/light auto tema
 - **Ikone**: Ionicons iz @expo/vector-icons (emoji samo kao content u kategorijama)
-- **Budžet**: Bazira se na ukupnom stanju računa (ne monthlyIncome iz profila)
 
 ## Navigacija
-- TabNavigator: Home, Transactions, Budget, Goals, More (sve Ionicons)
+- TabNavigator: Home, Transactions, Budget, Goals, More (sve Ionicons, i18n labele)
 - MoreScreen -> Reports, Accounts, Advisor, Household, RecurringPayments, Settings
+
+## Kategorije
+
+### Rashodi (13 kategorija)
+| ID | HR | EN | Emoji | 50/30/20 grupa | Postotak |
+|---|---|---|---|---|---|
+| housing | Stanovanje | Housing | 🏠 | Potrebe | 25% |
+| food | Hrana i piće | Food & Drinks | 🍽️ | Potrebe | 13% |
+| transport | Prijevoz | Transport | 🚗 | Potrebe | 5% |
+| utilities | Režije | Utilities | 💡 | Potrebe | 3% |
+| health | Zdravlje | Health | 🏥 | Potrebe | 2% |
+| appliances | Bijela tehnika | Home Appliances | 🧊 | Potrebe | 2% |
+| entertainment | Zabava | Entertainment | 🎬 | Želje | 10% |
+| clothing | Odjeća | Clothing | 👕 | Želje | 5% |
+| personal | Osobno | Personal | 🧴 | Želje | 5% |
+| education | Edukacija | Education | 📚 | Želje | 5% |
+| gifts | Pokloni | Gifts | 🎁 | Želje | 5% |
+| debt | Otplata kredita | Debt Payment | 🏦 | Štednja | 10% |
+| other_expense | Ostalo | Other | 📌 | Štednja | 10% |
+
+**Ukupno: 100%** (Potrebe 50%, Želje 30%, Štednja 20%)
+
+### Prihodi (8 kategorija)
+salary, freelance, bonus, investment_income, rental_income, business_income, association_income, other_income
+
+### Posebne kategorije
+- `transfer` — za prikaz transfera u listi (nije rashod)
+- `savings` — legacy, zadržana za stare transakcije
+
+### Lokalizacija kategorija
+- `getCategoryInfo()` u `dashboardService.ts` vraća `name` ili `nameEn` ovisno o `i18n.language`
+- Kategorije imaju `name` (HR) i `nameEn` (EN) field u `Category` interfaceu
+- Potkategorije isto imaju `name`/`nameEn`
+
+### Auto-kategorizacija (autoCategory.ts)
+- Keyword-based pravila za sve kategorije
+- appliances: perilica, hladnjak, sušilica, Gorenje, Bosch, Electrolux, blender, toster, itd.
+- Fallback: `suggestFromHistory()` — traži sličan opis u prošlim transakcijama
+
+## Budget sustav
+
+### Dva moda
+1. **Envelope (Kuverte)** — ručna raspodjela po kategoriji
+2. **50/30/20** — automatska raspodjela prema preporučenim postocima
+
+### Budget baza (fallback logika)
+```
+effectiveBase = income > 0 ? income : totalAllocated > 0 ? totalAllocated : balance + expenses
+```
+- Nikad ne koristi monthlyIncome iz profila
+- Dinamički računa iz stvarnog stanja računa
+
+### BudgetSummaryHeader (2x2 grid)
+- Mjesečni prihod (zeleno), Mjesečni rashodi (crveno)
+- Neto rezultat (zeleno/crveno), Ukupno stanje (zlatno)
+- Progress bar: potrošeno/raspoređeno vs prihod
+
+### 50/30/20 grupe
+- **Potrebe**: housing, food, transport, utilities, health, appliances
+- **Želje**: entertainment, clothing, personal, gifts, education
+- **Štednja/Dugovi**: debt, other_expense
+- Targeti koriste `groupAllocated()` iz DB alokacija, ne dinamički postotak
+
+### Envelope funkcionalnosti
+- +10/-10 i +50/-50 gumbi za alokaciju
+- **Auto-balance**: postavlja allocated = ceil(spent) za overbudget kategorije
+- **Preseti**: spremi/učitaj imenovane konfiguracije alokacija
+  - DB tablica: `budget_presets` (id, user_id, name, allocations JSON, created_at)
+  - `saveBudgetPreset()`, `getBudgetPresets()`, `loadBudgetPreset()`, `deleteBudgetPreset()`
+
+## i18n sustav
+
+### Potpuna internacionalizacija
+- **Svaki** string u aplikaciji koristi `t()` (React) ili `i18n.t()` (servisi)
+- 450+ prijevodnih ključeva u hr.json i en.json
+- Pokriva: navigaciju, sve ekrane, onboarding, PIN, budžet, ciljeve, izvještaje, savjetnika, notifikacije, sync
+- Language switcher u Settings (Hrvatski / English)
+
+### Ključne sekcije u locale fajlovima
+nav, common, dashboard, transactions, budget, goals, reports, settings, accounts, advisor, household, recurring, onboarding, auth, categories, notifications, sync, tips
+
+### Kako dodati nove stringove
+1. Dodaj ključ u `src/locales/hr.json` i `src/locales/en.json`
+2. U React komponentama: `const { t } = useTranslation(); t('section.key')`
+3. U servisima: `import i18n from '../locales/i18n'; i18n.t('section.key')`
+
+## Valuta sustav
+
+### Dinamička valuta (ne hardkodirani EUR)
+- `src/store/useSettingsStore.ts` — Zustand store s `currency` stateom
+- `CURRENCIES` array: EUR, USD, GBP, CHF, HRK, BAM, RSD, PLN, CZK, HUF
+- Persisted u SQLite `app_settings` tablica (key-value)
+- Module-level `_currentCurrency` za non-React pristup (servisi, formatteri)
+- `getCurrentCurrency()` export za `formatAmount()`
+
+### formatAmount logika
+```typescript
+formatAmount(amount, currency?, showSign?)
+// currency defaults to getCurrentCurrency()
+// locale from i18n.language ('hr' → 'hr-HR', 'en' → 'en-US')
+// uses Intl.NumberFormat
+```
+
+### Currency picker u Settings
+- Tappable row → modal s listom valuta (kod, simbol, ime)
+- Checkmark za odabranu valutu
+
+## Izvještaji (ReportsScreen)
+
+### Tabovi
+1. **Mjesečni** — prihodi vs rashodi (LineChart), kategorije (PieChart), prihodi po izvoru
+2. **Godišnji** — prihodi + rashodi LineChart s legendom
+3. **Trendovi** — po kategoriji, tappable → fullscreen modal
+4. **Prognoza** — projekcija 90 dana
+
+### Period filter
+- 1M / 3M / 6M / 1Y pills na mjesečnom tabu
+- Kontrolira `getMonthlyOverview` i `getCategoryTrends`
+
+### CSV export
+- Gumb u headeru (download-outline ikona)
+- `exportTransactionsCSV`, `exportMonthlyReportCSV`
+
+## Notifikacije
+- Payment reminders: 24h prije due date, 9:00
+- Weekly budget check: ponedjeljak 9:00
+- Monthly summary: 1. u mjesecu 10:00
+- Android kanali: 'payments' (HIGH), 'tips' (DEFAULT)
+- Sve poruke lokalizirane kroz i18n
+
+## SQLite tablice
+- users, transactions, accounts, budgets, goals, recurring_transactions
+- households (s invite_code), household_members
+- budget_presets (id, user_id, name, allocations TEXT, created_at)
+- app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)
 
 ## Implementirane faze
 
@@ -64,51 +198,43 @@ Mobilna aplikacija za vođenje kućnih financija za dvočlano kućanstvo.
 - App branding: ime "Sthedisia", custom ikona (zlatni novčić sa S)
 - HTML manual: manual.html (12 sekcija, kompletni vodič)
 
-### Post-faze: Notifikacije
-- expo-notifications sustav (src/services/notificationService.ts)
-- Payment reminders: 24h prije due date, 9:00
-- Weekly budget check: ponedjeljak 9:00
-- Monthly summary: 1. u mjesecu 10:00
-- Android kanali: 'payments' (HIGH), 'tips' (DEFAULT)
-
 ### Post-faze: Budget sustav refactor
-- 50/30/20 postoci prema stručnjacima (Elizabeth Warren): stanovanje 27%, hrana 13%, itd. = 100%
+- 50/30/20 postoci prema stručnjacima (Elizabeth Warren): ukupno 100%
 - Budget baziran na ukupnom stanju računa (ne monthlyIncome iz profila)
 - Gumb "Regeneriraj 50/30/20" za resetiranje na preporučene postotke
-- BudgetSummaryHeader: prikazuje "Ukupno stanje" kao glavni broj
+- BudgetSummaryHeader: 4 metrike u 2x2 gridu
 - StatusSemaphore interaktivan: tap otvara modal s detaljima i objašnjenjem
+- Auto-balance gumb: allocated = ceil(spent) za overbudget kategorije
+- Budget preseti: spremi/učitaj imenovane konfiguracije alokacija
 
 ### Post-faze: Ponavljajuća plaćanja fix
 - Dan u mjesecu picker (1-31) umjesto ručnog YYYY-MM-DD unosa
 - Auto-izračun nextDueDate iz odabranog dana
 - Fix DB schema mismatch: recurring_transactions tablica nema updated_at
 - Migracija: account_id nullable, uklonjen FK constraint
-- start_date dodan u insert
 - Podrška za europski decimalni zarez (150,50)
 - Error handling s alertom za prikaz grešaka
 
-### Post-faze: Kompletna i18n internationalizacija
-- Zamjena SVIH hardkodiranih hrvatskih stringova s t() pozivima na 15 ekrana + 2 komponente
+### Post-faze: Kompletna i18n + valuta
+- Zamjena SVIH hardkodiranih hrvatskih stringova s t() pozivima (~20 ekrana, svi servisi)
 - Language switcher u Settings (Hrvatski / English)
-- 433 prijevodna ključa, savršeno usklađena hr.json i en.json
-- Samo onboarding ima neke preostale hardkodirane stringove (minor)
-
-### Post-faze: Budget fix — konzistentno stanje Dashboard ↔ Budžet
-- Fix: Dashboard i Budget sad prikazuju ISTI "Ukupno stanje" (stvarno stanje računa)
-- Uklonjeno `Math.max(totalBalance, monthlyIncome)` — budžet baza = stanje + rashodi mjeseca
-- BudgetSummaryHeader prima `mode` prop — različit prikaz za 50/30/20 vs Envelope:
-  - 50/30/20: Dostupno / Potrošeno / Preostalo (dinamički iz stanja)
-  - Envelope: Raspoređeno / Potrošeno / Slobodno (iz DB alokacija)
-- 50/30/20 targeti se računaju dinamički od budgetBase, ne iz zamrznutih DB vrijednosti
-- Regeneracija budžeta koristi svježe stanje + rashode
+- 450+ prijevodnih ključeva, savršeno usklađena hr.json i en.json
+- Dinamička valuta — 10 podržanih valuta, picker u Settings
+- formatAmount koristi Intl.NumberFormat s dinamičkim locale + currency
+- Notifikacije, sync, advisor savjeti — sve lokalizirano
 
 ### Post-faze: Grafovi overhaul — Izvještaji + Dashboard
-- Dashboard MiniCashFlowChart: tappable → fullscreen modal s većim grafom, obje osi, grid, € sufiks
-- Izvještaji — "Prihodi vs Rashodi": BarChart → LineChart (zelena=prihodi, crvena=rashodi)
-- Izvještaji — "Mjesečna štednja" → "Mjesečni rezultat (neto)" — jasnije kad je negativno
-- Izvještaji — Godišnji tab: samo rashodi → LineChart s prihodima I rashodima + legenda
-- Izvještaji — Trendovi: svaka kategorija tappable → fullscreen modal s većim grafom + statistike
-- Izvještaji — Prognoza: fiksirani hardkodirani labeli ("Prije","Danas","90d") → i18n
+- Dashboard MiniCashFlowChart: tappable → fullscreen modal s većim grafom
+- Izvještaji — LineChart umjesto BarChart za prihode vs rashode
+- Izvještaji — Godišnji: prihodi I rashodi + legenda
+- Izvještaji — Trendovi: tappable → fullscreen modal + statistike
+- Izvještaji — Period filter (1M/3M/6M/1Y)
+- Izvještaji — Prihodi po izvoru (income breakdown)
+
+### Post-faze: Kategorije proširenje
+- 3 nova prihoda: rental_income, business_income, association_income
+- 1 novi rashod: appliances (Bijela tehnika / Home Appliances) s 3 potkategorije
+- Auto-kategorizacija za appliances (30+ ključnih riječi HR+EN)
 
 ## APK Build proces
 ```bash
@@ -128,25 +254,7 @@ cp android/app/build/outputs/apk/release/app-release.apk "$USERPROFILE/Desktop/M
 - Kategorije koriste emoji kao CONTENT (🏠 za stanovanje) — to je OK
 - Git remote: https://github.com/Bandrax/Stedishia (branch: master)
 - Expo docs: https://docs.expo.dev/versions/v54.0.0/
-
-## ZAVRŠENO: Kućanstvo overhaul ✅
-- Scope sustav uklonjen (personal/shared) — sve transakcije su osobne
-- ScopeToggle obrisan, "Za koga?" sekcija uklonjena iz AddTransaction
-- HouseholdScreen redizajniran: pozivni kod (KUC-XXXX), kreiranje/pridruživanje, stanja članova
-- householdService.ts: createHousehold, joinHousehold, leaveHousehold, getHouseholdMemberBalances
-- DB migracija: invite_code u households tablici
-
-## ZAVRŠENO: CSV export izvještaja ✅
-- exportService.ts: exportTransactionsCSV, exportMonthlyReportCSV, shareCSVFile
-- Gumb za export u ReportsScreen headeru (download-outline ikona)
-
-## ZAVRŠENO: Detekcija pretplata + godišnji trošak ✅
-- getSubscriptionSummary u recurringService.ts (godišnji izračun po frekvenciji)
-- RecurringScreen: subscription summary kartica s mjesečnim/godišnjim ukupnim iznosom
-
-## ZAVRŠENO: Dodatni unit testovi ✅
-- 31 novi test (autoCategory, CSV escaping, subscription calculations, formatter edge cases)
-- Ukupno 56 testova, svi prolaze
+- Testovi: 56 unit testova (calculations, autoCategory, CSV, subscriptions, formatters)
 
 ## Što još treba
 - Testiranje na iOS-u (djevojkin iPhone)

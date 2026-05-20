@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 import { formatAmount } from '../../utils';
@@ -21,6 +22,7 @@ export const EmergencyFundCard: React.FC<EmergencyFundCardProps> = ({
   onAddMoney,
 }) => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   const targetMonths = 6;
   const targetAmount = monthlyExpenses * targetMonths;
@@ -28,10 +30,10 @@ export const EmergencyFundCard: React.FC<EmergencyFundCardProps> = ({
   const status = monthsCovered >= 6 ? 'excellent' : monthsCovered >= 3 ? 'good' : monthsCovered >= 1 ? 'building' : 'start';
 
   const statusConfig = {
-    excellent: { icon: 'shield-checkmark' as const, color: colors.success, label: 'Odlično zaštićeni!' },
-    good: { icon: 'shield-half' as const, color: colors.success, label: 'Dobro stojite!' },
-    building: { icon: 'shield' as const, color: colors.warning, label: 'U izgradnji...' },
-    start: { icon: 'shield-outline' as const, color: colors.error, label: 'Vrijeme za početak' },
+    excellent: { icon: 'shield-checkmark' as const, color: colors.success, labelKey: 'goals.emergencyStatus.excellent' },
+    good: { icon: 'shield-half' as const, color: colors.success, labelKey: 'goals.emergencyStatus.good' },
+    building: { icon: 'shield' as const, color: colors.warning, labelKey: 'goals.emergencyStatus.building' },
+    start: { icon: 'shield-outline' as const, color: colors.error, labelKey: 'goals.emergencyStatus.start' },
   };
 
   const config = statusConfig[status];
@@ -41,7 +43,7 @@ export const EmergencyFundCard: React.FC<EmergencyFundCardProps> = ({
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <Ionicons name="shield-checkmark-outline" size={18} color={colors.primary} style={{ marginRight: 8 }} />
-          <Text style={[styles.title, { color: colors.text }]}>Sigurnosni fond</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t('goals.emergencyFund')}</Text>
         </View>
         {onInfoPress && (
           <TouchableOpacity onPress={onInfoPress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
@@ -50,7 +52,7 @@ export const EmergencyFundCard: React.FC<EmergencyFundCardProps> = ({
         )}
       </View>
 
-      {/* Mjeseci vizualizacija */}
+      {/* Months visualization */}
       <View style={styles.monthsRow}>
         {[1, 2, 3, 4, 5, 6].map((month) => (
           <View key={month} style={styles.monthBlock}>
@@ -73,19 +75,19 @@ export const EmergencyFundCard: React.FC<EmergencyFundCardProps> = ({
 
       <View style={styles.statusRow}>
         <Ionicons name={config.icon} size={18} color={config.color} />
-        <Text style={[styles.statusLabel, { color: config.color }]}>{config.label}</Text>
+        <Text style={[styles.statusLabel, { color: config.color }]}>{t(config.labelKey)}</Text>
       </View>
 
       <Text style={[styles.coverage, { color: colors.text }]}>
-        Pokriva {monthsCovered.toFixed(1)} mjeseci troškova
+        {t('goals.coverageMonths', { months: monthsCovered.toFixed(1) })}
       </Text>
 
       <View style={styles.detailRow}>
         <Text style={[styles.detail, { color: colors.textSecondary }]} numberOfLines={1}>
-          Ušteđeno: {formatAmount(totalSaved)}
+          {t('goals.saved')}: {formatAmount(totalSaved)}
         </Text>
         <Text style={[styles.detail, { color: colors.textSecondary }]} numberOfLines={1}>
-          Mj. troškovi: {formatAmount(monthlyExpenses)}
+          {t('goals.monthlyExpenses')}: {formatAmount(monthlyExpenses)}
         </Text>
       </View>
 
@@ -94,7 +96,7 @@ export const EmergencyFundCard: React.FC<EmergencyFundCardProps> = ({
         <View style={styles.progressSection}>
           <View style={styles.progressHeader}>
             <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>
-              Napredak prema cilju
+              {t('goals.progressToTarget')}
             </Text>
             <Text style={[styles.progressPercent, { color: colors.primary }]}>
               {Math.round(progressPercent)}%
@@ -117,7 +119,7 @@ export const EmergencyFundCard: React.FC<EmergencyFundCardProps> = ({
         </View>
       )}
 
-      {/* Dodaj u štednju gumb */}
+      {/* Add to savings button */}
       {onAddMoney && (
         <TouchableOpacity
           style={[styles.addButton, { backgroundColor: colors.primary }]}
@@ -125,13 +127,13 @@ export const EmergencyFundCard: React.FC<EmergencyFundCardProps> = ({
           activeOpacity={0.8}
         >
           <Ionicons name="add-circle-outline" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
-          <Text style={styles.addButtonText}>Dodaj u štednju</Text>
+          <Text style={styles.addButtonText}>{t('goals.addToSavings')}</Text>
         </TouchableOpacity>
       )}
 
       <View style={[styles.hint, { backgroundColor: colors.surfaceVariant }]}>
         <Text style={[styles.hintText, { color: colors.textSecondary }]}>
-          Preporučuje se 3-6 mjeseci troškova kao financijski jastuk za neočekivane situacije.
+          {t('goals.emergencyFundHint')}
         </Text>
       </View>
     </View>

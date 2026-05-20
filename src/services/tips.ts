@@ -1,46 +1,19 @@
-// Lokalni sustav dnevnih financijskih savjeta
-// Savjeti su napisani laičkim jezikom, prijateljskim tonom
+// Daily financial tips system — all strings served via i18n
+import i18n from '../locales/i18n';
 
-const generalTips = [
-  'Prije nego kupite nešto, pitajte se: "Da li bih ovo kupio/la za gotovinu?" Ako ne, vjerovatno ne trebate.',
-  'Pokušajte "pravilo 24 sata" — kad poželite nešto kupiti, pričekajte dan. Često ćete shvatiti da vam ne treba.',
-  'Pregled pretplata jednom mjesečno može uštedjeti više nego što mislite. Koje servise stvarno koristite?',
-  'Čak i 50€ mjesečno štednje je 600€ godišnje. Mali koraci stvaraju velike rezultate!',
-  'Kuhanje kod kuće umjesto dostave može uštedjeti 200-400€ mjesečno za dvočlano kućanstvo.',
-  'Automatizirana štednja radi čuda — postavite automatski prijenos na štedni račun čim sjedne plaća.',
-  'Usporedite cijene u dva-tri dućana za velike kupovine. Razlike znaju biti i 20-30%.',
-  'Sigurnosni fond od 3 mjeseca troškova je vaš financijski mir. Vrijedi svaki cent.',
-  'Napravite listu prije odlaska u dućan. Kupnja bez liste povećava potrošnju za ~20%.',
-  'Pretplate na godišnjoj bazi su obično 15-20% jeftinije od mjesečnih.',
-  'Kad dobijete povišicu, pokušajte "uštedjeti razliku" umjesto da odmah povećate potrošnju.',
-  'Voda iz slavine umjesto kupovne — ušteda do 300€ godišnje za kućanstvo.',
-  'Postavite ciljeve kojima se veselite. Štednja za odmor je motivirajuća, štednja "zato što moram" nije.',
-  'Pratite troškove barem 3 mjeseca da vidite realne obrasce potrošnje.',
-  'Podjelite troškove s partnerom transparentno — zajedničke financije su zdravije financije.',
-  'LED žarulje troše 75% manje struje. Mala ulaganja, velika ušteda na duže staze.',
-  'Obrok planirajte nedjeljom. Manje bacate hrane i manje naručujete dostavu.',
-  'Prije velikog troška pitajte: "Koliko sati moram raditi da ovo zaradim?"',
-  'Cashback kartice mogu vratiti 1-3% potrošnje. Na godišnjoj razini to je pristojan iznos.',
-  'Ne uspoređujte se s drugima na društvenim mrežama. Većina ne prikazuje pravu financijsku sliku.',
-  'Popust od 50% na nešto što ne trebate i dalje košta — nije ušteda, nego trošak.',
-  'Energetski razred uređaja stvarno utječe na račune. A+++ može uštedjeti 100€+ godišnje.',
-  'Jednom mjesečno pregledajte sve automatske naplate na kartici. Iznenadili biste se.',
-  'Zajednički budžet ne znači da nemate osobne troškove. Dogovorite koliko svatko ima "za sebe".',
-  'Investicija u edukaciju i zdravlje se uvijek isplati dugoročno.',
-];
-
-// Vrača savjet dana na temelju datuma (isti savjet cijeli dan)
+// Returns the tip of the day based on the date (same tip all day)
 export const getDailyTip = (): string => {
   const today = new Date();
   const dayOfYear = Math.floor(
     (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) /
     (1000 * 60 * 60 * 24)
   );
-  const index = dayOfYear % generalTips.length;
-  return generalTips[index];
+  const tipsList = i18n.t('tips.list', { returnObjects: true }) as string[];
+  const index = dayOfYear % tipsList.length;
+  return tipsList[index];
 };
 
-// Personalizirani savjeti na temelju podataka
+// Personalized tips input type
 export interface PersonalizedTipInput {
   monthlyIncome: number;
   totalExpenses: number;
@@ -54,51 +27,51 @@ export interface PersonalizedTipInput {
 export const getPersonalizedTips = (input: PersonalizedTipInput): string[] => {
   const tips: string[] = [];
 
-  // Stopa štednje
+  // Savings rate
   if (input.monthlyIncome > 0) {
     const savingsRate = ((input.monthlyIncome - input.totalExpenses) / input.monthlyIncome) * 100;
     if (savingsRate < 0) {
-      tips.push(
-        `Ovaj mjesec trošite više nego što zarađujete. Pogledajmo zajedno gdje možemo rezati.`
-      );
+      tips.push(i18n.t('advisor.personalizedTips.overspending'));
     } else if (savingsRate < 10) {
-      tips.push(
-        `Vaša stopa štednje je ${savingsRate.toFixed(0)}%. Cilj je barem 20% — pokušajmo pronaći prostor za poboljšanje.`
-      );
+      tips.push(i18n.t('advisor.personalizedTips.lowSavingsRate', { rate: savingsRate.toFixed(0) }));
     } else if (savingsRate >= 20) {
-      tips.push(
-        `Bravo! Štedite ${savingsRate.toFixed(0)}% prihoda. To je odličan tempo!`
-      );
+      tips.push(i18n.t('advisor.personalizedTips.greatSavingsRate', { rate: savingsRate.toFixed(0) }));
     }
   }
 
-  // Top kategorija
+  // Top category
   if (input.topCategory && input.topCategory.percentOfTotal > 40) {
     tips.push(
-      `${input.topCategory.name} čini ${input.topCategory.percentOfTotal.toFixed(0)}% vaših troškova. Je li to u skladu s vašim prioritetima?`
+      i18n.t('advisor.personalizedTips.topCategory', {
+        name: input.topCategory.name,
+        percent: input.topCategory.percentOfTotal.toFixed(0),
+      })
     );
   }
 
-  // Sigurnosni fond
+  // Emergency fund
   if (input.emergencyFundMonths !== undefined && input.emergencyFundMonths < 3) {
     tips.push(
-      `Vaš sigurnosni fond pokriva ${input.emergencyFundMonths.toFixed(1)} mjeseci troškova. Preporučeno je 3-6 mjeseci.`
+      i18n.t('advisor.personalizedTips.lowEmergencyFund', {
+        months: input.emergencyFundMonths.toFixed(1),
+      })
     );
   }
 
-  // Pretplate
+  // Subscriptions
   if (input.subscriptionTotal && input.subscriptionTotal > 50) {
     tips.push(
-      `Pretplate vam idu ${input.subscriptionTotal.toFixed(0)}€ mjesečno (${(input.subscriptionTotal * 12).toFixed(0)}€ godišnje). Vrijedi pregledati koje stvarno koristite.`
+      i18n.t('advisor.personalizedTips.highSubscriptions', {
+        amount: input.subscriptionTotal.toFixed(0),
+        yearly: (input.subscriptionTotal * 12).toFixed(0),
+      })
     );
   }
 
-  // Prekoračenje budžeta
+  // Over budget categories
   if (input.categoryOverBudget && input.categoryOverBudget.length > 0) {
     const categories = input.categoryOverBudget.join(', ');
-    tips.push(
-      `Prekoračili ste budžet za: ${categories}. Možda je vrijeme za realnije limite?`
-    );
+    tips.push(i18n.t('advisor.personalizedTips.overBudget', { categories }));
   }
 
   return tips;

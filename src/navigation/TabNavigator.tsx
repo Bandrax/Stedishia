@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Text, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import {
   DashboardScreen,
   TransactionsScreen,
@@ -15,16 +16,25 @@ import type { MainTabParamList } from '../types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const tabConfig: Record<string, { icon: keyof typeof Ionicons.glyphMap; iconFocused: keyof typeof Ionicons.glyphMap; label: string }> = {
-  Dashboard: { icon: 'home-outline', iconFocused: 'home', label: 'Početna' },
-  Transactions: { icon: 'receipt-outline', iconFocused: 'receipt', label: 'Transakcije' },
-  Budget: { icon: 'wallet-outline', iconFocused: 'wallet', label: 'Budžet' },
-  Goals: { icon: 'flag-outline', iconFocused: 'flag', label: 'Ciljevi' },
-  More: { icon: 'grid-outline', iconFocused: 'grid', label: 'Više' },
+const tabIcons: Record<string, { icon: keyof typeof Ionicons.glyphMap; iconFocused: keyof typeof Ionicons.glyphMap }> = {
+  Dashboard: { icon: 'home-outline', iconFocused: 'home' },
+  Transactions: { icon: 'receipt-outline', iconFocused: 'receipt' },
+  Budget: { icon: 'wallet-outline', iconFocused: 'wallet' },
+  Goals: { icon: 'flag-outline', iconFocused: 'flag' },
+  More: { icon: 'grid-outline', iconFocused: 'grid' },
+};
+
+const tabLabelKeys: Record<string, string> = {
+  Dashboard: 'nav.home',
+  Transactions: 'nav.transactions',
+  Budget: 'nav.budget',
+  Goals: 'nav.goals',
+  More: 'nav.more',
 };
 
 export const TabNavigator: React.FC = () => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   return (
     <Tab.Navigator
@@ -42,14 +52,14 @@ export const TabNavigator: React.FC = () => {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
         tabBarIcon: ({ focused, color }) => {
-          const config = tabConfig[route.name];
+          const icons = tabIcons[route.name];
           return (
             <View style={[
               styles.iconContainer,
               focused && { backgroundColor: colors.primary + '12' },
             ]}>
               <Ionicons
-                name={focused ? config.iconFocused : config.icon}
+                name={focused ? icons.iconFocused : icons.icon}
                 size={22}
                 color={color}
               />
@@ -57,13 +67,12 @@ export const TabNavigator: React.FC = () => {
           );
         },
         tabBarLabel: ({ focused }) => {
-          const config = tabConfig[route.name];
           return (
             <Text style={[
               styles.tabLabel,
               { color: focused ? colors.primary : colors.textTertiary },
             ]}>
-              {config.label}
+              {t(tabLabelKeys[route.name])}
             </Text>
           );
         },

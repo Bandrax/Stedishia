@@ -8,6 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../../hooks';
 import { Typography, Spacing, BorderRadius } from '../../constants';
 import { Button } from '../../components/atoms';
@@ -21,11 +22,11 @@ interface AccountSetup {
   emoji: string;
 }
 
-const accountTemplates: { type: AccountType; icon: string; label: string }[] = [
-  { type: 'checking', icon: 'business-outline', label: 'Tekući račun' },
-  { type: 'savings', icon: 'save-outline', label: 'Štedni račun' },
-  { type: 'cash', icon: 'cash-outline', label: 'Gotovina' },
-  { type: 'credit_card', icon: 'card-outline', label: 'Kreditna kartica' },
+const accountTemplates: { type: AccountType; icon: string; labelKey: string }[] = [
+  { type: 'checking', icon: 'business-outline', labelKey: 'accounts.types.checking' },
+  { type: 'savings', icon: 'save-outline', labelKey: 'accounts.types.savings' },
+  { type: 'cash', icon: 'cash-outline', labelKey: 'accounts.types.cash' },
+  { type: 'credit_card', icon: 'card-outline', labelKey: 'accounts.types.credit_card' },
 ];
 
 interface AccountsStepProps {
@@ -38,12 +39,13 @@ export const AccountsStep: React.FC<AccountsStepProps> = ({
   onAccountsChange,
 }) => {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   const addAccount = (type: AccountType) => {
     const template = accountTemplates.find((t) => t.type === type)!;
     const newAccount: AccountSetup = {
       id: `${type}_${Date.now()}`,
-      name: template.label,
+      name: t(template.labelKey),
       type: template.type,
       balance: '',
       emoji: template.icon,
@@ -70,13 +72,12 @@ export const AccountsStep: React.FC<AccountsStepProps> = ({
     >
       <Ionicons name="business" size={48} color={colors.primary} style={{ marginBottom: Spacing.lg }} />
       <Text style={[styles.title, { color: colors.text }]}>
-        Postavite svoje račune
+        {t('onboarding.step4Title')}
       </Text>
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        Dodajte račune koje koristite i unesite trenutno stanje
+        {t('onboarding.step4Subtitle')}
       </Text>
 
-      {/* Dodani računi */}
       {accounts.map((account) => (
         <View
           key={account.id}
@@ -93,7 +94,7 @@ export const AccountsStep: React.FC<AccountsStepProps> = ({
           </View>
           <View style={[styles.balanceRow, { borderColor: colors.border }]}>
             <Text style={[styles.balanceLabel, { color: colors.textSecondary }]}>
-              Stanje:
+              {t('onboarding.balanceLabel')}
             </Text>
             <TextInput
               style={[styles.balanceInput, { color: colors.text }]}
@@ -108,9 +109,8 @@ export const AccountsStep: React.FC<AccountsStepProps> = ({
         </View>
       ))}
 
-      {/* Gumbi za dodavanje */}
       <Text style={[styles.addLabel, { color: colors.textSecondary }]}>
-        Dodaj račun:
+        {t('onboarding.addAccount')}
       </Text>
       <View style={styles.addButtons}>
         {accountTemplates.map((template) => (
@@ -122,7 +122,7 @@ export const AccountsStep: React.FC<AccountsStepProps> = ({
           >
             <Ionicons name={template.icon as any} size={24} color={colors.primary} style={{ marginBottom: 4 }} />
             <Text style={[styles.addText, { color: colors.text }]}>
-              {template.label}
+              {t(template.labelKey)}
             </Text>
           </TouchableOpacity>
         ))}
@@ -131,8 +131,7 @@ export const AccountsStep: React.FC<AccountsStepProps> = ({
       {accounts.length === 0 && (
         <View style={[styles.hint, { backgroundColor: colors.surfaceVariant }]}>
           <Text style={[styles.hintText, { color: colors.textSecondary }]}>
-            Dodajte barem jedan račun da biste mogli pratiti transakcije.
-            Ne brinite — stanje ne mora biti točno do lipe, okvirno je dovoljno!
+            {t('onboarding.accountsHint')}
           </Text>
         </View>
       )}

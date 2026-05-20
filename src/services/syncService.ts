@@ -3,6 +3,7 @@ import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
 import { dbQuery, dbInsert, dbUpdate } from './database';
 import type { SyncData } from '../types';
+import i18n from '../locales/i18n';
 
 const SYNC_VERSION = 1;
 
@@ -68,7 +69,7 @@ export const exportToFile = async (userId: string, householdId: string): Promise
   if (await Sharing.isAvailableAsync()) {
     await Sharing.shareAsync(filePath, {
       mimeType: 'application/json',
-      dialogTitle: 'Eksportiraj podatke MojNovčanik',
+      dialogTitle: i18n.t('sync.exportDialogTitle'),
     });
   }
 
@@ -125,6 +126,7 @@ export const mergeImportedData = async (
         id: tx.id,
         user_id: tx.userId,
         account_id: tx.accountId,
+        to_account_id: tx.toAccountId || null,
         type: tx.type,
         amount: tx.amount,
         currency: tx.currency,
@@ -293,6 +295,7 @@ const mapTransactionRow = (row: any) => ({
   id: row.id,
   userId: row.user_id,
   accountId: row.account_id,
+  toAccountId: row.to_account_id || undefined,
   type: row.type,
   amount: row.amount,
   currency: row.currency,

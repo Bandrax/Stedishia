@@ -16,6 +16,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useAccountStore } from '../store';
+import { getCurrentCurrency } from '../store/useSettingsStore';
 import { Ionicons } from '@expo/vector-icons';
 import { Typography, Spacing, BorderRadius } from '../constants';
 import { formatAmount } from '../utils';
@@ -146,7 +147,7 @@ export const AccountsScreen: React.FC = () => {
       name: accName.trim(),
       type: accType,
       balance: parseFloat(accBalance) || 0,
-      currency: 'EUR',
+      currency: getCurrentCurrency(),
       color: accColor,
       icon: ACCOUNT_TYPES.find((t) => t.type === accType)?.icon || 'business-outline',
       isDefault: accounts.length === 0,
