@@ -70,6 +70,7 @@ export const BudgetScreen: React.FC = () => {
         getMonthlyStats(currentUser.id, currentMonth),
       ]);
       setActualBalance(totalBalance);
+      setMonthlyIncome(stats.income);
       setMonthlyExpenses(stats.expenses);
 
       // Provjeri ima li budžet za ovaj mjesec — ako ne, auto-kopiraj iz prethodnog
@@ -81,13 +82,12 @@ export const BudgetScreen: React.FC = () => {
         }
       }
 
-      // Efektivna baza: prihodi ako postoje, inače stanje + rashodi, inače alocirano
+      // Efektivna baza za budget alokacije (interni izračun, ne prikazuje se kao "prihod")
       const effectiveBase = stats.income > 0
         ? stats.income
         : (budgetSummary.totalAllocated > 0
           ? budgetSummary.totalAllocated
           : totalBalance + stats.expenses);
-      setMonthlyIncome(effectiveBase);
 
       // Ponovo izračunaj s pravom bazom za availableToAllocate
       budgetSummary = await getBudgetSummary(currentUser.id, effectiveBase, currentMonth);
@@ -128,10 +128,10 @@ export const BudgetScreen: React.FC = () => {
         getTotalBalance(currentUser.id),
         getMonthlyStats(currentUser.id, currentMonth),
       ]);
-      // Ako ima prihoda, koristi prihode; inače koristi stanje + rashode kao procjenu
+      // Baza za budget alokacije (interno)
       const base = stats.income > 0 ? stats.income : (totalBalance + stats.expenses);
       setActualBalance(totalBalance);
-      setMonthlyIncome(stats.income > 0 ? stats.income : base);
+      setMonthlyIncome(stats.income);
       setMonthlyExpenses(stats.expenses);
       await generate503020Budget(currentUser.id, base, currentMonth);
       await loadBudget();

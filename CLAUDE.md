@@ -81,17 +81,20 @@ salary, freelance, bonus, investment_income, rental_income, business_income, ass
 1. **Envelope (Kuverte)** — ručna raspodjela po kategoriji
 2. **50/30/20** — automatska raspodjela prema preporučenim postocima
 
-### Budget baza (fallback logika)
+### Budget baza (fallback logika — SAMO za interni izračun alokacija)
 ```
 effectiveBase = income > 0 ? income : totalAllocated > 0 ? totalAllocated : balance + expenses
 ```
+- `effectiveBase` se koristi SAMO za `availableToAllocate` i `generate503020Budget`
+- NIKAD se ne prikazuje korisniku kao "prihod"
 - Nikad ne koristi monthlyIncome iz profila
-- Dinamički računa iz stvarnog stanja računa
 
 ### BudgetSummaryHeader (2x2 grid)
-- Mjesečni prihod (zeleno), Mjesečni rashodi (crveno)
-- Neto rezultat (zeleno/crveno), Ukupno stanje (zlatno)
-- Progress bar: potrošeno/raspoređeno vs prihod
+- Mjesečni prihod (zeleno) — **stvarni SUM income transakcija za mjesec**
+- Mjesečni rashodi (crveno) — **stvarni SUM expense transakcija za mjesec**
+- Neto rezultat (zeleno/crveno) — **prihod - rashod (prava razlika)**
+- Ukupno stanje (zlatno) — **SUM svih account balances**
+- Nema progress bar (uklonjen jer je bio zbunjujući)
 
 ### 50/30/20 grupe
 - **Potrebe**: housing, food, transport, utilities, health, appliances
@@ -398,6 +401,13 @@ formatDate(dateStr, formatStr = 'dd-MM-yyyy', locale?)
 - DB migracija: `last_paid_date TEXT` kolumna
 - 18 novih i18n ključeva (hr + en)
 
+### Post-faze: Budget summary fix
+- BudgetSummaryHeader sada prikazuje **stvarne** prihode i rashode (SUM iz transactions tablice)
+- Prije je "Mjesečni prihod" prikazivao `effectiveBase` (totalBalance + expenses) što je davalo lažne brojke
+- `effectiveBase` sada korišten SAMO interno za budget alokacije (availableToAllocate, 50/30/20 generiranje)
+- Neto rezultat = stvarni prihod - stvarni rashod
+- Uklonjen progress bar na dnu headera (bio zbunjujući, prikazivao "rashod/effectiveBase")
+
 ## APK Build proces
 ```bash
 export JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"
@@ -422,4 +432,4 @@ cp android/app/build/outputs/apk/release/app-release.apk "$USERPROFILE/Desktop/M
 
 ## Što još treba
 - Testiranje na iOS-u (djevojkin iPhone)
-- Testiranje ponavljajućih plaćanja na Android-u
+- Kontinuirano testiranje na Android-u
