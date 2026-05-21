@@ -28,7 +28,7 @@ Mobilna aplikacija za vođenje kućnih financija za dvočlano kućanstvo.
 - **AI savjeti**: Potpuno lokalno (pravila + heuristike)
 - **Dizajn**: #0F4C3A primarna, #D4AF37 akcent, dark/light auto tema
 - **Ikone**: Ionicons iz @expo/vector-icons; kategorije imaju dva stila ikona (Klasične=emoji, Moderne=Ionicons) — odabir u Settings
-- **Datumi**: Prikaz u dd-MM-yyyy formatu, interno YYYY-MM-DD (ISO)
+- **Datumi**: Prikaz u dd.MM.yyyy formatu, interno YYYY-MM-DD (ISO)
 
 ## Navigacija
 - TabNavigator: Home, Transactions, Budget, Goals, More (sve Ionicons, i18n labele)
@@ -80,6 +80,8 @@ salary, freelance, bonus, investment_income, rental_income, business_income, ass
 ### Dva moda
 1. **Envelope (Kuverte)** — ručna raspodjela po kategoriji
 2. **50/30/20** — automatska raspodjela prema preporučenim postocima
+- Zadani prikaz se bira u Settings ("Zadani prikaz budžeta") — `defaultBudgetView` u `useSettingsStore`
+- Oba moda uvijek dostupna, postavka samo određuje koji se prikaže pri otvaranju Budget taba
 
 ### Budget baza (fallback logika — SAMO za interni izračun alokacija)
 ```
@@ -235,8 +237,8 @@ formatAmount(amount, currency?, showSign?)
 
 ### formatDate logika
 ```typescript
-formatDate(dateStr, formatStr = 'dd-MM-yyyy', locale?)
-// Prikaz: dd-MM-yyyy (dashes)
+formatDate(dateStr, formatStr = 'dd.MM.yyyy', locale?)
+// Prikaz: dd.MM.yyyy (dashes)
 // Interno: YYYY-MM-DD (ISO)
 // Koristi date-fns format() s hr/enUS locale
 ```
@@ -259,9 +261,11 @@ formatDate(dateStr, formatStr = 'dd-MM-yyyy', locale?)
   - `CATEGORY_IONICONS` — mapping 23+ kategorija na Ionicons
   - `SUBCATEGORY_IONICONS` — mapping 30+ potkategorija
   - `GOAL_EMOJI_IONICONS` — mapping 14 goal emojija na Ionicons
-  - `getCategoryIonicon()`, `getSubcategoryIonicon()`, `getGoalIonicon()`
-- `useSettingsStore` — `iconStyle: 'classic' | 'modern'`, persistirano u `app_settings`
+  - `ADVISOR_EMOJI_IONICONS` — mapping 30+ advisor emojija na Ionicons
+  - `getCategoryIonicon()`, `getSubcategoryIonicon()`, `getGoalIonicon()`, `getAdvisorIonicon()`
+- `useSettingsStore` — `iconStyle`, `defaultBudgetView`, persistirano u `app_settings`
 - Settings: sekcija "Stil ikona" s preview
+- **Pokrivenost**: sve komponente poštuju iconStyle — Dashboard, Budget, Goals, Transactions, Reports, Advisor (savjeti, check-in, edukacija, pojmovnik), Onboarding, SelectableChip
 
 ## Izvještaji (ReportsScreen)
 
@@ -286,10 +290,34 @@ formatDate(dateStr, formatStr = 'dd-MM-yyyy', locale?)
 - Android kanali: 'payments' (HIGH), 'tips' (DEFAULT)
 - Sve poruke lokalizirane kroz i18n
 
+## Mjesečni prijelaz sustav
+
+### Koncept
+Svakog prvog u mjesecu (ili kad se Dashboard otvori u novom mjesecu) automatski se:
+1. Kreira snapshot prošlog mjeseca (prihodi, rashodi, neto, stanja računa, top kategorije, budget performance)
+2. Kopiraju budget alokacije iz prošlog mjeseca u novi (ako novi mjesec nema alokacija)
+3. Advance-aju nextDueDate za overdue recurring plaćanja
+
+### Servis (`monthTransitionService.ts`)
+- `ensureMonthTransition(userId)` — poziva se na Dashboard load
+- `createMonthlySnapshot(userId, month)` — arhivira mjesec
+- `getSnapshot(userId, month)` / `getAllSnapshots(userId)` — dohvat snapshotova
+
+### DB tablica: `monthly_snapshots`
+- id, user_id, month (YYYY-MM), total_income, total_expenses, net_result
+- total_balance, savings_total, account_balances (JSON), top_categories (JSON)
+- budget_performance (JSON), created_at
+- UNIQUE(user_id, month)
+
+### Dashboard integracija
+- `LastMonthCard` — kartica sa sažetkom prošlog mjeseca (prihodi, rashodi, neto, % promjena)
+- Advisor koristi snapshotove za mjesečne usporedbe (+20% rashodi, -10% rashodi, pad prihoda, rast štednje)
+
 ## SQLite tablice
 - users, transactions, accounts, budgets, goals, recurring_transactions
 - households (s invite_code), household_members
 - budget_presets (id, user_id, name, allocations TEXT, created_at)
+- monthly_snapshots (id, user_id, month, financijski podaci, created_at)
 - app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)
 
 ### Migracije (u database.ts)
@@ -299,6 +327,7 @@ formatDate(dateStr, formatStr = 'dd-MM-yyyy', locale?)
 - `to_account_id` u transactions
 - `last_paid_date` u recurring_transactions
 - `account_id` nullable u recurring_transactions (rekreacija tablice)
+- `monthly_snapshots` tablica
 
 ## Implementirane faze
 
@@ -380,9 +409,9 @@ formatDate(dateStr, formatStr = 'dd-MM-yyyy', locale?)
 - Emoji picker u goal modalu prikazuje Ionicons u modernom modu
 
 ### Post-faze: Datumi fix
-- Svi datumi u aplikaciji prikazuju dd-MM-yyyy format (dashes)
-- `formatDate()` default promijenjen iz `dd.MM.yyyy.` u `dd-MM-yyyy`
-- `formatRelativeDate()` fallback ažuriran na `dd-MM-yyyy`
+- Svi datumi u aplikaciji prikazuju dd.MM.yyyy format (dashes)
+- `formatDate()` default promijenjen iz `dd.MM.yyyy.` u `dd.MM.yyyy`
+- `formatRelativeDate()` fallback ažuriran na `dd.MM.yyyy`
 - GoalCard completedOn koristi default format umjesto eksplicitnog
 
 ### Post-faze: Ponavljajuća plaćanja overhaul
@@ -408,6 +437,28 @@ formatDate(dateStr, formatStr = 'dd-MM-yyyy', locale?)
 - Neto rezultat = stvarni prihod - stvarni rashod
 - Uklonjen progress bar na dnu headera (bio zbunjujući, prikazivao "rashod/effectiveBase")
 
+### Post-faze: Mjesečni prijelaz + StatusSemaphore fix
+- Kompletni month transition sustav: snapshots, budget copy, recurring advance
+- `monthly_snapshots` DB tablica s financijskim podacima po mjesecu
+- `monthTransitionService.ts` — `ensureMonthTransition()` poziv na Dashboard load
+- `LastMonthCard` komponenta na Dashboardu (prihodi/rashodi/neto s % promjenama)
+- Advisor mjesečne usporedbe: 4 nova tipa savjeta baziranih na snapshotovima
+- StatusSemaphore fix: uklonjeno zbunjujuće 698/2211, prikazuje stvarne prihode/rashode/neto
+- `parseUserDate()` helper za parsiranje dd.MM.yyyy i dd-MM-yyyy formata
+- `formatDate()` try-catch za sprječavanje crasheva na nevalidnim datumima
+- Goals tab crash fix: emoji account ikone → `getAccountIonicon()`, date parsing fix
+
+### Post-faze: Kompletne moderne ikone + Budget preferenca
+- **Advisor ekran**: svi emojiji (savjeti, check-in, edukacija, pojmovnik) poštuju iconStyle
+- **ReportsScreen**: 4 emoji lokacije zamijenjene s CategoryIcon
+- **TransactionsScreen**: emoji uklonjen iz Alert naslova
+- **SelectableChip**: dodana Ionicons podrška za moderni stil
+- **GoalsStep (onboarding)**: header emoji → Ionicons u modernom modu
+- `ADVISOR_EMOJI_IONICONS` — 30+ mapiranja emoji→Ionicons u categoryIcons.ts
+- **Zadani prikaz budžeta**: nova postavka u Settings (Kuverte / 50/30/20)
+- `defaultBudgetView` u `useSettingsStore`, persistirano u `app_settings`
+- `BudgetScreen` koristi `defaultBudgetView` kao inicijalni mode
+
 ## APK Build proces
 ```bash
 export JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"
@@ -427,7 +478,7 @@ cp android/app/build/outputs/apk/release/app-release.apk "$USERPROFILE/Desktop/M
 - Git remote: https://github.com/Bandrax/Stedishia (branch: master)
 - Expo docs: https://docs.expo.dev/versions/v54.0.0/
 - Testovi: 83 unit testa (calculations, autoCategory, CSV, subscriptions, formatters)
-- Datumi: prikaz dd-MM-yyyy, interno YYYY-MM-DD
+- Datumi: prikaz dd.MM.yyyy, interno YYYY-MM-DD
 - Ponavljajuća plaćanja su podsjetnici, ne automatski rashodi — transakcija se kreira tek na "Plaćeno"
 
 ## Što još treba

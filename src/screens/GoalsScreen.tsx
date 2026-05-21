@@ -17,8 +17,8 @@ import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useGoalStore, useAccountStore } from '../store';
 import { getCurrentCurrency, useSettingsStore } from '../store/useSettingsStore';
-import { Typography, Spacing, BorderRadius, getGoalIonicon } from '../constants';
-import { formatAmount } from '../utils';
+import { Typography, Spacing, BorderRadius, getGoalIonicon, getAccountIonicon } from '../constants';
+import { formatAmount, parseUserDate } from '../utils';
 import {
   getGoals,
   createGoal,
@@ -118,13 +118,10 @@ export const GoalsScreen: React.FC = () => {
       return;
     }
 
-    // Default datum: 1 godina od danas
-    let targetDate = goalDate;
-    if (!targetDate) {
-      const d = new Date();
-      d.setFullYear(d.getFullYear() + 1);
-      targetDate = d.toISOString().split('T')[0];
-    }
+    // Parsiraj datum iz korisničkog unosa (podržava dd-MM-yyyy, dd.MM.yyyy, YYYY-MM-DD)
+    const defaultDate = new Date();
+    defaultDate.setFullYear(defaultDate.getFullYear() + 1);
+    const targetDate = (goalDate ? parseUserDate(goalDate) : null) || defaultDate.toISOString().split('T')[0];
 
     setIsSubmitting(true);
     try {
@@ -618,7 +615,7 @@ export const GoalsScreen: React.FC = () => {
                 >
                   <View style={styles.accountChipContent}>
                     <Ionicons
-                      name={(acc.icon || 'wallet-outline') as any}
+                      name={getAccountIonicon(acc.type, acc.icon)}
                       size={14}
                       color={addMoneyAccountId === acc.id ? colors.primary : colors.textSecondary}
                       style={{ marginRight: 4 }}

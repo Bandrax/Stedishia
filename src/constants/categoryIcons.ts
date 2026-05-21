@@ -123,3 +123,61 @@ export const getSubcategoryIonicon = (subcategoryId: string): IoniconName =>
 
 export const getGoalIonicon = (emoji: string): IoniconName =>
   GOAL_EMOJI_IONICONS[emoji] ?? 'flag-outline';
+
+// Mapping account tipova na Ionicons
+export const ACCOUNT_TYPE_IONICONS: Record<string, IoniconName> = {
+  checking: 'business-outline',
+  savings: 'save-outline',
+  cash: 'cash-outline',
+  credit_card: 'card-outline',
+  mortgage: 'home-outline',
+  personal_loan: 'document-text-outline',
+  car_loan: 'car-outline',
+  other: 'list-outline',
+};
+
+// Mapping advisor emojija na Ionicons za moderni stil
+export const ADVISOR_EMOJI_IONICONS: Record<string, IoniconName> = {
+  '🚨': 'alert-circle-outline',
+  '💡': 'bulb-outline',
+  '🌟': 'star-outline',
+  '📊': 'bar-chart-outline',
+  '⚠️': 'warning-outline',
+  '🔥': 'flame-outline',
+  '⚡': 'flash-outline',
+  '🔄': 'sync-outline',
+  '📋': 'clipboard-outline',
+  '🛡️': 'shield-outline',
+  '🏗️': 'construct-outline',
+  '🛡️✨': 'shield-checkmark-outline',
+  '📉': 'trending-down-outline',
+  '🌈': 'happy-outline',
+  '📈': 'trending-up-outline',
+  '🎉': 'sparkles-outline',
+  '💰': 'wallet-outline',
+  '⭐': 'star-outline',
+  '🧠': 'bulb-outline',
+  '🛍️': 'bag-outline',
+  '👁️': 'eye-outline',
+  '🐷': 'save-outline',
+  '🏆': 'trophy-outline',
+  '🎯': 'flag-outline',
+  '📒': 'book-outline',
+  '⛷️': 'snow-outline',
+  '🎈': 'balloon-outline',
+  '💧': 'water-outline',
+  '🥚': 'apps-outline',
+  '😴': 'moon-outline',
+  '💸': 'cash-outline',
+  '⏱': 'time-outline',
+};
+
+export const getAdvisorIonicon = (emoji: string): IoniconName =>
+  ADVISOR_EMOJI_IONICONS[emoji] ?? 'information-circle-outline';
+
+// Vraća Ionicons ime za račun — emoji ikone iz baze se ignoriraju, koristi se tip računa
+export const getAccountIonicon = (accountType: string, icon?: string): IoniconName => {
+  // Ako icon sadrži '-' vjerojatno je već validan Ionicons name
+  if (icon && icon.includes('-')) return icon as IoniconName;
+  return ACCOUNT_TYPE_IONICONS[accountType] ?? 'wallet-outline';
+};

@@ -76,7 +76,7 @@ export const TransactionsScreen: React.FC = () => {
     const typeLabel = t(`transactions.type.${tx.type}`);
     const sign = tx.type === 'income' ? '+' : '-';
     Alert.alert(
-      `${catInfo?.emoji ?? '📌'} ${tx.description}`,
+      tx.description,
       [
         `${typeLabel}: ${sign}${formatAmount(tx.amount)}`,
         `${t('transactions.category')}: ${catInfo?.name ?? tx.categoryId}`,

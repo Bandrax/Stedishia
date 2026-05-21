@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useSettingsStore, CURRENCIES } from '../store';
-import type { IconStyle } from '../store';
+import type { IconStyle, BudgetView } from '../store';
 import { useThemeStore } from '../store/useThemeStore';
 import { Ionicons } from '@expo/vector-icons';
 import { Typography, Spacing, BorderRadius } from '../constants';
@@ -28,7 +28,7 @@ export const SettingsScreen: React.FC = () => {
   const currentUser = useAuthStore((s) => s.currentUser);
   const { logout } = useAuthStore();
   const { mode, setMode } = useThemeStore();
-  const { currency, setCurrency, iconStyle, setIconStyle } = useSettingsStore();
+  const { currency, setCurrency, iconStyle, setIconStyle, defaultBudgetView, setDefaultBudgetView } = useSettingsStore();
   const [language, setLanguage] = useState<'hr' | 'en'>(i18n.language as 'hr' | 'en' || 'hr');
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const activeCurrency = CURRENCIES.find((c) => c.code === currency) || CURRENCIES[0];
@@ -199,6 +199,42 @@ export const SettingsScreen: React.FC = () => {
                   </View>
                 )}
                 <Text style={[styles.themeLabel, { color: iconStyle === option.key ? colors.primary : colors.text }]}>
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Zadani prikaz budžeta */}
+        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Spacing.md }}>
+            <Ionicons name="wallet-outline" size={18} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>{t('settings.defaultBudgetView')}</Text>
+          </View>
+          <View style={styles.themeRow}>
+            {([
+              { key: 'envelope' as BudgetView, label: t('settings.defaultBudgetEnvelope'), icon: 'mail-outline' as const },
+              { key: '50-30-20' as BudgetView, label: t('settings.defaultBudget5030'), icon: 'pie-chart-outline' as const },
+            ]).map((option) => (
+              <TouchableOpacity
+                key={option.key}
+                style={[
+                  styles.themeOption,
+                  {
+                    backgroundColor: defaultBudgetView === option.key ? colors.primary + '20' : colors.surfaceVariant,
+                    borderColor: defaultBudgetView === option.key ? colors.primary : colors.border,
+                  },
+                ]}
+                onPress={() => setDefaultBudgetView(option.key)}
+              >
+                <Ionicons
+                  name={option.icon}
+                  size={22}
+                  color={defaultBudgetView === option.key ? colors.primary : colors.textSecondary}
+                  style={{ marginBottom: 4 }}
+                />
+                <Text style={[styles.themeLabel, { color: defaultBudgetView === option.key ? colors.primary : colors.text }]}>
                   {option.label}
                 </Text>
               </TouchableOpacity>

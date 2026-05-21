@@ -16,3 +16,4 @@ export { BudgetModeToggle } from './BudgetModeToggle';
 export { GoalCard } from './GoalCard';
 export { NetWorthCard } from './NetWorthCard';
 export { EmergencyFundCard } from './EmergencyFundCard';
+export { LastMonthCard } from './LastMonthCard';

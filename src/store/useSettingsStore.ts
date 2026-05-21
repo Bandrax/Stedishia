@@ -15,12 +15,15 @@ export const CURRENCIES = [
 ] as const;
 
 export type IconStyle = 'classic' | 'modern';
+export type BudgetView = 'envelope' | '50-30-20';
 
 interface SettingsState {
   currency: string;
   iconStyle: IconStyle;
+  defaultBudgetView: BudgetView;
   setCurrency: (code: string) => Promise<void>;
   setIconStyle: (style: IconStyle) => Promise<void>;
+  setDefaultBudgetView: (view: BudgetView) => Promise<void>;
   loadSettings: () => Promise<void>;
 }
 
@@ -34,6 +37,7 @@ export const getCurrentIconStyle = () => _currentIconStyle;
 export const useSettingsStore = create<SettingsState>((set) => ({
   currency: 'EUR',
   iconStyle: 'classic',
+  defaultBudgetView: 'envelope',
 
   setCurrency: async (code: string) => {
     _currentCurrency = code;
@@ -59,10 +63,21 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     } catch (_) {}
   },
 
+  setDefaultBudgetView: async (view: BudgetView) => {
+    set({ defaultBudgetView: view });
+    try {
+      const db = await getDatabase();
+      await db.runAsync(
+        `INSERT OR REPLACE INTO app_settings (key, value) VALUES ('default_budget_view', ?)`,
+        [view]
+      );
+    } catch (_) {}
+  },
+
   loadSettings: async () => {
     try {
       const rows = await dbQuery<{ key: string; value: string }>(
-        `SELECT key, value FROM app_settings WHERE key IN ('currency', 'icon_style')`,
+        `SELECT key, value FROM app_settings WHERE key IN ('currency', 'icon_style', 'default_budget_view')`,
         []
       );
       for (const row of rows) {
@@ -73,6 +88,9 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         if (row.key === 'icon_style' && (row.value === 'classic' || row.value === 'modern')) {
           _currentIconStyle = row.value;
           set({ iconStyle: row.value });
+        }
+        if (row.key === 'default_budget_view' && (row.value === 'envelope' || row.value === '50-30-20')) {
+          set({ defaultBudgetView: row.value });
         }
       }
     } catch (_) {}

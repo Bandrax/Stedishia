@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { SelectableChip } from '../../components/atoms';
 import { useAppTheme } from '../../hooks';
-import { Typography, Spacing, BorderRadius } from '../../constants';
+import { useSettingsStore } from '../../store';
+import { Typography, Spacing, BorderRadius, getGoalIonicon } from '../../constants';
 
 interface GoalOption {
   id: string;
@@ -33,6 +35,7 @@ export const GoalsStep: React.FC<GoalsStepProps> = ({
 }) => {
   const { colors } = useAppTheme();
   const { t } = useTranslation();
+  const iconStyle = useSettingsStore((s) => s.iconStyle);
 
   return (
     <ScrollView
@@ -40,7 +43,13 @@ export const GoalsStep: React.FC<GoalsStepProps> = ({
       contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.emoji}>🎯</Text>
+      {iconStyle === 'modern' ? (
+        <View style={styles.emojiContainer}>
+          <Ionicons name="flag-outline" size={48} color={colors.primary} />
+        </View>
+      ) : (
+        <Text style={styles.emoji}>🎯</Text>
+      )}
       <Text style={[styles.title, { color: colors.text }]}>
         {t('onboarding.step3Title')}
       </Text>
@@ -81,6 +90,10 @@ const styles = StyleSheet.create({
   emoji: {
     fontSize: 48,
     textAlign: 'center',
+    marginBottom: Spacing.md,
+  },
+  emojiContainer: {
+    alignItems: 'center',
     marginBottom: Spacing.md,
   },
   title: {

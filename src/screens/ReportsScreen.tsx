@@ -73,7 +73,6 @@ export const ReportsScreen: React.FC = () => {
   const [expandedTrend, setExpandedTrend] = useState<{
     categoryId: string;
     name: string;
-    emoji: string;
     color: string;
     data: number[];
     labels: string[];
@@ -497,7 +496,7 @@ export const ReportsScreen: React.FC = () => {
             return (
               <View key={cat.categoryId} style={styles.categoryRow}>
                 <Text style={styles.categoryRank}>{index + 1}.</Text>
-                <Text style={styles.categoryEmoji}>{info?.emoji || '📁'}</Text>
+                <View style={styles.categoryEmoji}><CategoryIcon categoryId={cat.categoryId} size={18} color={info?.color || '#607D8B'} /></View>
                 <View style={styles.categoryInfo}>
                   <View style={styles.categoryHeader}>
                     <Text style={[styles.categoryName, { color: colors.text }]}>
@@ -565,7 +564,6 @@ export const ReportsScreen: React.FC = () => {
               onPress={() => setExpandedTrend({
                 categoryId: trend.categoryId,
                 name: info?.name || trend.categoryId,
-                emoji: info?.emoji || '📁',
                 color: info?.color || colors.primary,
                 data: trend.months.map((m) => m.amount || 0),
                 labels,
@@ -574,7 +572,7 @@ export const ReportsScreen: React.FC = () => {
             >
               <View style={styles.trendHeader}>
                 <View style={styles.trendTitleRow}>
-                  <Text style={styles.trendEmoji}>{info?.emoji || '📁'}</Text>
+                  <View style={styles.trendEmoji}><CategoryIcon categoryId={trend.categoryId} size={20} color={info?.color || '#607D8B'} /></View>
                   <Text style={[styles.trendName, { color: colors.text }]}>
                     {info?.name || trend.categoryId}
                   </Text>
@@ -870,7 +868,7 @@ export const ReportsScreen: React.FC = () => {
                   <Ionicons name="arrow-back" size={24} color={colors.primary} />
                 </TouchableOpacity>
                 <Text style={[styles.title, { color: colors.text }]}>
-                  {expandedTrend.emoji} {expandedTrend.name}
+                  <CategoryIcon categoryId={expandedTrend.categoryId} size={20} color={expandedTrend.color} /> {expandedTrend.name}
                 </Text>
                 <View style={{ width: 24 }} />
               </View>
@@ -1116,8 +1114,8 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   categoryEmoji: {
-    fontSize: 22,
     marginRight: Spacing.sm,
+    justifyContent: 'center' as const,
   },
   categoryInfo: {
     flex: 1,
@@ -1168,7 +1166,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   trendEmoji: {
-    fontSize: 22,
+    justifyContent: 'center' as const,
   },
   trendName: {
     fontSize: 16,

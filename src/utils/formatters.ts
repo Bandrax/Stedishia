@@ -34,17 +34,42 @@ export const formatAmountShort = (amount: number): string => {
   return `${amount.toFixed(0)} ${symbol}`;
 };
 
+// Pokušaj parsirati datum iz raznih korisničkih formata u ISO (YYYY-MM-DD)
+export const parseUserDate = (input: string): string | null => {
+  if (!input || !input.trim()) return null;
+  const s = input.trim();
+
+  // Već ISO format: YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+  // dd.MM.yyyy ili dd.MM.yyyy ili dd/MM/yyyy
+  const match = s.match(/^(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})$/);
+  if (match) {
+    const [, day, month, year] = match;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+
+  return null;
+};
+
 // Formatiranje datuma
 export const formatDate = (
   dateStr: string,
-  formatStr: string = 'dd-MM-yyyy',
+  formatStr: string = 'dd.MM.yyyy',
   locale?: string
 ): string => {
-  const lang = locale || i18n.language;
-  const date = typeof dateStr === 'string' ? parseISO(dateStr) : dateStr;
-  return format(date, formatStr, {
-    locale: lang === 'hr' ? hr : enUS,
-  });
+  try {
+    const lang = locale || i18n.language;
+    // Pokušaj parsirati razne formate
+    const isoStr = parseUserDate(dateStr) || dateStr;
+    const date = typeof isoStr === 'string' ? parseISO(isoStr) : isoStr;
+    if (isNaN(date.getTime())) return dateStr; // fallback: vrati original string
+    return format(date, formatStr, {
+      locale: lang === 'hr' ? hr : enUS,
+    });
+  } catch {
+    return dateStr; // fallback: vrati original string umjesto crasha
+  }
 };
 
 // Relativan datum (Danas, Jučer, ili datum)
@@ -52,7 +77,7 @@ export const formatRelativeDate = (dateStr: string): string => {
   const date = parseISO(dateStr);
   if (isToday(date)) return i18n.t('common.today');
   if (isYesterday(date)) return i18n.t('common.yesterday');
-  return formatDate(dateStr, 'dd-MM-yyyy');
+  return formatDate(dateStr, 'dd.MM.yyyy');
 };
 
 // Formatiranje postotka

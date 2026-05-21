@@ -284,6 +284,28 @@ export const initializeDatabase = async (): Promise<void> => {
     }
   } catch (_) {}
 
+  // Migracija: monthly_snapshots tablica za mjesečne arhive
+  try {
+    await database.execAsync(`
+      CREATE TABLE IF NOT EXISTS monthly_snapshots (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        month TEXT NOT NULL,
+        total_income REAL DEFAULT 0,
+        total_expenses REAL DEFAULT 0,
+        net_result REAL DEFAULT 0,
+        total_balance REAL DEFAULT 0,
+        savings_total REAL DEFAULT 0,
+        account_balances TEXT DEFAULT '[]',
+        top_categories TEXT DEFAULT '[]',
+        budget_performance TEXT DEFAULT '{}',
+        created_at TEXT NOT NULL,
+        UNIQUE(user_id, month),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )
+    `);
+  } catch (_) {}
+
   // Migracija: dodaj to_account_id u transactions za transfer podršku
   try {
     const txInfo = await database.getAllAsync(

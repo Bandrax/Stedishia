@@ -3,6 +3,7 @@ import { dbQuery } from './database';
 import { getCurrentMonth } from '../utils';
 import { getMonthlyStats, getTopExpenses, getBudgetProgress } from './dashboardService';
 import { getEmergencyFundCoverage, getNetWorth } from './goalService';
+import { getSnapshot, getPreviousMonth } from './monthTransitionService';
 import { detectSubscriptions } from './debtService';
 import { getDebts } from './debtService';
 import type { AdviceCategory, AdvicePriority } from '../types';
@@ -233,6 +234,65 @@ export const generateAdvice = async (userId: string): Promise<Advice[]> => {
         emoji: '🌈',
       });
     }
+    // === MONTH-TO-MONTH COMPARISON ===
+    const prevMonth = getPreviousMonth(month);
+    const prevSnapshot = await getSnapshot(userId, prevMonth);
+    if (prevSnapshot && prevSnapshot.totalExpenses > 0 && stats.expenses > 0) {
+      const expenseChangePercent = ((stats.expenses - prevSnapshot.totalExpenses) / prevSnapshot.totalExpenses) * 100;
+
+      if (expenseChangePercent > 20) {
+        advice.push({
+          id: 'monthly_expense_up',
+          title: i18n.t('advisor.advice.monthlyExpenseUpTitle'),
+          message: i18n.t('advisor.advice.monthlyExpenseUpMsg', { percent: Math.round(expenseChangePercent) }),
+          category: 'spending',
+          priority: 'high',
+          emoji: '📈',
+        });
+      } else if (expenseChangePercent < -10) {
+        advice.push({
+          id: 'monthly_expense_down',
+          title: i18n.t('advisor.advice.monthlyExpenseDownTitle'),
+          message: i18n.t('advisor.advice.monthlyExpenseDownMsg', { percent: Math.round(Math.abs(expenseChangePercent)) }),
+          category: 'spending',
+          priority: 'low',
+          emoji: '📉',
+        });
+      }
+
+      if (prevSnapshot.totalIncome > 0 && stats.income > 0) {
+        const incomeChange = ((stats.income - prevSnapshot.totalIncome) / prevSnapshot.totalIncome) * 100;
+        if (incomeChange < -20) {
+          advice.push({
+            id: 'monthly_income_drop',
+            title: i18n.t('advisor.advice.monthlyIncomeDropTitle'),
+            message: i18n.t('advisor.advice.monthlyIncomeDropMsg', { percent: Math.round(Math.abs(incomeChange)) }),
+            category: 'general',
+            priority: 'medium',
+            emoji: '⚠️',
+          });
+        }
+      }
+
+      // Usporedba štednje
+      const prevSavingsRate = prevSnapshot.totalIncome > 0
+        ? ((prevSnapshot.totalIncome - prevSnapshot.totalExpenses) / prevSnapshot.totalIncome) * 100
+        : 0;
+      if (savingsRate > 0 && prevSavingsRate > 0 && savingsRate > prevSavingsRate + 5) {
+        advice.push({
+          id: 'monthly_savings_improved',
+          title: i18n.t('advisor.advice.monthlySavingsImprovedTitle'),
+          message: i18n.t('advisor.advice.monthlySavingsImprovedMsg', {
+            current: Math.round(savingsRate),
+            previous: Math.round(prevSavingsRate),
+          }),
+          category: 'saving',
+          priority: 'low',
+          emoji: '🎉',
+        });
+      }
+    }
+
   } catch (error) {
     console.error('Advice generation error:', error);
     advice.push({

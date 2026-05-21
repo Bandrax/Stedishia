@@ -177,7 +177,13 @@
     "limitsNeeds": "50% prihoda — potrebe (stanovanje 27%, hrana 13%, prijevoz 5%, režije 3%, zdravlje 2%)",
     "limitsWants": "30% prihoda — želje (zabava 10%, odjeća 5%, osobno 5%, edukacija 5%, pokloni 5%)",
     "limitsSavings": "20% prihoda — štednja i otplate (po 10%)",
-    "limitsCustomize": "Ove granice možete prilagoditi u tabu Budžet → Envelope mod."
+    "limitsCustomize": "Ove granice možete prilagoditi u tabu Budžet → Envelope mod.",
+    "lastMonth": "Prošli mjesec ({{month}})",
+    "lastMonthIncome": "Prihodi",
+    "lastMonthExpenses": "Rashodi",
+    "lastMonthNet": "Neto rezultat",
+    "lastMonthBudget": "Budžet: {{spent}} / {{allocated}}",
+    "lastMonthOverBudget": "{{count}} prekoračeno"
   },
 
   "transactions": {
@@ -496,6 +502,9 @@
     "iconStyle": "Stil ikona",
     "iconStyleClassic": "Klasične",
     "iconStyleModern": "Moderne",
+    "defaultBudgetView": "Zadani prikaz budžeta",
+    "defaultBudgetEnvelope": "Kuverte",
+    "defaultBudget5030": "50/30/20",
     "security": "Sigurnost",
     "pinLock": "PIN zaključavanje",
     "biometric": "Biometrija",
@@ -637,7 +646,15 @@
       "allGoodTitle": "Financije su na dobrom putu!",
       "allGoodMsg": "Na temelju vaših podataka, stvari izgledaju dobro. Nastavite pratiti troškove i držati se budžeta. Konzistentnost je ključ financijskog zdravlja.",
       "errorTitle": "Savjeti dolaze uskoro",
-      "errorMsg": "Unesite više transakcija kako bismo vam mogli dati personalizirane savjete."
+      "errorMsg": "Unesite više transakcija kako bismo vam mogli dati personalizirane savjete.",
+      "monthlyExpenseUpTitle": "Rashodi rastu!",
+      "monthlyExpenseUpMsg": "Ovaj mjesec trošite {{percent}}% više nego prošli mjesec. Provjerite koji troškovi su porasli.",
+      "monthlyExpenseDownTitle": "Troškovi su pali!",
+      "monthlyExpenseDownMsg": "Ovaj mjesec trošite {{percent}}% manje nego prošli. Odlično — nastavite tako!",
+      "monthlyIncomeDropTitle": "Prihodi su pali",
+      "monthlyIncomeDropMsg": "Vaši prihodi su pali {{percent}}% u odnosu na prošli mjesec. Razmislite o prilagodbi budžeta.",
+      "monthlySavingsImprovedTitle": "Štednja se poboljšala!",
+      "monthlySavingsImprovedMsg": "Vaša stopa štednje je porasla s {{previous}}% na {{current}}%. Sjajan napredak!"
     },
 
     "checkin": {

@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
 import { useAuthStore, useAccountStore } from '../store';
 import { Ionicons } from '@expo/vector-icons';
-import { Typography, Spacing, BorderRadius } from '../constants';
+import { Typography, Spacing, BorderRadius, getAccountIonicon } from '../constants';
 import { formatAmount } from '../utils';
 import { getCategoryInfo } from '../services/dashboardService';
 import { getAccounts } from '../services/accountService';
@@ -793,7 +793,7 @@ export const RecurringScreen: React.FC = () => {
                     ]}
                     onPress={() => setPayAccountId(acc.id)}
                   >
-                    <Ionicons name={acc.icon as any} size={16} color={payAccountId === acc.id ? colors.primary : colors.textSecondary} />
+                    <Ionicons name={getAccountIonicon(acc.type, acc.icon)} size={16} color={payAccountId === acc.id ? colors.primary : colors.textSecondary} />
                     <Text style={[styles.accountChipText, { color: payAccountId === acc.id ? colors.primary : colors.text }]}>
                       {acc.name}
                     </Text>

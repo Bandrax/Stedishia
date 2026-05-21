@@ -22,6 +22,8 @@ interface StatusSemaphoreProps {
   nearLimitItems?: BudgetDetail[];
   totalSpent?: number;
   totalAllocated?: number;
+  monthlyIncome?: number;
+  monthlyExpenses?: number;
 }
 
 const statusIcons = {
@@ -37,6 +39,8 @@ export const StatusSemaphore: React.FC<StatusSemaphoreProps> = ({
   nearLimitItems = [],
   totalSpent = 0,
   totalAllocated = 0,
+  monthlyIncome = 0,
+  monthlyExpenses = 0,
 }) => {
   const { t } = useTranslation();
   const { colors } = useAppTheme();
@@ -97,20 +101,37 @@ export const StatusSemaphore: React.FC<StatusSemaphoreProps> = ({
             </View>
 
             <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
-              {/* Ukupno */}
-              {totalAllocated > 0 && (
-                <View style={[styles.summaryBox, { backgroundColor: bgColorMap[status] }]}>
-                  <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
-                    {t('dashboard.totalSpendingVsBudget')}
-                  </Text>
-                  <Text style={[styles.summaryAmount, { color: iconColorMap[status] }]}>
-                    {formatAmount(totalSpent)} / {formatAmount(totalAllocated)}
-                  </Text>
-                  <Text style={[styles.summaryPercent, { color: colors.text }]}>
-                    {t('dashboard.budgetUsed', { percent: totalAllocated > 0 ? Math.round((totalSpent / totalAllocated) * 100) : 0 })}
-                  </Text>
+              {/* Prihodi, rashodi, neto */}
+              <View style={[styles.summaryBox, { backgroundColor: bgColorMap[status] }]}>
+                <View style={styles.summaryGrid}>
+                  <View style={styles.summaryGridItem}>
+                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
+                      {t('dashboard.income')}
+                    </Text>
+                    <Text style={[styles.summaryGridValue, { color: colors.success }]}>
+                      {formatAmount(monthlyIncome)}
+                    </Text>
+                  </View>
+                  <View style={styles.summaryGridItem}>
+                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
+                      {t('dashboard.expenses')}
+                    </Text>
+                    <Text style={[styles.summaryGridValue, { color: colors.error }]}>
+                      {formatAmount(monthlyExpenses)}
+                    </Text>
+                  </View>
                 </View>
-              )}
+                {monthlyIncome > 0 && (
+                  <View style={styles.netResultRow}>
+                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
+                      {t('dashboard.lastMonthNet')}
+                    </Text>
+                    <Text style={[styles.summaryAmount, { color: monthlyIncome - monthlyExpenses >= 0 ? colors.success : colors.error }]}>
+                      {monthlyIncome - monthlyExpenses >= 0 ? '+' : ''}{formatAmount(monthlyIncome - monthlyExpenses)}
+                    </Text>
+                  </View>
+                )}
+              </View>
 
               {/* Prekoračene kategorije */}
               {overBudgetItems.length > 0 && (
@@ -254,12 +275,32 @@ const styles = StyleSheet.create({
   summaryBox: {
     borderRadius: BorderRadius.lg,
     padding: Spacing.base,
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.md,
+  },
+  summaryGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.sm,
+  },
+  summaryGridItem: {
+    flex: 1,
+  },
+  summaryGridValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  netResultRow: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(0,0,0,0.1)',
+    paddingTop: Spacing.sm,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
   summaryLabel: { fontSize: 12, marginBottom: 4 },
-  summaryAmount: { fontSize: 22, fontWeight: '700', marginBottom: 4 },
-  summaryPercent: { fontSize: 14 },
+  summaryAmount: { fontSize: 18, fontWeight: '700' },
+  summaryPercent: { fontSize: 13 },
 
   detailSection: { marginBottom: Spacing.lg },
   detailTitleRow: {

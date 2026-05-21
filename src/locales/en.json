@@ -177,7 +177,13 @@
     "limitsNeeds": "50% of income — needs (housing 27%, food 13%, transport 5%, utilities 3%, health 2%)",
     "limitsWants": "30% of income — wants (entertainment 10%, clothing 5%, personal 5%, education 5%, gifts 5%)",
     "limitsSavings": "20% of income — savings and debt repayment (10% each)",
-    "limitsCustomize": "You can customize these limits in the Budget tab → Envelope mode."
+    "limitsCustomize": "You can customize these limits in the Budget tab → Envelope mode.",
+    "lastMonth": "Last month ({{month}})",
+    "lastMonthIncome": "Income",
+    "lastMonthExpenses": "Expenses",
+    "lastMonthNet": "Net result",
+    "lastMonthBudget": "Budget: {{spent}} / {{allocated}}",
+    "lastMonthOverBudget": "{{count}} over budget"
   },
 
   "transactions": {
@@ -496,6 +502,9 @@
     "iconStyle": "Icon Style",
     "iconStyleClassic": "Classic",
     "iconStyleModern": "Modern",
+    "defaultBudgetView": "Default budget view",
+    "defaultBudgetEnvelope": "Envelopes",
+    "defaultBudget5030": "50/30/20",
     "security": "Security",
     "pinLock": "PIN lock",
     "biometric": "Biometrics",
@@ -637,7 +646,15 @@
       "allGoodTitle": "Finances are on the right track!",
       "allGoodMsg": "Based on your data, things look good. Keep tracking expenses and sticking to your budget. Consistency is the key to financial health.",
       "errorTitle": "Tips coming soon",
-      "errorMsg": "Enter more transactions so we can give you personalized advice."
+      "errorMsg": "Enter more transactions so we can give you personalized advice.",
+      "monthlyExpenseUpTitle": "Expenses are rising!",
+      "monthlyExpenseUpMsg": "You're spending {{percent}}% more than last month. Check which costs increased.",
+      "monthlyExpenseDownTitle": "Expenses dropped!",
+      "monthlyExpenseDownMsg": "You're spending {{percent}}% less than last month. Great job — keep it up!",
+      "monthlyIncomeDropTitle": "Income dropped",
+      "monthlyIncomeDropMsg": "Your income decreased by {{percent}}% compared to last month. Consider adjusting your budget.",
+      "monthlySavingsImprovedTitle": "Savings improved!",
+      "monthlySavingsImprovedMsg": "Your savings rate increased from {{previous}}% to {{current}}%. Great progress!"
     },
 
     "checkin": {

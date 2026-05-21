@@ -1,11 +1,17 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks';
-import { Typography, Spacing, BorderRadius } from '../../constants';
+import { useSettingsStore } from '../../store';
+import { Typography, Spacing, BorderRadius, getGoalIonicon } from '../../constants';
+import type { ComponentProps } from 'react';
+
+type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
 interface SelectableChipProps {
   label: string;
   emoji?: string;
+  ionicon?: IoniconName;
   selected: boolean;
   onPress: () => void;
 }
@@ -13,10 +19,28 @@ interface SelectableChipProps {
 export const SelectableChip: React.FC<SelectableChipProps> = ({
   label,
   emoji,
+  ionicon,
   selected,
   onPress,
 }) => {
   const { colors } = useAppTheme();
+  const iconStyle = useSettingsStore((s) => s.iconStyle);
+
+  const renderIcon = () => {
+    if (iconStyle === 'modern' && (ionicon || emoji)) {
+      const name = ionicon || (emoji ? getGoalIonicon(emoji) : 'flag-outline');
+      return (
+        <Ionicons
+          name={name}
+          size={20}
+          color={selected ? colors.textOnPrimary : colors.text}
+          style={styles.iconMargin}
+        />
+      );
+    }
+    if (emoji) return <Text style={styles.emoji}>{emoji}</Text>;
+    return null;
+  };
 
   return (
     <TouchableOpacity
@@ -30,7 +54,7 @@ export const SelectableChip: React.FC<SelectableChipProps> = ({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {emoji && <Text style={styles.emoji}>{emoji}</Text>}
+      {renderIcon()}
       <Text
         style={[
           styles.label,
@@ -55,6 +79,9 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: 20,
+    marginRight: Spacing.sm,
+  },
+  iconMargin: {
     marginRight: Spacing.sm,
   },
   label: {

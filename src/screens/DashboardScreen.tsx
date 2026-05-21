@@ -19,7 +19,9 @@ import {
   getSavingsStats,
 } from '../services/dashboardService';
 import { getRecurringPaymentStatus } from '../services/recurringService';
+import { ensureMonthTransition, getSnapshot, getPreviousMonth } from '../services/monthTransitionService';
 import { getDailyTip } from '../services/tips';
+import { getCurrentMonth } from '../utils';
 import { Ionicons } from '@expo/vector-icons';
 import { Card } from '../components/atoms';
 import {
@@ -30,8 +32,10 @@ import {
   TopExpenseItem,
   MiniCashFlowChart,
   DailyTipCard,
+  LastMonthCard,
 } from '../components/molecules';
 import type { BudgetStatus } from '../components/molecules';
+import type { MonthlySnapshot } from '../types';
 
 interface DashboardData {
   totalBalance: number;
@@ -68,11 +72,27 @@ export const DashboardScreen: React.FC = () => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [tipDismissed, setTipDismissed] = useState(false);
+  const [lastMonthSnapshot, setLastMonthSnapshot] = useState<MonthlySnapshot | null>(null);
+  const [prevMonthSnapshot, setPrevMonthSnapshot] = useState<MonthlySnapshot | null>(null);
 
   const loadData = useCallback(async () => {
     if (!currentUser) return;
 
     try {
+      // Osiguraj mjesečni prijelaz (snapshot, budget copy, recurring advance)
+      const transitionResult = await ensureMonthTransition(currentUser.id);
+
+      // Dohvati snapshot prošlog mjeseca za karticu
+      const currentMonth = getCurrentMonth();
+      const prevMonth = getPreviousMonth(currentMonth);
+      const prevPrevMonth = getPreviousMonth(prevMonth);
+      const [snap, prevSnap] = await Promise.all([
+        transitionResult.snapshot || getSnapshot(currentUser.id, prevMonth),
+        getSnapshot(currentUser.id, prevPrevMonth),
+      ]);
+      setLastMonthSnapshot(snap);
+      setPrevMonthSnapshot(prevSnap);
+
       const [
         totalBalance,
         monthlyStats,
@@ -199,6 +219,20 @@ export const DashboardScreen: React.FC = () => {
           changePercent={data?.changePercent ?? 0}
         />
 
+        {/* Prošli mjesec */}
+        {lastMonthSnapshot && (lastMonthSnapshot.totalIncome > 0 || lastMonthSnapshot.totalExpenses > 0) && (
+          <View style={styles.section}>
+            <LastMonthCard
+              snapshot={lastMonthSnapshot}
+              previousSnapshot={prevMonthSnapshot}
+              monthLabel={(() => {
+                const [y, m] = lastMonthSnapshot.month.split('-');
+                return `${m}.${y}`;
+              })()}
+            />
+          </View>
+        )}
+
         {/* Štednja kartica */}
         {data && data.savingsBalance > 0 && (
           <Card style={styles.section} variant="default">
@@ -239,6 +273,8 @@ export const DashboardScreen: React.FC = () => {
             nearLimitItems={data?.nearLimitDetails}
             totalSpent={data?.totalSpent}
             totalAllocated={data?.totalAllocated}
+            monthlyIncome={data?.monthlyIncome}
+            monthlyExpenses={data?.monthlyExpenses}
           />
         </View>
 

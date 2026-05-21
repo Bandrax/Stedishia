@@ -6,4 +6,5 @@ export {
   formatPercentage,
   formatMonth,
   getCurrentMonth,
+  parseUserDate,
 } from './formatters';

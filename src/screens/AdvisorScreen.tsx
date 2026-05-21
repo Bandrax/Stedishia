@@ -11,9 +11,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../hooks';
-import { useAuthStore } from '../store';
+import { useAuthStore, useSettingsStore } from '../store';
 import { Ionicons } from '@expo/vector-icons';
-import { Typography, Spacing, BorderRadius } from '../constants';
+import { Typography, Spacing, BorderRadius, getAdvisorIonicon } from '../constants';
 import {
   generateAdvice,
   getWeeklyCheckIn,
@@ -32,6 +32,14 @@ export const AdvisorScreen: React.FC = () => {
   const currentUser = useAuthStore((s) => s.currentUser);
   const userId = currentUser?.id || '';
   const { t } = useTranslation();
+  const iconStyle = useSettingsStore((s) => s.iconStyle);
+
+  const renderEmoji = (emoji: string, size: number) => {
+    if (iconStyle === 'modern') {
+      return <Ionicons name={getAdvisorIonicon(emoji)} size={size} color={colors.primary} />;
+    }
+    return <Text style={{ fontSize: size }}>{emoji}</Text>;
+  };
 
   const [activeTab, setActiveTab] = useState<AdvisorTab>('advice');
   const [refreshing, setRefreshing] = useState(false);
@@ -125,7 +133,7 @@ export const AdvisorScreen: React.FC = () => {
             style={[styles.adviceCard, { backgroundColor: style.bg, borderColor: style.border }]}
           >
             <View style={styles.adviceHeader}>
-              <Text style={styles.adviceEmoji}>{item.emoji}</Text>
+              <View style={styles.adviceEmoji}>{renderEmoji(item.emoji, 28)}</View>
               <View style={styles.adviceHeaderInfo}>
                 <Text style={[styles.adviceTitle, { color: colors.text }]}>{item.title}</Text>
                 <View style={[styles.priorityBadge, { backgroundColor: style.text + '20' }]}>
@@ -178,7 +186,7 @@ export const AdvisorScreen: React.FC = () => {
           key={index}
           style={[styles.questionCard, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <Text style={styles.questionEmoji}>{item.emoji}</Text>
+          <View style={styles.questionEmoji}>{renderEmoji(item.emoji, 24)}</View>
           <Text style={[styles.questionText, { color: colors.text }]}>{item.question}</Text>
           <View style={styles.questionType}>
             {item.type === 'yes_no' && (
@@ -242,14 +250,14 @@ export const AdvisorScreen: React.FC = () => {
           }}
           activeOpacity={0.7}
         >
-          <Text style={styles.articleEmoji}>{article.emoji}</Text>
+          <View style={styles.articleEmoji}>{renderEmoji(article.emoji, 32)}</View>
           <View style={styles.articleInfo}>
             <Text style={[styles.articleTitle, { color: colors.text }]}>{article.title}</Text>
             <Text style={[styles.articleSummary, { color: colors.textSecondary }]}>
               {article.summary}
             </Text>
             <Text style={[styles.articleMeta, { color: colors.textTertiary }]}>
-              ⏱ {t('advisor.readTime', { min: article.readTimeMin })}
+              {iconStyle === 'modern' ? <Ionicons name="time-outline" size={11} color={colors.textTertiary} /> : <Text>⏱</Text>} {t('advisor.readTime', { min: article.readTimeMin })}
             </Text>
           </View>
           <Text style={{ color: colors.textTertiary, fontSize: 18 }}>›</Text>
@@ -269,7 +277,7 @@ export const AdvisorScreen: React.FC = () => {
           key={index}
           style={[styles.glossaryItem, { backgroundColor: colors.card, borderColor: colors.border }]}
         >
-          <Text style={styles.glossaryEmoji}>{item.emoji}</Text>
+          <View style={styles.glossaryEmoji}>{renderEmoji(item.emoji, 24)}</View>
           <View style={styles.glossaryInfo}>
             <Text style={[styles.glossaryTerm, { color: colors.text }]}>{item.term}</Text>
             <Text style={[styles.glossaryDef, { color: colors.textSecondary }]}>
@@ -335,7 +343,7 @@ export const AdvisorScreen: React.FC = () => {
           <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.articleModalHeader}>
-                <Text style={styles.articleModalEmoji}>{selectedArticle?.emoji}</Text>
+                <View style={styles.articleModalEmoji}>{selectedArticle && renderEmoji(selectedArticle.emoji, 48)}</View>
                 <Text style={[styles.articleModalTitle, { color: colors.text }]}>
                   {selectedArticle?.title}
                 </Text>
@@ -401,7 +409,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   adviceHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: Spacing.sm },
-  adviceEmoji: { fontSize: 28, marginRight: Spacing.md },
+  adviceEmoji: { marginRight: Spacing.md, justifyContent: 'center' as const },
   adviceHeaderInfo: { flex: 1 },
   adviceTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
   priorityBadge: {
@@ -437,7 +445,7 @@ const styles = StyleSheet.create({
     padding: Spacing.base,
     marginBottom: Spacing.md,
   },
-  questionEmoji: { fontSize: 24, marginBottom: Spacing.sm },
+  questionEmoji: { marginBottom: Spacing.sm },
   questionText: { fontSize: 16, fontWeight: '600', marginBottom: Spacing.md, lineHeight: 24 },
   questionType: {},
   yesNoRow: { flexDirection: 'row', gap: Spacing.sm },
@@ -467,7 +475,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: Spacing.sm,
   },
-  articleEmoji: { fontSize: 32, marginRight: Spacing.md },
+  articleEmoji: { marginRight: Spacing.md, justifyContent: 'center' as const },
   articleInfo: { flex: 1 },
   articleTitle: { fontSize: 15, fontWeight: '600', marginBottom: 4 },
   articleSummary: { fontSize: 13, lineHeight: 18, marginBottom: 4 },
@@ -481,7 +489,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: Spacing.sm,
   },
-  glossaryEmoji: { fontSize: 24, marginRight: Spacing.md },
+  glossaryEmoji: { marginRight: Spacing.md, justifyContent: 'center' as const },
   glossaryInfo: { flex: 1 },
   glossaryTerm: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
   glossaryDef: { fontSize: 13, lineHeight: 20 },
@@ -501,7 +509,7 @@ const styles = StyleSheet.create({
     maxHeight: '85%',
   },
   articleModalHeader: { alignItems: 'center', marginBottom: Spacing.lg },
-  articleModalEmoji: { fontSize: 48, marginBottom: Spacing.md },
+  articleModalEmoji: { marginBottom: Spacing.md, alignItems: 'center' as const },
   articleModalTitle: { ...Typography.heading2, textAlign: 'center' },
   articleContent: { fontSize: 15, lineHeight: 24, marginBottom: Spacing.lg },
   closeButton: {

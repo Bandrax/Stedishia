@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../hooks';
-import { useAuthStore, useBudgetStore } from '../store';
+import { useAuthStore, useBudgetStore, useSettingsStore } from '../store';
 import { Typography, Spacing, BorderRadius, DEFAULT_EXPENSE_CATEGORIES } from '../constants';
 import { formatMonth, getCurrentMonth, formatAmount } from '../utils';
 import { Ionicons } from '@expo/vector-icons';
@@ -44,13 +44,12 @@ export const BudgetScreen: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser } = useAuthStore();
   const { currentMonth, setCurrentMonth } = useBudgetStore();
+  const defaultBudgetView = useSettingsStore((s) => s.defaultBudgetView);
 
   const [summary, setSummary] = useState<BudgetSummary | null>(null);
   const [unbudgeted, setUnbudgeted] = useState<Array<{ categoryId: string; spent: number }>>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [mode, setMode] = useState<'envelope' | '50-30-20'>(
-    (currentUser?.budgetMode as any) || 'envelope'
-  );
+  const [mode, setMode] = useState<'envelope' | '50-30-20'>(defaultBudgetView);
   const [showSetup, setShowSetup] = useState(false);
   const [isSettingUp, setIsSettingUp] = useState(false);
 

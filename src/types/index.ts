@@ -159,6 +159,26 @@ export interface FinancialAdvice {
   createdAt: string;
 }
 
+// ===== Mjesečni snapshot =====
+export interface MonthlySnapshot {
+  id: string;
+  userId: string;
+  month: string; // YYYY-MM
+  totalIncome: number;
+  totalExpenses: number;
+  netResult: number;
+  totalBalance: number;
+  savingsTotal: number;
+  accountBalances: Array<{ name: string; type: string; balance: number }>;
+  topCategories: Array<{ categoryId: string; amount: number }>;
+  budgetPerformance: {
+    totalAllocated: number;
+    totalSpent: number;
+    overBudgetCount: number;
+  };
+  createdAt: string;
+}
+
 // ===== Postavke =====
 export interface AppSettings {
   theme: 'light' | 'dark' | 'system';
